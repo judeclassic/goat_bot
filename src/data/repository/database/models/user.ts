@@ -15,6 +15,7 @@ export interface IUser {
     telegram_id: string;
     wallets: IWallet[],
     passcode?: string;
+    previous_command: string;
 }
 
 
@@ -45,6 +46,9 @@ const UserSchema = new Schema<IUser>({
     },
     wallets: [WalletSchema],
     passcode: {
+        type: String,
+    },
+    previous_command: {
         type: String,
     }
 });

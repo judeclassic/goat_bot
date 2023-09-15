@@ -1,30 +1,53 @@
 import TelegramBot from "node-telegram-bot-api";
-
+import { SessionMessage, SessionType } from "../../handler/type";
+import { IUser, UserModel } from "../database/models/user";
+import WalletRepository from "../wallet/wallet";
 const token = '6010824016:AAE9Eohr5_lvNwD0fSTnbaDjjhkmrEhMBKM';
-
-const bot = new TelegramBot(token, {polling: true});
 class TelegramBotRepository {
-    constructor(){
-        bot.onText(/\/echo (.+)/, (msg, match) => {
-            if (!match) return;
+    bot: TelegramBot;
+    walletRepository: WalletRepository;
+    userModel: typeof UserModel;
 
-            const chatId = msg.chat.id;
-            const resp = match[1];
+    constructor( userModel: typeof UserModel, walletRepository: WalletRepository){
+        this.bot = new TelegramBot(token, {polling: true});
+        this.walletRepository = walletRepository;
+        this.userModel = userModel;
+    }
 
-            bot.sendMessage(chatId, resp);
-        });
+    start = (callback: (data: SessionMessage) => void) => {
+        this.bot.onText(/\/start/, async (msg) => {
+            const telegram_id = msg.chat.id;
+            const user = await UserModel.findOne({ telegram_id });
+            if (!user) {
+                const wallets = [await this.walletRepository.createWallet()]
+    
+                const createdUser = await this.userModel.create({ telegram_id, wallets });
+                if (!createdUser) return { status: false, message: 'unable to create your account' };
+    
+                callback({ msg, user: createdUser });
+                return;
+            }
+            if (!user) return this.bot.sendMessage(telegram_id, "Error in retrieving account")
+            callback({ msg, user });
+        })
+    }
 
-        bot.on('message', (msg) => {
-            const chatId = msg.chat.id;
-
-            bot.sendMessage(chatId, 'Received your message');
-
-            bot.sendMessage(msg.chat.id, "Welcome", {
-                "reply_markup": {
-                    "keyboard": [["Sample text", "Second sample"],   ["Keyboard"], ["I'm robot"]] as any
-                }
-            });
-        });
+    on = (callback: (data: SessionType) => void) => {
+        this.bot.on('callback_query', async (query) => {
+            const telegram_id = query.message?.chat.id!;
+            const user = await UserModel.findOne({ telegram_id });
+            if (!user) {
+                const wallets = [await this.walletRepository.createWallet()]
+    
+                const createdUser = await this.userModel.create({ telegram_id, wallets });
+                if (!createdUser) return { status: false, message: 'unable to create your account' };
+    
+                callback({ query, user: createdUser });
+                return;
+            }
+            if (!user) return this.bot.sendMessage(telegram_id, "Error in retrieving account")
+            callback({ query, user });
+        })
     }
 }
 
