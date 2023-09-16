@@ -41,26 +41,48 @@ ${wallet.address}
 }
 export class MessageTradeTemplete {
     static defaultDollarToEth = 1608;
-    static selectWalletAddress = ({ wallets }:{ wallets: IUser['wallets']}) => (
+    static marketBuyWalletAddress = ({ wallets }:{ wallets: IUser['wallets']}) => (
     
 `
 -------------------------------------------------------------------------
 🦄 Goatbot 🦄
 
 ═══ Select Wallets ═══
-Select the address you want to buy from
+Select the address perform a market sell from
 -------------------------------------------------------------------------
 `)
 
-    static selectBuyingWalletAddress = ({ wallet }:{ wallet: IWallet }) => (
-        
+    static marketSellWalletAddress = ({ wallets }:{ wallets: IUser['wallets']}) => (
+    
 `
-
 -------------------------------------------------------------------------
-Gas: 31   ═   Block: 18092846   ═   ETH: $${this.defaultDollarToEth}
+🦄 Goatbot 🦄
 
-═══ Your Wallet - ${wallet.address} ═══
+═══ Select Wallets ═══
+Select the address perform a market buy from
+-------------------------------------------------------------------------
+`)
 
+    static limitBuyWalletAddress = ({ wallets }:{ wallets: IUser['wallets']}) => (
+    
+`
+-------------------------------------------------------------------------
+🦄 Goatbot 🦄
+
+═══ Select Wallets ═══
+Select the address perform a market sell from
+-------------------------------------------------------------------------
+`)
+
+    static limitSellWalletAddress = ({ wallets }:{ wallets: IUser['wallets']}) => (
+    
+`
+-------------------------------------------------------------------------
+🦄 Goatbot 🦄
+
+═══ Select Wallets ═══
+Select the address perform a market buy from
+-------------------------------------------------------------------------
 `)
 
 }

@@ -1,4 +1,3 @@
-import CryptoAccount, { newPrivateKey } from "send-crypto";
 import Web3 from "web3";
 import { IWallet } from "../database/models/user";
 const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f' 
