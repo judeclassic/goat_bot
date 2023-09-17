@@ -3,11 +3,12 @@ import { MessageTemplete, MessageWalletTemplete, MessageTradeTemplete } from '..
 import { UserModel } from '../../data/repository/database/models/user';
 import WalletRepository from '../../data/repository/wallet/wallet';
 import TelegramService from './telegram.service';
+
 const YOUR_BOT_TOKEN = '6010824016:AAE9Eohr5_lvNwD0fSTnbaDjjhkmrEhMBKM';
+const INTEGRATION_HOST = 'https://app.uniswap.org/swap';
+
 const bot = new Telegraf(YOUR_BOT_TOKEN);
 
-const INTEGRATION_HOST = 'https://app.uniswap.org/swap';
-// const INTEGRATION_HOST = 'https://localhost:3002';
 
 export const useTelegramBot = () => {
     const walletRepository = new WalletRepository();
@@ -53,7 +54,7 @@ export const useTelegramBot = () => {
             Markup.button.callback('Import wallet', 'import-wallet-menu'),
             Markup.button.callback('Export wallet', 'export-wallet-menu'),
             Markup.button.callback('Remove wallet', 'remove-wallet-menu'),
-            Markup.button.callback('Back', 'menu'),
+            Markup.button.callback('Back', 'menu')
         ], { wrap: (btn, index, currentRow) => true});
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -85,7 +86,7 @@ export const useTelegramBot = () => {
             Markup.button.callback('Create wallet', 'create-wallet-menu'),
             Markup.button.callback('Export wallet', 'import-wallet-menu'),
             Markup.button.callback('Export wallet', 'export-wallet-menu'),
-            Markup.button.callback('Back', 'menu'),
+            Markup.button.callback('Back', 'menu')
         ], { wrap: (btn, index, currentRow) => true});
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
