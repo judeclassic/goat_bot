@@ -4,8 +4,8 @@ import { UserModel } from '../../data/repository/database/models/user';
 import WalletRepository from '../../data/repository/wallet/wallet';
 import TelegramService from './telegram.service';
 
-const YOUR_BOT_TOKEN = '6010824016:AAE9Eohr5_lvNwD0fSTnbaDjjhkmrEhMBKM';
-const INTEGRATION_HOST = 'https://app.uniswap.org/swap';
+const YOUR_BOT_TOKEN = process.env.YOUR_BOT_TOKEN!;
+// const INTEGRATION_HOST = 'https://app.uniswap.org/swap';
 const INTEGRATION_WEB_HOST = 'https://goatbot.app';
 
 const bot = new Telegraf(YOUR_BOT_TOKEN);
