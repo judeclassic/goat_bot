@@ -2,6 +2,7 @@
   "start": "build/index.js",
   "scripts": {
     "build": "tsc",
+    "prestart": "tsc",
     "start": "node build/index.js",
     "dev": "nodemon src/index.ts"
   },
