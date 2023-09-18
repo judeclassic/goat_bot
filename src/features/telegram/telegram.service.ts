@@ -83,6 +83,26 @@ class TelegramService {
         }
     }
 
+    userDeleteWallet = async ({ telegram_id, wallet_number }: { telegram_id: string, wallet_number: number }) => {
+        try {
+            const { user } = await this.getCurrentUser(telegram_id);
+            if (!user) return { status: false, message: 'unable to get current user' };
+
+            const wallets: IWallet[] = [];
+            for (const element of user.wallets) {
+                if (user.wallets.indexOf(element) === wallet_number) continue;
+                const wallet = await this.walletRepository.getWallet(element);
+                wallets.push(wallet);
+            }
+            user.wallets = wallets;
+            await user.save()
+
+            return { status: true, user };
+        }catch (err) {
+            return { status: false, message: 'error please send "/start" request again' };
+        }
+    }
+
     getCurrentUser = async (telegram_id: string) => {
         const user = await this.userModel.findOne({ telegram_id });
         if (!user) {

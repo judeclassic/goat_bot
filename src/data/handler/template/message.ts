@@ -85,6 +85,17 @@ Select the address perform a market buy from
 -------------------------------------------------------------------------
 `)
 
+    static viewTransactionHistory = ({ wallets }:{ wallets: IUser['wallets']}) => (
+    
+`
+-------------------------------------------------------------------------
+🦄 Goatbot 🦄
+
+═══ Select Wallets ═══
+Select the address to view transaction history
+-------------------------------------------------------------------------
+`)
+
 }
 
 
