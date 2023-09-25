@@ -1,50 +1,83 @@
-import { UserModel } from "../../../data/repository/database/models/user";
+import { IOtherWallet, UserModel } from "../../../data/repository/database/models/user";
+import TradeRepository from "../../../data/repository/wallet/trade";
 import IError from "../../../data/types/error/error";
-
-const ERROR_UNABLE_TO_GET_ALL_USERS: IError = {
-  field: 'emailAddress',
-  message: 'Unable to fetch all users',
-};
-const ERROR_USER_NOT_FOUND: IError = {
-  field: 'password',
-  message: 'User with this email/password combination does not exist.',
-};
 
 class IntegrationService {
   private _userModel: typeof UserModel;
+  private _tradeRepository: TradeRepository;
 
-  constructor ({ userModel} : { userModel: typeof UserModel; }){
+  constructor ({ userModel, tradeRepository} : { userModel: typeof UserModel; tradeRepository: TradeRepository; }){
     this._userModel = userModel;
+    this._tradeRepository = tradeRepository;
   }
 
-//   public getAllCoin = async ( options: { limit: number; page: number }): Promise<{ coins: any[] }> => {
-//     const usersResponse = await this._userModel.getUsers([{}], options);
-//     if ( !usersResponse.status ) {
-//       return { errors: [ERROR_UNABLE_TO_GET_ALL_USERS] };
-//     } 
-//     return { users: usersResponse.data };
-//   };
+  public getGasPrices = async () => {
+    const gasPricesResponse = await this._tradeRepository.getGasPrices();
+    if ( !gasPricesResponse.success || !gasPricesResponse.gasPrices ) {
+      return { error: 'unable to get gas prices' };
+    } 
+    return { data: gasPricesResponse.gasPrices };
+  };
 
-//   public buyCoin = async (userId: string): Promise<{ errors?: IError[]; user?: UserDto; }> => {
-      
-//     const user = await this._userModel.getUser({ _id: userId });
-//     if (!user.status) return { errors: [ERROR_USER_NOT_FOUND] };
+  public getListOfTokensInWallet = async ({ user_id, wallet_address } : {
+    user_id: string, wallet_address: string
+  }): Promise<{ error?: IError[], data?: any[] }> => {
+    const user = await this._userModel.findOne({ telegram_id: user_id });
+    if (!user) return { error: [{ message: 'unable to get user information' }]};
 
-//     const updateUser = await this._userModel.updateUser( { _id: user.data.id }, { is_banned: true });
-//     if (!updateUser.status) return { errors: [ERROR_USER_NOT_FOUND] };
+    const wallet = user.wallets.find((wallet) => wallet.address === wallet_address);
+    if (!wallet) return { error: [{ message: 'unable to get wallet information' }]};
 
-//     return { user:  updateUser.data};
-//   };
+    const tokensResponse = await this._tradeRepository.getListOfTokensInWallet({ wallet });
+    if ( !tokensResponse ) {
+      return { error: [{ message: 'unable to get list of token' }]};
+    } 
+    return { data: tokensResponse };
+  };
 
-//   public unbanUser = async (userId: string): Promise<{ errors?: IError[]; user?: UserDto; }> => {
-//     const user = await this._userModel.getUser({ _id: userId });
-//     if (!user.status) return { errors: [ERROR_USER_NOT_FOUND] };
+  public buyCoin = async ({ user_id, wallet_address, contract_address, amount, slippage, gas_fee }:{
+    user_id: string,
+    wallet_address: string,
+    slippage: number;
+    contract_address: string,
+    amount: number
+    gas_fee: number
+  }) => {
+    const user = await this._userModel.findOne({ telegram_id: user_id });
+    if (!user) return { errors: [{ message: 'user not found'}] };
 
-//     const updateUser = await this._userModel.updateUser( { _id: user.data.id }, { is_banned: false });
-//     if (!updateUser.status) return { errors: [ERROR_USER_NOT_FOUND] };
+    const wallet = user.wallets.find((wallet) => wallet.address === wallet_address);
+    if (!wallet) return { error: [{ message: 'unable to get wallet information' }]};
 
-//     return { user:  updateUser.data};
-//   };
+    const response = await this._tradeRepository.swapEthToToken({ contract_address, amount, slippage, wallet, gas_fee });
+    if ( !response ) {
+      return { error: [{ message: 'unable to place trade' }]};
+    }
+
+    return { response };
+  };
+
+  public sellCoin = async ({ user_id, wallet_address, contract_address, amount, slippage, gas_fee }:{
+    user_id: string,
+    wallet_address: string,
+    slippage: number;
+    contract_address: string,
+    amount: number
+    gas_fee: number
+  }) => {
+      const user = await this._userModel.findOne({ telegram_id: user_id });
+      if (!user) return { errors: [{ message: 'user not found'}] };
+
+      const wallet = user.wallets.find((wallet) => wallet.address === wallet_address);
+      if (!wallet) return { error: [{ message: 'unable to get wallet information' }]};
+
+      const response = await this._tradeRepository.swapTokenToEth({ contract_address, amount, slippage, wallet, gas_fee });
+      if ( !response ) {
+        return { error: [{ message: 'unable to place trade' }]};
+      }
+
+      return { response };
+  };
 
 }
 

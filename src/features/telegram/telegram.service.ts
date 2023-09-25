@@ -1,18 +1,22 @@
 import { SessionMessage, SessionType } from '../../data/handler/type';
-import { IWallet, UserModel } from '../../data/repository/database/models/user';
+import { IOtherWallet, IWallet, UserModel } from '../../data/repository/database/models/user';
+import TradeRepository from '../../data/repository/wallet/trade';
 import WalletRepository from '../../data/repository/wallet/wallet';
 
 class TelegramService {
     userModel: typeof UserModel
     walletRepository: WalletRepository;
+    tradeRepository: TradeRepository;
 
 
-    constructor({ userModel, walletRepository } : {
+    constructor({ userModel, walletRepository, tradeRepository } : {
         userModel: typeof UserModel
         walletRepository: WalletRepository
+        tradeRepository: TradeRepository;
     }) {
         this.userModel = userModel;
         this.walletRepository = walletRepository;
+        this.tradeRepository = tradeRepository;
 
     }
 
@@ -98,6 +102,30 @@ class TelegramService {
             await user.save()
 
             return { status: true, user };
+        }catch (err) {
+            return { status: false, message: 'error please send "/start" request again' };
+        }
+    }
+
+    getGeneralBalance = async ({ telegram_id, wallet_number }: { telegram_id: string, wallet_number: number }) => {
+        try {
+            const { user } = await this.getCurrentUser(telegram_id);
+            if (!user) return { status: false, message: 'unable to get current user' };
+
+            const wallet = user.wallets[wallet_number]
+            const balances = await this.tradeRepository.getListOfTokensInWallet({ wallet});
+
+            if (balances.length === 0) {
+                const _wallet = await this.walletRepository.getWallet(wallet);
+                return {status: true, balances: [{
+                    coin_name: 'Eth',
+                    contract_address: '',
+                    balance: _wallet.balance
+                }] as IOtherWallet[]}
+                
+            }
+
+            return { status: true, balances };
         }catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }

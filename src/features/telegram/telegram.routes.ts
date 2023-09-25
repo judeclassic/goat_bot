@@ -1,61 +1,70 @@
 import { Telegraf, Markup } from 'telegraf';
 import { MessageTemplete, MessageWalletTemplete, MessageTradeTemplete } from '../../data/handler/template/message';
 import { UserModel } from '../../data/repository/database/models/user';
+import TradeRepository from '../../data/repository/wallet/trade';
 import WalletRepository from '../../data/repository/wallet/wallet';
 import TelegramService from './telegram.service';
 
-const YOUR_BOT_TOKEN = process.env.YOUR_BOT_TOKEN!;
-// const INTEGRATION_HOST = 'https://app.uniswap.org/swap';
 const INTEGRATION_WEB_HOST = 'https://goatbot.app';
 
-const bot = new Telegraf(YOUR_BOT_TOKEN);
-
-
 export const useTelegramBot = () => {
+    const YOUR_BOT_TOKEN = process.env.YOUR_BOT_TOKEN!;
+
+    const bot = new Telegraf(YOUR_BOT_TOKEN);
     const walletRepository = new WalletRepository();
-    const telegramService = new TelegramService({ userModel: UserModel, walletRepository });
+    const tradeRepository = new TradeRepository();
+    const telegramService = new TelegramService({ userModel: UserModel, walletRepository, tradeRepository });
     
     bot.start(async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('Wallet', 'wallet-menu'),
-            Markup.button.callback('Trade', 'trade-menu'),
-            Markup.button.callback('Bots', 'bots-menu'),
-            Markup.button.callback('Earn', 'earn-menu'),
-            Markup.button.callback('Setting', 'setting-menu')
-        ], { wrap: (btn, index, currentRow) => true});
+            [   Markup.button.callback('💼 Wallet hub 🪙', 'wallet-menu'),
+                Markup.button.callback('🔄 Start trading 💹', 'trade-menu'),
+            ],
+            [   Markup.button.callback('🤖 Bot center 🚀', 'bots-menu'),
+                Markup.button.callback('💰 Earn rewards 🌟', 'earn-menu')],
+            [Markup.button.callback('⚙️ Settings & tools 🔧', 'setting-menu')],
+        ]);
 
+        if (!ctx.chat) return;
         const telegram_id = ctx.chat.id.toString();
-        const response = await telegramService.userOpensChat({ telegram_id });
-        if (!response.user) return ctx.reply(response.message, keyboard);
 
-        ctx.reply(MessageTemplete.welcome({ wallets: response.user.wallets }), keyboard);
+        const response = await telegramService.userOpensChat({ telegram_id });
+        if (!response.user) return bot.telegram.sendMessage(telegram_id, response.message);
+
+        const { text, entities } = MessageTemplete.generateWalletEntities({wallets: response.user.wallets})
+        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
     });
 
     bot.action('menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('Wallet', 'wallet-menu'),
-            Markup.button.callback('Trade', 'trade-menu'),
-            Markup.button.callback('Bots', 'bots-menu'),
-            Markup.button.callback('Earn', 'earn-menu'),
-            Markup.button.callback('Setting', 'setting-menu'),
-        ], { wrap: (btn, index, currentRow) => true});
-
+            [   Markup.button.callback('💼 Wallet hub 🪙', 'wallet-menu'),
+                Markup.button.callback('🔄 Start trading 💹', 'trade-menu')
+            ],
+            [   Markup.button.callback('🤖 Bot center 🚀', 'bots-menu'),
+                Markup.button.callback('💰 Earn rewards 🌟', 'earn-menu')],
+            [Markup.button.callback('⚙️ Settings & tools 🔧', 'setting-menu')]
+        ]);
+        
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
         const telegram_id = ctx.chat.id.toString();
         const response = await telegramService.userOpensChat({ telegram_id });
         if (!response.user) return ctx.reply(response.message, keyboard);
 
-        ctx.reply(MessageTemplete.welcome({ wallets: response.user.wallets }), keyboard);
+        const { text, entities } = MessageTemplete.generateWalletEntities({wallets: response.user.wallets})
+        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
     });
 
     bot.action('wallet-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('Create wallet', 'create-wallet-menu')],
-            [Markup.button.callback('Import wallet', 'import-wallet-menu')],
-            [Markup.button.callback('Export wallet', 'export-wallet-menu')],
-            [Markup.button.callback('Remove wallet', 'remove-wallet-menu')],
-            [Markup.button.callback('Back', 'menu')]
+            [   Markup.button.callback('➕ Create new wallet 🔐', 'create-wallet-menu'),
+                Markup.button.callback('⬇️ Import wallet 🔗', 'import-wallet-menu')
+            ],
+            [   Markup.button.callback('⬆️ Export wallet 📤', 'export-wallet-menu'),
+                Markup.button.callback('❌ Delete wallet 🗑️', 'remove-wallet-menu')
+            ],
+            [Markup.button.callback('💼 Wallet balance 🔗', 'wallet-balance-menu')],
+            [Markup.button.callback('🔙 Back to menu 🔄', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -64,13 +73,16 @@ export const useTelegramBot = () => {
         const response = await telegramService.userOpensChat({ telegram_id });
         if (!response.user) return ctx.reply(response.message, keyboard);
 
-        ctx.reply(MessageTemplete.welcome({ wallets: response.user.wallets }), keyboard);
+        const { text, entities } = MessageWalletTemplete.generateWalletEntities({wallets: response.user.wallets})
+
+        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
     });
+    
 
     bot.action('create-wallet-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
             Markup.button.callback('Add New', 'adding-new-wallet'),
-            Markup.button.callback('Back', 'wallet-menu'),
+            Markup.button.callback('🔙 Back 🔄', 'wallet-menu'),
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -84,11 +96,14 @@ export const useTelegramBot = () => {
 
     bot.action('adding-new-wallet', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('Create wallet', 'create-wallet-menu')],
-            [Markup.button.callback('Import wallet', 'import-wallet-menu')],
-            [Markup.button.callback('Export wallet', 'export-wallet-menu')],
-            [Markup.button.callback('Remove wallet', 'remove-wallet-menu')],
-            [Markup.button.callback('Back', 'menu')]
+            [   Markup.button.callback('➕ Create new wallet 🔐', 'create-wallet-menu'),
+                Markup.button.callback('⬇️ Import wallet 🔗', 'import-wallet-menu')
+            ],
+            [   Markup.button.callback('⬆️ Export wallet 📤', 'export-wallet-menu'),
+                Markup.button.callback('❌ Delete wallet 🗑️', 'remove-wallet-menu')
+            ],
+            [Markup.button.callback('💼 Wallet balance 🔗', 'wallet-balance-menu')],
+            [Markup.button.callback('🔙 Back to menu 🔄', 'menu')]
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -97,13 +112,15 @@ export const useTelegramBot = () => {
         const response = await telegramService.userAddsWallet({ telegram_id });
         if (!response.user) return ctx.reply(response.message, keyboard);
 
-        ctx.reply(MessageTemplete.trade({ wallets: response.user.wallets }), keyboard);
+        const { text, entities } = MessageWalletTemplete.generateWalletEntities({ wallets: response.user.wallets })
+
+        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
     });
 
     bot.action('import-wallet-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
             Markup.button.callback('Click here to start', 'importing-new-wallet'),
-            Markup.button.callback('Back', 'wallet-menu'),
+            Markup.button.callback('🔙 Back 🔄', 'wallet-menu'),
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -117,21 +134,22 @@ export const useTelegramBot = () => {
 
     bot.action('importing-new-wallet', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('Back', 'menu'),
+            Markup.button.callback('🔙 Back 🔄', 'menu'),
         ]);
 
-        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+        // if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
-        const telegram_id = ctx.chat.id.toString();
-        const response = await telegramService.userAddsWallet({ telegram_id });
-        if (!response.user) return ctx.reply(response.message, keyboard);
+        // const telegram_id = ctx.chat.id.toString();
+        // const response = await telegramService.userAddsWallet({ telegram_id });
+        // if (!response.user) return ctx.reply(response.message, keyboard);
 
-        ctx.reply(MessageTemplete.trade({ wallets: response.user.wallets }), keyboard);
+        // ctx.reply(MessageTemplete.trade({ wallets: response.user.wallets }), keyboard);
+        ctx.reply(MessageTemplete.welcome() ,keyboard);
     });
     
     bot.action('export-wallet-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('Back', 'wallet-menu'),
+            Markup.button.callback('🔙 Back 🔄', 'wallet-menu'),
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -140,13 +158,14 @@ export const useTelegramBot = () => {
         const response = await telegramService.userOpensChat({ telegram_id });
         if (!response.user) return ctx.reply(response.message, keyboard);
 
-        ctx.reply(MessageWalletTemplete.exportWallet({ wallets: response.user.wallets }), keyboard);
+        const { text, entities } = MessageWalletTemplete.generateExportWalletEntities({wallets: response.user.wallets})
+        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
     });
 
     bot.action('remove-wallet-menu', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
             [Markup.button.callback('Buy', 'remove-wallet-menu')],
-            [Markup.button.callback('Back', 'wallet-menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -159,16 +178,17 @@ export const useTelegramBot = () => {
             ...response.user.wallets.map((_wallet, index) => {
                 return Markup.button.callback(`Wallet ${index+1}`, `delete-wallet-${index+1}`);
             })],
-            [Markup.button.callback('Back', 'wallet-menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
         ]);
 
         ctx.reply(MessageTradeTemplete.marketBuyWalletAddress({ wallets: response.user.wallets }), keyboard);
     });
+
     [ 1, 2, 3 ].forEach((data, wallet_number) => {
         bot.action( `delete-wallet-${wallet_number+1}`, async (ctx) => {
             const initialKeyboard = Markup.inlineKeyboard([
                 [Markup.button.callback('try again', `delete-wallet-${wallet_number+1}`)],
-                [Markup.button.callback('Back', 'wallet-menu')],
+                [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
             ]);
 
             if (!ctx.chat) return ctx.reply('unable to delete', initialKeyboard);
@@ -181,38 +201,88 @@ export const useTelegramBot = () => {
                 ...response.user.wallets.map((_wallet, index) => {
                     return Markup.button.callback(`Wallet ${index+1}`, `delete-wallet-${index+1}`);
                 })],
-                [Markup.button.callback('Back', 'wallet-menu')],
+                [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
             ]);
 
             ctx.reply(MessageTradeTemplete.marketBuyWalletAddress({ wallets: response.user.wallets }), keyboard);
         });
     });
 
-    bot.action('trade-menu', async (ctx) => {
-        const keyboard = Markup.inlineKeyboard([
-            [   Markup.button.callback('Buy', 'buy-market-order-menu'),
-                Markup.button.callback('Sell', 'sell-market-order-menu'),
-            ],
-            [   Markup.button.callback('Limit Buy', 'buy-limit-order-menu'),
-                Markup.button.callback('Limit Sell', 'sell-limit-order-menu')
-            ],
-            [Markup.button.callback('View transaction history', 'view-transaction-history')],
-            [Markup.button.callback('Back', 'menu'),]
+    bot.action('wallet-balance-menu', async (ctx) => {
+        const initialKeyboard = Markup.inlineKeyboard([
+            [Markup.button.callback('Buy', 'remove-wallet-menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
         ]);
 
-        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+        if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
 
         const telegram_id = ctx.chat.id.toString();
         const response = await telegramService.userOpensChat({ telegram_id });
-        if (!response.user) return ctx.reply(response.message, keyboard);
+        if (!response.user) return ctx.reply(response.message, initialKeyboard);
 
-        ctx.reply(MessageTemplete.welcome({ wallets: response.user.wallets }), keyboard);
+        const keyboard = Markup.inlineKeyboard([[
+            ...response.user.wallets.map((_wallet, index) => {
+                return Markup.button.callback(`Wallet ${index+1}`, `wallet-balance-${index+1}`);
+            })],
+            [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
+        ]);
+
+        ctx.reply(MessageTradeTemplete.marketBuyWalletAddress({ wallets: response.user.wallets }), keyboard);
+    });
+
+    [ 1, 2, 3 ].forEach((data, wallet_number) => {
+        bot.action( `wallet-balance-${wallet_number+1}`, async (ctx) => {
+            const initialKeyboard = Markup.inlineKeyboard([
+                [Markup.button.callback('try again', `wallet-balance-${wallet_number+1}`)],
+                [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
+            ]);
+
+            if (!ctx.chat) return ctx.reply('unable to delete', initialKeyboard);
+
+            const telegram_id = ctx.chat.id.toString();
+            const response = await telegramService.getGeneralBalance({ telegram_id, wallet_number });
+            if (!response.balances) return ctx.reply(response.message!, initialKeyboard);
+
+            const keyboard = Markup.inlineKeyboard([[
+                ...response.balances.map((balance, index) => {
+                    return Markup.button.callback(`Wallet ${index+1}`, `wallet-balance-${index+1}`);
+                })],
+                [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
+            ]);
+
+            const { text, entities } = MessageWalletTemplete.generateWalletBalanceEntities({balances: response.balances})
+
+            ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        });
+    });
+
+    bot.action('trade-menu', async (ctx) => {
+        const keyboard = Markup.inlineKeyboard([
+            [   Markup.button.callback('🟢 Buy now 💸', 'buy-market-order-menu'),
+                Markup.button.callback('🔴 Sell now 💸', 'sell-market-order-menu'),
+            ],
+            [   Markup.button.callback('🟡 Limit buy order 🔒', 'buy-limit-order-menu'),
+                Markup.button.callback('🟠 Limit sell order 🔒', 'sell-limit-order-menu')
+            ],
+            [Markup.button.callback('📜 View transactions 🔍', 'view-transaction-history')],
+            [Markup.button.callback('🔙 Back 🔄', 'menu'),]
+        ]);
+
+        // if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+
+        // const telegram_id = ctx.chat.id.toString();
+        // const response = await telegramService.userOpensChat({ telegram_id });
+        // if (!response.user) return ctx.reply(response.message, keyboard);
+
+        // const { text, entities } = MessageTradeTemplete.generateWalletEntities({wallets: response.user.wallets})
+        // ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        ctx.reply(MessageTemplete.welcome() ,keyboard);
     });
 
     bot.action('buy-market-order-menu', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
             [Markup.button.callback('Buy', 'buy-market-order-menu')],
-            [Markup.button.callback('Back', 'menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -228,7 +298,7 @@ export const useTelegramBot = () => {
             ...response.user.wallets.map((_wallet, index) => {
                 return Markup.button.webApp(`Wallet ${index+1}`, `${urlHost}`);
             })],
-            [Markup.button.callback('Back', 'trade-menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'trade-menu')],
         ]);
 
         ctx.reply(MessageTradeTemplete.marketBuyWalletAddress({ wallets: response.user.wallets }), keyboard);
@@ -236,7 +306,7 @@ export const useTelegramBot = () => {
 
     bot.action('sell-market-order-menu', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('Back', 'menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -251,7 +321,7 @@ export const useTelegramBot = () => {
             ...response.user.wallets.map((_wallet, index) => {
                 return Markup.button.webApp(`Wallet ${index+1}`, `${urlHost}`);
             })],
-            [Markup.button.callback('Back', 'trade-menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'trade-menu')],
         ]);
 
         ctx.reply(MessageTradeTemplete.marketSellWalletAddress({ wallets: response.user.wallets }), keyboard);
@@ -259,7 +329,7 @@ export const useTelegramBot = () => {
 
     bot.action('buy-limit-order-menu', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('Back', 'menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -274,7 +344,7 @@ export const useTelegramBot = () => {
             ...response.user.wallets.map((_wallet, index) => {
                 return Markup.button.webApp(`Wallet ${index+1}`, `${urlHost}`);
             })],
-            [Markup.button.callback('Back', 'trade-menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'trade-menu')],
         ]);
 
         ctx.reply(MessageTradeTemplete.limitBuyWalletAddress({ wallets: response.user.wallets }), keyboard);
@@ -282,7 +352,7 @@ export const useTelegramBot = () => {
 
     bot.action('sell-limit-order-menu', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('Back', 'menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -297,7 +367,7 @@ export const useTelegramBot = () => {
             ...response.user.wallets.map((_wallet, index) => {
                 return Markup.button.webApp(`Wallet ${index+1}`, `${urlHost}`);
             })],
-            [Markup.button.callback('Back', 'trade-menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'trade-menu')],
         ]);
 
         ctx.reply(MessageTradeTemplete.limitSellWalletAddress({ wallets: response.user.wallets }), keyboard);
@@ -305,7 +375,7 @@ export const useTelegramBot = () => {
 
     bot.action('view-transaction-history', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('Back', 'menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -320,7 +390,7 @@ export const useTelegramBot = () => {
             ...response.user.wallets.map((wallet, index) => {
                 return Markup.button.webApp(`Wallet ${index+1}`, `https://etherscan.io/txs?a=${wallet.address}`);
             })],
-            [Markup.button.callback('Back', 'trade-menu')],
+            [Markup.button.callback('🔙 Back 🔄', 'trade-menu')],
         ]);
 
         ctx.reply(MessageTradeTemplete.viewTransactionHistory({ wallets: response.user.wallets }), keyboard);
@@ -328,53 +398,63 @@ export const useTelegramBot = () => {
 
     bot.action('bots-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('Activate Sniper Bot', 'activate-sniper-bot')],
-            [Markup.button.callback('Activate Frontrunner Bot', 'activate-frontrunner-bot')],
-            [Markup.button.callback('Activate Mirror Bot', 'activate-mirror-bot')],
-            [Markup.button.callback('Check Bot Performance', 'check-bot-performance')],
-            [Markup.button.callback('Back', 'menu')],
+            [Markup.button.callback('🎯 Activate sniper bot 💥', 'activate-sniper-bot')],
+            [Markup.button.callback('🚀 Activate frontrunner bot 🌠', 'activate-frontrunner-bot')],
+            [Markup.button.callback('🪞 Activate mirror bot 🔄', 'activate-mirror-bot')],
+            [Markup.button.callback('📊 Check bot stats 🔍', 'check-bot-performance')],
+            [Markup.button.callback('🔙 Back 🔄', 'menu')],
         ]);
 
-        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+        // if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
-        const telegram_id = ctx.chat.id.toString();
-        const response = await telegramService.userOpensChat({ telegram_id });
-        if (!response.user) return ctx.reply(response.message, keyboard);
+        // const telegram_id = ctx.chat.id.toString();
+        // const response = await telegramService.userOpensChat({ telegram_id });
+        // if (!response.user) return ctx.reply(response.message, keyboard);
 
-        ctx.reply(MessageTemplete.welcome({ wallets: response.user.wallets }), keyboard);
+        // const { text, entities } = MessageTemplete.welcome({wallets: response.user.wallets})
+        // ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        ctx.reply(MessageTemplete.welcome() ,keyboard);
     });
 
     bot.action('earn-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('Participate in staking', 'participate-in-staking'),
-            Markup.button.callback('Refer friends and earn', 'refer-friends-and-earn'),
-            Markup.button.callback('View earnings history', 'view-earnings-history'),
-            Markup.button.callback('Back', 'menu'),
+            Markup.button.callback('📈 Stake & earn 🔥', 'participate-in-staking'),
+            Markup.button.callback('👫 Refer & earn 💰', 'refer-friends-and-earn'),
+            Markup.button.callback('📘 View earnings 🌟', 'view-earnings-history'),
+            Markup.button.callback('🔙 Back 🔄', 'menu'),
         ]);
 
-        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+        // if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
-        const telegram_id = ctx.chat.id.toString();
-        const response = await telegramService.userOpensChat({ telegram_id });
-        if (!response.user) return ctx.reply(response.message, keyboard);
+        // const telegram_id = ctx.chat.id.toString();
+        // const response = await telegramService.userOpensChat({ telegram_id });
+        // if (!response.user) return ctx.reply(response.message, keyboard);
 
-        ctx.reply(MessageTemplete.welcome({ wallets: response.user.wallets }), keyboard);
+        // const { text, entities } = MessageTemplete.generateWalletTextAndEntities({wallets: response.user.wallets})
+        // ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        ctx.reply(MessageTemplete.welcome() ,keyboard);
     });
 
     bot.action('setting-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('Delete Account', 'buy-coin-menu'),
-            Markup.button.callback('Add Password', 'sell-coin-menu'),
-            Markup.button.callback('Back', 'menu'),
+            Markup.button.callback('🗑️ Delete account ❌', 'buy-coin-menu'),
+            Markup.button.callback('🔐 Set password 🛡️', 'sell-coin-menu'),
+            Markup.button.callback('🔙 Back 🔄', 'menu'),
         ]);
 
-        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+        // if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
-        const telegram_id = ctx.chat.id.toString();
-        const response = await telegramService.userOpensChat({ telegram_id });
-        if (!response.user) return ctx.reply(response.message, keyboard);
+        // const telegram_id = ctx.chat.id.toString();
+        // const response = await telegramService.userOpensChat({ telegram_id });
+        // if (!response.user) return ctx.reply(response.message, keyboard);
 
-        ctx.reply(MessageTemplete.welcome({ wallets: response.user.wallets }), keyboard);
+        // const { text, entities } = MessageTemplete.generateWalletTextAndEntities({wallets: response.user.wallets})
+        // ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        ctx.reply(MessageTemplete.welcome() ,keyboard);
+    });
+
+    bot.on('message', (text) => {
+        console.log(text.message);
     });
     
     // Start the bot

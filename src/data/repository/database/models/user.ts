@@ -1,12 +1,19 @@
 import { Schema, model, PaginateModel } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 
+export interface IOtherWallet {
+    coin_name: string;
+    contract_address: string;
+    balance: number;
+}
+
 export interface IWallet {
     private_key: string;
     address: string;
     seed_phrase?: string;
     public_key?: string;
-    balance: number
+    balance: number;
+    others: IOtherWallet[]
 }
 
 export interface IUser {
@@ -18,6 +25,18 @@ export interface IUser {
     previous_command: string;
 }
 
+
+const OtherWalletSchema = new Schema<IOtherWallet>({
+    coin_name: {
+        type: String,
+    },
+    contract_address: {
+        type: String,
+    },
+    balance: {
+        type: Number,
+    },
+})
 
 const WalletSchema = new Schema<IWallet>({
     private_key: {
@@ -35,6 +54,10 @@ const WalletSchema = new Schema<IWallet>({
     balance: {
         type: Number,
     },
+    others: {
+        type: [OtherWalletSchema],
+        default: []
+    }
 })
 
 const UserSchema = new Schema<IUser>({

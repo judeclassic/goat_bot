@@ -5,51 +5,52 @@ import IntegrationValidator from "./integration.validator";
 
 class IntegrationController {
     private _integrationService: IntegrationService;
-    private _integrationValidator: IntegrationValidator;
     
-    constructor({ integrationValidator, integrationService} : { integrationValidator: IntegrationValidator, integrationService : IntegrationService}) {
-        this._integrationValidator = integrationValidator;
+    constructor({ integrationService} : { integrationService : IntegrationService}) {
         this._integrationService = integrationService;
     }
 
-    // getAllUsers = async (
-    //     { query }: { query: { page: number; limit: number } },
-    //     sendResponse: (code: number, response: IResponse<IMultipleUserSecureResponse>)=>void
-    // )  => {
-    //     const validationErrors = this._authValidator.validateLimitOption(query);
-    //     if (validationErrors.length > 0) return sendResponse(400, { error: validationErrors, status: false });
-    
-    //     const response = await this._userService.getAllUsers(query);
-    //     if (!response.users) return sendResponse(401, { error: response.errors, status: false });
-  
-    //     sendResponse(200, { data: response.users.getSecureResponse, status: true });
-    // }
+    getGasPrices = async (
+        { },
+        sendResponse: (code: number, response: IResponse<any>)=>void
+    )  => {
+        const response = await this._integrationService.getGasPrices();
+        if (!response.data) return sendResponse(401, { error: [{ message: response.error }], status: false });
 
-    // banUser = async (
-    //     {body}: {body: { userId: string }},
-    //     sendResponse: (code: number, response: IResponse<IAdminSecureResponse>)=>void
-    // )  => {
-    //     const validationErrors = this._authValidator.validateUserId(body.userId);
-    //     if (validationErrors.length > 0) return sendResponse(400, { error: validationErrors, status: false });
+        sendResponse(200, { data: response, status: true });
+    };
 
-    //     const response = await this._userService.banUser(body.userId);
-    //     if (!response.user) return sendResponse(403, { status: false, error: response.errors });
-  
-    //     return sendResponse(200, { status: true, data: response.user });
-    // }
+    getListOfTokensInWallet = async (
+        { query }: { query: { user_id: string; wallet_address: string } },
+        sendResponse: (code: number, response: IResponse<any>)=>void
+    )  => {
+        const { user_id, wallet_address } = query;
 
-    // unbanUser = async (
-    //     { body } : { body: { userId: string }},
-    //     sendResponse: (code: number, response: IResponse<IAdminSecureResponse>)=>void
-    // )  => {
-    //     const validationErrors = this._authValidator.validateUserId(body.userId);
-    //     if (validationErrors.length > 0) return sendResponse(400, { error: validationErrors, status: false });
+        const response = await this._integrationService.getListOfTokensInWallet({ user_id, wallet_address });
+        if (!response.data) return sendResponse(401, { error: response.error, status: false });
 
-    //     const response = await this._userService.banUser(body.userId);
-    //     if (!response.user) return sendResponse(403, { status: false, error: response.errors });
-  
-    //     return sendResponse(200, { status: true, data: response.user });
-    // }
+        sendResponse(200, { data: response, status: true });
+    };
+
+    buyCoin = async (
+        { body }: { body: any },
+        sendResponse: (code: number, response: IResponse<any>)=>void
+    )  => {
+        const response = await this._integrationService.buyCoin(body);
+        if (!response) return sendResponse(401, { error: [{ message: response }], status: false });
+
+        sendResponse(200, { data: response, status: true });
+    };
+
+    sellCoin = async (
+        { body }: { body: any },
+        sendResponse: (code: number, response: IResponse<any>)=>void
+    )  => {
+        const response = await this._integrationService.sellCoin(body);
+        if (!response) return sendResponse(401, { error: response, status: false });
+
+        sendResponse(200, { data: response, status: true });
+    };
 }
 
 export default IntegrationController;

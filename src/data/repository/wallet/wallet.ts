@@ -19,13 +19,14 @@ class WalletRepository {
                 address: account.address,
                 private_key: account.privateKey,
                 balance: 0,
+                others: []
             }
         } catch (err) {
             return undefined;
         }
     }
 
-    importWallet:(privateKey: string) => Promise<IWallet | undefined> = async (privateKey: string) => {
+    importWallet = async (privateKey: string): Promise<IWallet | undefined> => {
         try {
             const account = this.provider.eth.accounts.privateKeyToAccount(privateKey);
 
@@ -33,13 +34,14 @@ class WalletRepository {
                 address: account.address,
                 private_key: account.privateKey,
                 balance: parseFloat((await this.provider.eth.getBalance(account.address)).toString()),
+                others: []
             }
         } catch (err) {
             return undefined;
         }
     }
 
-    getWallet:(wallet: IWallet) => Promise<IWallet> = async (wallet: IWallet) => {
+    getWallet = async (wallet: IWallet): Promise<IWallet> => {
         try {
             const account = this.provider.eth.accounts.privateKeyToAccount(wallet.private_key);
 
@@ -47,15 +49,17 @@ class WalletRepository {
                 address: account.address,
                 private_key: account.privateKey,
                 balance: parseFloat((await this.provider.eth.getBalance(account.address)).toString()),
+                others: wallet.others.map((wallet) => wallet)
             }
         } catch (err) {
             return wallet;
         }
     }
 
-    getPoolInfo = async ({ contract_address }: { contract_address: string }) => {
-        const poolInfo = await this.tradeRepository.getPoolInfo({ contract_address });
-        return poolInfo;
+    addTokensToWallet = async (contract_address: string) => {
+        const abiResponse = await this.tradeRepository.getABI(contract_address);
+        if (!abiResponse.abi) return { error: abiResponse.error };
+
     }
 }
 
