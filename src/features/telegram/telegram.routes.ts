@@ -137,14 +137,15 @@ export const useTelegramBot = () => {
             Markup.button.callback('🔙 Back 🔄', 'menu'),
         ]);
 
-        // if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
-        // const telegram_id = ctx.chat.id.toString();
-        // const response = await telegramService.userAddsWallet({ telegram_id });
-        // if (!response.user) return ctx.reply(response.message, keyboard);
+        const telegram_id = ctx.chat.id.toString();
+        const response = await telegramService.userAddsWallet({ telegram_id });
+        if (!response.user) return ctx.reply(response.message, keyboard);
 
         // ctx.reply(MessageTemplete.trade({ wallets: response.user.wallets }), keyboard);
-        ctx.reply(MessageTemplete.welcome() ,keyboard);
+        const { text, entities } = MessageTemplete.generateWalletEntities({wallets: response.user.wallets})
+        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
     });
     
     bot.action('export-wallet-menu', async (ctx) => {
@@ -268,15 +269,15 @@ export const useTelegramBot = () => {
             [Markup.button.callback('🔙 Back 🔄', 'menu'),]
         ]);
 
-        // if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
-        // const telegram_id = ctx.chat.id.toString();
-        // const response = await telegramService.userOpensChat({ telegram_id });
-        // if (!response.user) return ctx.reply(response.message, keyboard);
+        const telegram_id = ctx.chat.id.toString();
+        const response = await telegramService.userOpensChat({ telegram_id });
+        if (!response.user) return ctx.reply(response.message, keyboard);
 
-        // const { text, entities } = MessageTradeTemplete.generateWalletEntities({wallets: response.user.wallets})
-        // ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
-        ctx.reply(MessageTemplete.welcome() ,keyboard);
+        const { text, entities } = MessageWalletTemplete.generateWalletEntities({wallets: response.user.wallets})
+        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        // ctx.reply(MessageTemplete.welcome() ,keyboard);
     });
 
     bot.action('buy-market-order-menu', async (ctx) => {
@@ -405,15 +406,15 @@ export const useTelegramBot = () => {
             [Markup.button.callback('🔙 Back 🔄', 'menu')],
         ]);
 
-        // if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
-        // const telegram_id = ctx.chat.id.toString();
-        // const response = await telegramService.userOpensChat({ telegram_id });
-        // if (!response.user) return ctx.reply(response.message, keyboard);
+        const telegram_id = ctx.chat.id.toString();
+        const response = await telegramService.userOpensChat({ telegram_id });
+        if (!response.user) return ctx.reply(response.message, keyboard);
 
-        // const { text, entities } = MessageTemplete.welcome({wallets: response.user.wallets})
-        // ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
-        ctx.reply(MessageTemplete.welcome() ,keyboard);
+        const { text, entities } = MessageTemplete.generateWalletEntities({wallets: response.user.wallets})
+        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        // ctx.reply(MessageTemplete.welcome() ,keyboard);
     });
 
     bot.action('earn-menu', async (ctx) => {
@@ -424,15 +425,15 @@ export const useTelegramBot = () => {
             Markup.button.callback('🔙 Back 🔄', 'menu'),
         ]);
 
-        // if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
-        // const telegram_id = ctx.chat.id.toString();
-        // const response = await telegramService.userOpensChat({ telegram_id });
-        // if (!response.user) return ctx.reply(response.message, keyboard);
+        const telegram_id = ctx.chat.id.toString();
+        const response = await telegramService.userOpensChat({ telegram_id });
+        if (!response.user) return ctx.reply(response.message, keyboard);
 
-        // const { text, entities } = MessageTemplete.generateWalletTextAndEntities({wallets: response.user.wallets})
-        // ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
-        ctx.reply(MessageTemplete.welcome() ,keyboard);
+        const { text, entities } = MessageWalletTemplete.generateWalletEntities({wallets: response.user.wallets})
+        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        // ctx.reply(MessageTemplete.welcome() ,keyboard);
     });
 
     bot.action('setting-menu', async (ctx) => {
@@ -442,14 +443,14 @@ export const useTelegramBot = () => {
             Markup.button.callback('🔙 Back 🔄', 'menu'),
         ]);
 
-        // if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
-        // const telegram_id = ctx.chat.id.toString();
-        // const response = await telegramService.userOpensChat({ telegram_id });
-        // if (!response.user) return ctx.reply(response.message, keyboard);
+        const telegram_id = ctx.chat.id.toString();
+        const response = await telegramService.userOpensChat({ telegram_id });
+        if (!response.user) return ctx.reply(response.message, keyboard);
 
-        // const { text, entities } = MessageTemplete.generateWalletTextAndEntities({wallets: response.user.wallets})
-        // ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        const { text, entities } = MessageWalletTemplete.generateWalletEntities({wallets: response.user.wallets})
+        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
         ctx.reply(MessageTemplete.welcome() ,keyboard);
     });
 

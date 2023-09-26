@@ -286,7 +286,6 @@ export class MessageWalletTemplete {
 
     static removeAWalletConfirm = ({ wallet }:{ wallet: IWallet}) => (
         `
-
         ________________________________________________
         🦄 Goatbot 🦄
         Click on "confirm" if you really want to remove this wallet ${wallet.address}
