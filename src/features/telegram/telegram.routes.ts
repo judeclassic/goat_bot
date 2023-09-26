@@ -17,12 +17,12 @@ export const useTelegramBot = () => {
     
     bot.start(async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            [   Markup.button.callback('💼 Wallet hub 🪙', 'wallet-menu'),
-                Markup.button.callback('🔄 Start trading 💹', 'trade-menu'),
+            [   Markup.button.callback('💼 Wallet hub', 'wallet-menu'),
+                Markup.button.callback('💹 Start trading', 'trade-menu'),
             ],
-            [   Markup.button.callback('🤖 Bot center 🚀', 'bots-menu'),
-                Markup.button.callback('💰 Earn rewards 🌟', 'earn-menu')],
-            [Markup.button.callback('⚙️ Settings & tools 🔧', 'setting-menu')],
+            [   Markup.button.callback('🤖 Bot center', 'bots-menu'),
+                Markup.button.callback('💰 Earn rewards', 'earn-menu')],
+            [Markup.button.callback('🔧 Settings & tools', 'setting-menu')],
         ]);
 
         if (!ctx.chat) return;
@@ -37,12 +37,12 @@ export const useTelegramBot = () => {
 
     bot.action('menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            [   Markup.button.callback('💼 Wallet hub 🪙', 'wallet-menu'),
-                Markup.button.callback('🔄 Start trading 💹', 'trade-menu')
+            [   Markup.button.callback('💼 Wallet hub', 'wallet-menu'),
+                Markup.button.callback('💹 Start trading', 'trade-menu'),
             ],
-            [   Markup.button.callback('🤖 Bot center 🚀', 'bots-menu'),
-                Markup.button.callback('💰 Earn rewards 🌟', 'earn-menu')],
-            [Markup.button.callback('⚙️ Settings & tools 🔧', 'setting-menu')]
+            [   Markup.button.callback('🤖 Bot center', 'bots-menu'),
+                Markup.button.callback('💰 Earn rewards', 'earn-menu')],
+            [Markup.button.callback('🔧 Settings & tools', 'setting-menu')],
         ]);
         
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -57,14 +57,14 @@ export const useTelegramBot = () => {
 
     bot.action('wallet-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            [   Markup.button.callback('➕ Create new wallet 🔐', 'create-wallet-menu'),
-                Markup.button.callback('⬇️ Import wallet 🔗', 'import-wallet-menu')
+            [   Markup.button.callback('➕ Create new wallet', 'create-wallet-menu'),
+                Markup.button.callback('⬇️ Import wallet', 'import-wallet-menu')
             ],
-            [   Markup.button.callback('⬆️ Export wallet 📤', 'export-wallet-menu'),
-                Markup.button.callback('❌ Delete wallet 🗑️', 'remove-wallet-menu')
+            [   Markup.button.callback('📤 Export wallet', 'export-wallet-menu'),
+                Markup.button.callback('🗑️ Delete wallet', 'remove-wallet-menu')
             ],
-            [Markup.button.callback('💼 Wallet balance 🔗', 'wallet-balance-menu')],
-            [Markup.button.callback('🔙 Back to menu 🔄', 'menu')],
+            [Markup.button.callback('💼 Wallet balance', 'wallet-balance-menu')],
+            [Markup.button.callback('🔙 Back to menu', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -96,14 +96,14 @@ export const useTelegramBot = () => {
 
     bot.action('adding-new-wallet', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            [   Markup.button.callback('➕ Create new wallet 🔐', 'create-wallet-menu'),
-                Markup.button.callback('⬇️ Import wallet 🔗', 'import-wallet-menu')
+            [   Markup.button.callback('➕ Create new wallet', 'create-wallet-menu'),
+                Markup.button.callback('⬇️ Import wallet', 'import-wallet-menu')
             ],
-            [   Markup.button.callback('⬆️ Export wallet 📤', 'export-wallet-menu'),
-                Markup.button.callback('❌ Delete wallet 🗑️', 'remove-wallet-menu')
+            [   Markup.button.callback('📤 Export wallet', 'export-wallet-menu'),
+                Markup.button.callback('🗑️ Delete wallet', 'remove-wallet-menu')
             ],
-            [Markup.button.callback('💼 Wallet balance 🔗', 'wallet-balance-menu')],
-            [Markup.button.callback('🔙 Back to menu 🔄', 'menu')]
+            [Markup.button.callback('💼 Wallet balance', 'wallet-balance-menu')],
+            [Markup.button.callback('🔙 Back to menu', 'menu')]
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -120,7 +120,7 @@ export const useTelegramBot = () => {
     bot.action('import-wallet-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
             Markup.button.callback('Click here to start', 'importing-new-wallet'),
-            Markup.button.callback('🔙 Back 🔄', 'wallet-menu'),
+            Markup.button.callback('🔙 Back', 'wallet-menu'),
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -134,7 +134,7 @@ export const useTelegramBot = () => {
 
     bot.action('importing-new-wallet', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('🔙 Back 🔄', 'menu'),
+            Markup.button.callback('🔙 Back', 'menu'),
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -150,7 +150,7 @@ export const useTelegramBot = () => {
     
     bot.action('export-wallet-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('🔙 Back 🔄', 'wallet-menu'),
+            Markup.button.callback('🔙 Back', 'wallet-menu'),
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -166,7 +166,7 @@ export const useTelegramBot = () => {
     bot.action('remove-wallet-menu', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
             [Markup.button.callback('Buy', 'remove-wallet-menu')],
-            [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
+            [Markup.button.callback('🔙 Back', 'wallet-menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -189,7 +189,7 @@ export const useTelegramBot = () => {
         bot.action( `delete-wallet-${wallet_number+1}`, async (ctx) => {
             const initialKeyboard = Markup.inlineKeyboard([
                 [Markup.button.callback('try again', `delete-wallet-${wallet_number+1}`)],
-                [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
+                [Markup.button.callback('🔙 Back', 'wallet-menu')],
             ]);
 
             if (!ctx.chat) return ctx.reply('unable to delete', initialKeyboard);
@@ -202,7 +202,7 @@ export const useTelegramBot = () => {
                 ...response.user.wallets.map((_wallet, index) => {
                     return Markup.button.callback(`Wallet ${index+1}`, `delete-wallet-${index+1}`);
                 })],
-                [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
+                [Markup.button.callback('🔙 Back', 'wallet-menu')],
             ]);
 
             ctx.reply(MessageTradeTemplete.marketBuyWalletAddress({ wallets: response.user.wallets }), keyboard);
@@ -212,7 +212,7 @@ export const useTelegramBot = () => {
     bot.action('wallet-balance-menu', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
             [Markup.button.callback('Buy', 'remove-wallet-menu')],
-            [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
+            [Markup.button.callback('🔙 Back', 'wallet-menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -225,7 +225,7 @@ export const useTelegramBot = () => {
             ...response.user.wallets.map((_wallet, index) => {
                 return Markup.button.callback(`Wallet ${index+1}`, `wallet-balance-${index+1}`);
             })],
-            [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
+            [Markup.button.callback('🔙 Back', 'wallet-menu')],
         ]);
 
         ctx.reply(MessageTradeTemplete.marketBuyWalletAddress({ wallets: response.user.wallets }), keyboard);
@@ -235,7 +235,7 @@ export const useTelegramBot = () => {
         bot.action( `wallet-balance-${wallet_number+1}`, async (ctx) => {
             const initialKeyboard = Markup.inlineKeyboard([
                 [Markup.button.callback('try again', `wallet-balance-${wallet_number+1}`)],
-                [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
+                [Markup.button.callback('🔙 Back', 'wallet-menu')],
             ]);
 
             if (!ctx.chat) return ctx.reply('unable to delete', initialKeyboard);
@@ -248,7 +248,7 @@ export const useTelegramBot = () => {
                 ...response.balances.map((balance, index) => {
                     return Markup.button.callback(`Wallet ${index+1}`, `wallet-balance-${index+1}`);
                 })],
-                [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
+                [Markup.button.callback('🔙 Back', 'wallet-menu')],
             ]);
 
             const { text, entities } = MessageWalletTemplete.generateWalletBalanceEntities({balances: response.balances})
@@ -259,14 +259,14 @@ export const useTelegramBot = () => {
 
     bot.action('trade-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            [   Markup.button.callback('🟢 Buy now 💸', 'buy-market-order-menu'),
-                Markup.button.callback('🔴 Sell now 💸', 'sell-market-order-menu'),
+            [   Markup.button.callback('🟢 Buy now', 'buy-market-order-menu'),
+                Markup.button.callback('🔴 Sell now', 'sell-market-order-menu'),
             ],
-            [   Markup.button.callback('🟡 Limit buy order 🔒', 'buy-limit-order-menu'),
-                Markup.button.callback('🟠 Limit sell order 🔒', 'sell-limit-order-menu')
+            [   Markup.button.callback('🟡 Limit buy order', 'buy-limit-order-menu'),
+                Markup.button.callback('🟠 Limit sell order', 'sell-limit-order-menu')
             ],
-            [Markup.button.callback('📜 View transactions 🔍', 'view-transaction-history')],
-            [Markup.button.callback('🔙 Back 🔄', 'menu'),]
+            [Markup.button.callback('📜 View transactions ', 'view-transaction-history')],
+            [Markup.button.callback('🔙 Back', 'menu'),]
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -283,7 +283,7 @@ export const useTelegramBot = () => {
     bot.action('buy-market-order-menu', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
             [Markup.button.callback('Buy', 'buy-market-order-menu')],
-            [Markup.button.callback('🔙 Back 🔄', 'menu')],
+            [Markup.button.callback('🔙 Back', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -299,7 +299,7 @@ export const useTelegramBot = () => {
             ...response.user.wallets.map((_wallet, index) => {
                 return Markup.button.webApp(`Wallet ${index+1}`, `${urlHost}`);
             })],
-            [Markup.button.callback('🔙 Back 🔄', 'trade-menu')],
+            [Markup.button.callback('🔙 Back', 'trade-menu')],
         ]);
 
         ctx.reply(MessageTradeTemplete.marketBuyWalletAddress({ wallets: response.user.wallets }), keyboard);
@@ -307,7 +307,7 @@ export const useTelegramBot = () => {
 
     bot.action('sell-market-order-menu', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('🔙 Back 🔄', 'menu')],
+            [Markup.button.callback('🔙 Back', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -322,7 +322,7 @@ export const useTelegramBot = () => {
             ...response.user.wallets.map((_wallet, index) => {
                 return Markup.button.webApp(`Wallet ${index+1}`, `${urlHost}`);
             })],
-            [Markup.button.callback('🔙 Back 🔄', 'trade-menu')],
+            [Markup.button.callback('🔙 Back', 'trade-menu')],
         ]);
 
         ctx.reply(MessageTradeTemplete.marketSellWalletAddress({ wallets: response.user.wallets }), keyboard);
@@ -330,7 +330,7 @@ export const useTelegramBot = () => {
 
     bot.action('buy-limit-order-menu', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('🔙 Back 🔄', 'menu')],
+            [Markup.button.callback('🔙 Back', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -345,7 +345,7 @@ export const useTelegramBot = () => {
             ...response.user.wallets.map((_wallet, index) => {
                 return Markup.button.webApp(`Wallet ${index+1}`, `${urlHost}`);
             })],
-            [Markup.button.callback('🔙 Back 🔄', 'trade-menu')],
+            [Markup.button.callback('🔙 Back', 'trade-menu')],
         ]);
 
         ctx.reply(MessageTradeTemplete.limitBuyWalletAddress({ wallets: response.user.wallets }), keyboard);
@@ -353,7 +353,7 @@ export const useTelegramBot = () => {
 
     bot.action('sell-limit-order-menu', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('🔙 Back 🔄', 'menu')],
+            [Markup.button.callback('🔙 Back', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -368,7 +368,7 @@ export const useTelegramBot = () => {
             ...response.user.wallets.map((_wallet, index) => {
                 return Markup.button.webApp(`Wallet ${index+1}`, `${urlHost}`);
             })],
-            [Markup.button.callback('🔙 Back 🔄', 'trade-menu')],
+            [Markup.button.callback('🔙 Back', 'trade-menu')],
         ]);
 
         ctx.reply(MessageTradeTemplete.limitSellWalletAddress({ wallets: response.user.wallets }), keyboard);
@@ -376,7 +376,7 @@ export const useTelegramBot = () => {
 
     bot.action('view-transaction-history', async (ctx) => {
         const initialKeyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('🔙 Back 🔄', 'menu')],
+            [Markup.button.callback('🔙 Back', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -391,7 +391,7 @@ export const useTelegramBot = () => {
             ...response.user.wallets.map((wallet, index) => {
                 return Markup.button.webApp(`Wallet ${index+1}`, `https://etherscan.io/txs?a=${wallet.address}`);
             })],
-            [Markup.button.callback('🔙 Back 🔄', 'trade-menu')],
+            [Markup.button.callback('🔙 Back', 'trade-menu')],
         ]);
 
         ctx.reply(MessageTradeTemplete.viewTransactionHistory({ wallets: response.user.wallets }), keyboard);
@@ -399,11 +399,11 @@ export const useTelegramBot = () => {
 
     bot.action('bots-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('🎯 Activate sniper bot 💥', 'activate-sniper-bot')],
-            [Markup.button.callback('🚀 Activate frontrunner bot 🌠', 'activate-frontrunner-bot')],
-            [Markup.button.callback('🪞 Activate mirror bot 🔄', 'activate-mirror-bot')],
-            [Markup.button.callback('📊 Check bot stats 🔍', 'check-bot-performance')],
-            [Markup.button.callback('🔙 Back 🔄', 'menu')],
+            [Markup.button.callback('🎯 Activate sniper bot', 'activate-sniper-bot')],
+            [Markup.button.callback('🚀 Activate frontrunner bot', 'activate-frontrunner-bot')],
+            [Markup.button.callback('🪞 Activate mirror bot', 'activate-mirror-bot')],
+            [Markup.button.callback('📊 Check bot stats', 'check-bot-performance')],
+            [Markup.button.callback('🔙 Back', 'menu')],
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -419,10 +419,10 @@ export const useTelegramBot = () => {
 
     bot.action('earn-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('📈 Stake & earn 🔥', 'participate-in-staking'),
-            Markup.button.callback('👫 Refer & earn 💰', 'refer-friends-and-earn'),
-            Markup.button.callback('📘 View earnings 🌟', 'view-earnings-history'),
-            Markup.button.callback('🔙 Back 🔄', 'menu'),
+            Markup.button.callback('📈 Stake & earn', 'participate-in-staking'),
+            Markup.button.callback('👫 Refer & earn', 'refer-friends-and-earn'),
+            Markup.button.callback('📘 View earnings', 'view-earnings-history'),
+            Markup.button.callback('🔙 Back', 'menu'),
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -438,9 +438,9 @@ export const useTelegramBot = () => {
 
     bot.action('setting-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('🗑️ Delete account ❌', 'buy-coin-menu'),
-            Markup.button.callback('🔐 Set password 🛡️', 'sell-coin-menu'),
-            Markup.button.callback('🔙 Back 🔄', 'menu'),
+            Markup.button.callback('🗑️ Delete account', 'buy-coin-menu'),
+            Markup.button.callback('🔐 Set password', 'sell-coin-menu'),
+            Markup.button.callback('🔙 Back', 'menu'),
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
