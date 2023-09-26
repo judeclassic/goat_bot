@@ -21,11 +21,10 @@ export class MessageTemplete {
         const entities: any = [];
     
         const header = 
-            "_________________________________________________________________________\n"+
-            "Gas: 8   ═   Block: 18206914   ═   ETH: $1588"+
+            "________________________________________________\n"+
+            "Gas: 8   ═   Block: 18206914   ═   ETH: $1588\n"+
             "🐐✨ Welcome to GoatBot! 🚀\n"+
-            "═══ Your Wallets ═══\n"+
-            "🎉 Congrats on finding the G.O.A.T (Greatest Of All Telegram)\n\n"
+            "═══ Your Wallets ═══\n"
         offset += header.length;
     
         const walletTexts = wallets.map((wallet, index) => {
@@ -62,7 +61,7 @@ export class MessageTradeTemplete {
     static defaultDollarToEth = 1608;
 
     static welcome = () => ( 
-        "-------------------------------------------------------------------------\n\n"+
+        "________________________________________________\n\n"+
         "🦄 Goatbot 🦄\n\n"+
 
         "💹 Start Trading with GoatBot🦸‍♂️\n\n"+
@@ -78,61 +77,61 @@ export class MessageTradeTemplete {
         "5. 📜 View Transaction History 🔍: Curious about your past maneuvers? Take a stroll down memory lane and review all your trade activities, beautifully documented and easy to understand.\n\n"+
 
         "🌟 Trading made simple, effective, and fun, all at your fingertips!\n\n"+
-        "-------------------------------------------------------------------------"
+        "________________________________________________"
     )
     
     static marketBuyWalletAddress = ({ wallets }:{ wallets: IUser['wallets']}) => ( 
         `
-        -------------------------------------------------------------------------
+        ________________________________________________
         🦄 Goatbot 🦄
 
         ═══ Select Wallets ═══
         Select the address perform a market sell from
-        -------------------------------------------------------------------------
+        ________________________________________________
         `
     )
 
     static marketSellWalletAddress = ({ wallets }:{ wallets: IUser['wallets']}) => (
         `
-        -------------------------------------------------------------------------
+        ________________________________________________
         🦄 Goatbot 🦄
 
         ═══ Select Wallets ═══
         Select the address perform a market buy from
-        -------------------------------------------------------------------------
+        ________________________________________________
         `
     )
 
     static limitBuyWalletAddress = ({ wallets }:{ wallets: IUser['wallets']}) => (
         `
-        -------------------------------------------------------------------------
+        ________________________________________________
         🦄 Goatbot 🦄
 
         ═══ Select Wallets ═══
         Select the address perform a market sell from
-        -------------------------------------------------------------------------
+        ________________________________________________
         `
     )
 
     static limitSellWalletAddress = ({ wallets }:{ wallets: IUser['wallets']}) => (
         `
-        -------------------------------------------------------------------------
+        ________________________________________________
         🦄 Goatbot 🦄
 
         ═══ Select Wallets ═══
         Select the address perform a market buy from
-        -------------------------------------------------------------------------
+        ________________________________________________
         `
     )
 
     static viewTransactionHistory = ({ wallets }:{ wallets: IUser['wallets']}) => (
         `
-        -------------------------------------------------------------------------
+        ________________________________________________
         🦄 Goatbot 🦄
 
         ═══ Select Wallets ═══
         Select the address to view transaction history
-        -------------------------------------------------------------------------
+        ________________________________________________
         `
     )
 }
@@ -146,19 +145,19 @@ export class MessageWalletTemplete {
     
     static createANewWallet = ({ wallets }:{ wallets: IUser['wallets']}) => (
         `
-        -------------------------------------------------------------------------
+        ________________________________________________
         🦄 Goatbot 🦄
         Click on "Add New" to create a new wallet
-        -------------------------------------------------------------------------
+        ________________________________________________
         `
     )
         
     static importAWallet = ({ wallets }:{ wallets: IUser['wallets']}) => (
         `
-        -------------------------------------------------------------------------
+        ________________________________________________
         🦄 Goatbot 🦄
         Enter the wallet private key and send to add wallet
-        -------------------------------------------------------------------------
+        ________________________________________________
         `
     )
 
@@ -166,7 +165,7 @@ export class MessageWalletTemplete {
         let offset = 0;
         const entities: any = [];
     
-        const header = "_________________________________________________________________________\n🦄 Goatbot 🦄\n\n═══ Your Wallets ═══\n\n";
+        const header = "_____________________________________________\n🦄 Goatbot 🦄\n\n═══ Your Wallets ═══\n\n";
         offset += header.length;
     
         const walletTexts = wallets.map((wallet, index) => {
@@ -200,7 +199,7 @@ export class MessageWalletTemplete {
         let offset = 0;
         const entities: any = [];
     
-        const header = "_________________________________________________________________________\n🦄 Goatbot 🦄\n\n═══ Your Wallets ═══\n\n";
+        const header = "________________________________________________\n🦄 Goatbot 🦄\n\n═══ Your Wallets ═══\n\n";
         offset += header.length;
     
         const walletTexts = wallets.map((wallet, index) => {
@@ -237,7 +236,7 @@ export class MessageWalletTemplete {
         let offset = 0;
         const entities: any = [];
     
-        const header = "_________________________________________________________________________\n🦄 Goatbot 🦄\n\n═══ Your Wallets ═══\n\n";
+        const header = "________________________________________________\n🦄 Goatbot 🦄\n\n═══ Your Wallets ═══\n\n";
         offset += header.length;
     
         const walletTexts = balances.map((balance, index) => {
@@ -269,29 +268,29 @@ export class MessageWalletTemplete {
             
     static selectWalletToExport = ({ wallets }:{ wallets: IUser['wallets']}) => (
         `
-        -------------------------------------------------------------------------
+        ________________________________________________
         🦄 Goatbot 🦄
         Enter the wallet private key and send to add wallet
-        -------------------------------------------------------------------------
+        ________________________________________________
         `
     )
 
     static removeAWallet = ({ wallets }:{ wallets: IUser['wallets']}) => (
         `
-        -------------------------------------------------------------------------
+        ________________________________________________
         🦄 Goatbot 🦄
         Select the wallet to remove
-        -------------------------------------------------------------------------
+        ________________________________________________
         `
     )
 
     static removeAWalletConfirm = ({ wallet }:{ wallet: IWallet}) => (
         `
 
-        -------------------------------------------------------------------------
+        ________________________________________________
         🦄 Goatbot 🦄
         Click on "confirm" if you really want to remove this wallet ${wallet.address}
-        -------------------------------------------------------------------------
+        ________________________________________________
         `
     )
 }
