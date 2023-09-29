@@ -165,7 +165,12 @@ export class MessageWalletTemplete {
         let offset = 0;
         const entities: any = [];
     
-        const header = "_____________________________________________\n🦄 Goatbot 🦄\n\n═══ Your Wallets ═══\n\n";
+        
+        const header = 
+            "══════[ 🐐 GoatBot 🐐 ]══════\n\n"+
+            "🐐 GoatBot | Website | Tutorials\n"+
+            "Elevate Your Crypto Trades with GOATBOT– Greatest Of All Telegram Bots \n\n"+
+            "══🔳 Your Wallets 🔳══\n\n"
         offset += header.length;
     
         const walletTexts = wallets.map((wallet, index) => {
@@ -199,7 +204,11 @@ export class MessageWalletTemplete {
         let offset = 0;
         const entities: any = [];
     
-        const header = "________________________________________________\n🦄 Goatbot 🦄\n\n═══ Your Wallets ═══\n\n";
+        const header = 
+            "══════[ 🐐 GoatBot 🐐 ]══════\n\n"+
+            "🐐 GoatBot | Website | Tutorials\n"+
+            "Elevate Your Crypto Trades with GOATBOT– Greatest Of All Telegram Bots \n\n"+
+            "══🔳 Your Wallets 🔳══\n\n"
         offset += header.length;
     
         const walletTexts = wallets.map((wallet, index) => {
@@ -236,7 +245,12 @@ export class MessageWalletTemplete {
         let offset = 0;
         const entities: any = [];
     
-        const header = "________________________________________________\n🦄 Goatbot 🦄\n\n═══ Your Wallets ═══\n\n";
+        
+        const header = 
+            "══════[ 🐐 GoatBot 🐐 ]══════\n\n"+
+            "🐐 GoatBot | Website | Tutorials\n"+
+            "Elevate Your Crypto Trades with GOATBOT– Greatest Of All Telegram Bots \n\n"+
+            "══🔳 Your Wallets 🔳══\n\n"
         offset += header.length;
     
         const walletTexts = balances.map((balance, index) => {
