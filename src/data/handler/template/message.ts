@@ -21,10 +21,10 @@ export class MessageTemplete {
         const entities: any = [];
     
         const header = 
-            "________________________________________________\n"+
-            "Gas: 8   ═   Block: 18206914   ═   ETH: $1588\n"+
-            "🐐✨ Welcome to GoatBot! 🚀\n"+
-            "═══ Your Wallets ═══\n"
+            "══════[ 🐐 GoatBot 🐐 ]══════\n\n"+
+            "🐐 GoatBot | Website | Tutorials\n"+
+            "Elevate Your Crypto Trades with GOATBOT– Greatest Of All Telegram Bots \n\n"+
+            "══🔳 Your Wallets 🔳══\n\n"
         offset += header.length;
     
         const walletTexts = wallets.map((wallet, index) => {

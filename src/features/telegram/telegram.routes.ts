@@ -257,6 +257,32 @@ export const useTelegramBot = () => {
         });
     });
 
+    [ 1, 2, 3 ].forEach((data, wallet_number) => {
+        bot.action( `send-coin-${wallet_number+1}`, async (ctx) => {
+            const initialKeyboard = Markup.inlineKeyboard([
+                [Markup.button.callback('try again', `send-coin-${wallet_number+1}`)],
+                [Markup.button.callback('🔙 Back', 'wallet-menu')],
+            ]);
+
+            if (!ctx.chat) return ctx.reply('unable to delete', initialKeyboard);
+
+            const telegram_id = ctx.chat.id.toString();
+            const response = await telegramService.getGeneralBalance({ telegram_id, wallet_number });
+            if (!response.balances) return ctx.reply(response.message!, initialKeyboard);
+
+            const keyboard = Markup.inlineKeyboard([[
+                ...response.balances.map((balance, index) => {
+                    return Markup.button.callback(`Wallet ${index+1}`, `send-coin-${index+1}`);
+                })],
+                [Markup.button.callback('🔙 Back', 'wallet-menu')],
+            ]);
+
+            const { text, entities } = MessageWalletTemplete.generateWalletBalanceEntities({balances: response.balances})
+
+            ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        });
+    });
+
     bot.action('trade-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
             [   Markup.button.callback('🟢 Buy now', 'buy-market-order-menu'),
