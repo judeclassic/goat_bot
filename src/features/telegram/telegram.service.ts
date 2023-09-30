@@ -1,22 +1,26 @@
 import { SessionMessage, SessionType } from '../../data/handler/type';
 import { IOtherWallet, IWallet, UserModel } from '../../data/repository/database/models/user';
+import EncryptionRepository from '../../data/repository/encryption';
 import TradeRepository from '../../data/repository/wallet/trade';
 import WalletRepository from '../../data/repository/wallet/wallet';
 
 class TelegramService {
     userModel: typeof UserModel
+    encryptionRepository: EncryptionRepository
     walletRepository: WalletRepository;
     tradeRepository: TradeRepository;
 
 
-    constructor({ userModel, walletRepository, tradeRepository } : {
+    constructor({ userModel, walletRepository, tradeRepository, encryptionRepository } : {
         userModel: typeof UserModel
         walletRepository: WalletRepository
         tradeRepository: TradeRepository;
+        encryptionRepository: EncryptionRepository
     }) {
         this.userModel = userModel;
         this.walletRepository = walletRepository;
         this.tradeRepository = tradeRepository;
+        this.encryptionRepository = encryptionRepository;
 
     }
 
@@ -63,6 +67,18 @@ class TelegramService {
         }
     }
 
+    generateUserIDToken = async ( { telegram_id }: { telegram_id: string } ) => {
+        try {
+            const { user } = await this.getCurrentUser(telegram_id);
+            if (!user) return { status: false, message: 'unable to get current user' };
+
+            const token = this.encryptionRepository.encryptToken({ telegram_id });
+
+            return { status: true, token };
+        }catch (err) {
+            return { status: false, message: 'error please send "/start" request again' };
+        }
+    }
     userImportWallet = async ( { telegram_id, private_key }: { telegram_id: string, private_key: string } ) => {
         try {
             const { user } = await this.getCurrentUser(telegram_id);

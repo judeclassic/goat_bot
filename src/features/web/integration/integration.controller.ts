@@ -51,6 +51,16 @@ class IntegrationController {
 
         sendResponse(200, { data: response, status: true });
     };
+
+    importWallet = async (
+        { body }: { body: any },
+        sendResponse: (code: number, response: IResponse<any>)=>void
+    )  => {
+        const response = await this._integrationService.importWallet(body);
+        if (!response.data) return sendResponse(401, { error: response.errors, status: false });
+
+        sendResponse(200, { data: response, status: true });
+    };
 }
 
 export default IntegrationController;

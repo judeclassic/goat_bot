@@ -1,6 +1,7 @@
 import { Telegraf, Markup } from 'telegraf';
 import { MessageTemplete, MessageWalletTemplete, MessageTradeTemplete } from '../../data/handler/template/message';
 import { UserModel } from '../../data/repository/database/models/user';
+import EncryptionRepository from '../../data/repository/encryption';
 import TradeRepository from '../../data/repository/wallet/trade';
 import WalletRepository from '../../data/repository/wallet/wallet';
 import TelegramService from './telegram.service';
@@ -13,7 +14,8 @@ export const useTelegramBot = () => {
     const bot = new Telegraf(YOUR_BOT_TOKEN);
     const walletRepository = new WalletRepository();
     const tradeRepository = new TradeRepository();
-    const telegramService = new TelegramService({ userModel: UserModel, walletRepository, tradeRepository });
+    const encryptionRepository = new EncryptionRepository();
+    const telegramService = new TelegramService({ userModel: UserModel, walletRepository, tradeRepository, encryptionRepository });
     
     bot.start(async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
@@ -91,7 +93,7 @@ export const useTelegramBot = () => {
         const response = await telegramService.userOpensChat({ telegram_id });
         if (!response.user) return ctx.reply(response.message, keyboard);
 
-        ctx.reply(MessageWalletTemplete.importAWallet({ wallets: response.user.wallets }), keyboard);
+        ctx.reply(MessageWalletTemplete.createANewWallet(), keyboard);
     });
 
     bot.action('adding-new-wallet', async (ctx) => {
@@ -119,34 +121,43 @@ export const useTelegramBot = () => {
 
     bot.action('import-wallet-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('Click here to start', 'importing-new-wallet'),
+            Markup.button.callback('Try again', 'import-new-wallet'),
             Markup.button.callback('🔙 Back', 'wallet-menu'),
         ]);
 
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
         const telegram_id = ctx.chat.id.toString();
-        const response = await telegramService.userOpensChat({ telegram_id });
-        if (!response.user) return ctx.reply(response.message, keyboard);
+        const response = await telegramService.generateUserIDToken({ telegram_id });
+        if (!response.token) return ctx.reply(response.message!, keyboard);
 
-        ctx.reply(MessageWalletTemplete.importAWallet({ wallets: response.user.wallets }), keyboard);
-    });
+        const urlHost = getUrlForDomainWallet({ token: response.token, type: 'import_wallet'});
 
-    bot.action('importing-new-wallet', async (ctx) => {
-        const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('🔙 Back', 'menu'),
+        console.log(urlHost);
+
+        const modifiedKeyboard = Markup.inlineKeyboard([
+            Markup.button.webApp('Click here to import', urlHost),
+            Markup.button.callback('🔙 Back', 'wallet-menu'),
         ]);
 
-        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
-
-        const telegram_id = ctx.chat.id.toString();
-        const response = await telegramService.userAddsWallet({ telegram_id });
-        if (!response.user) return ctx.reply(response.message, keyboard);
-
-        // ctx.reply(MessageTemplete.trade({ wallets: response.user.wallets }), keyboard);
-        const { text, entities } = MessageTemplete.generateWalletEntities({wallets: response.user.wallets})
-        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        ctx.reply(MessageWalletTemplete.importAWallet(), modifiedKeyboard);
     });
+
+    // bot.action('importing-new-wallet', async (ctx) => {
+    //     const keyboard = Markup.inlineKeyboard([
+    //         Markup.button.callback('🔙 Back', 'menu'),
+    //     ]);
+
+    //     if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+
+    //     const telegram_id = ctx.chat.id.toString();
+    //     const response = await telegramService.userAddsWallet({ telegram_id });
+    //     if (!response.user) return ctx.reply(response.message, keyboard);
+
+    //     // ctx.reply(MessageTemplete.trade({ wallets: response.user.wallets }), keyboard);
+    //     const { text, entities } = MessageTemplete.generateWalletEntities({wallets: response.user.wallets})
+    //     ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+    // });
     
     bot.action('export-wallet-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
@@ -318,7 +329,7 @@ export const useTelegramBot = () => {
         const response = await telegramService.userOpensChat({ telegram_id });
         if (!response.user) return ctx.reply(response.message, initialKeyboard);
 
-        const urlHost = getUrlForDomain({ telegram_id, wallet: response.user.wallets[0].address, type: 'market_buy'});
+        const urlHost = getUrlForDomainTrade({ telegram_id, wallet: response.user.wallets[0].address, type: 'market_buy'});
         console.log(urlHost);
 
         const keyboard = Markup.inlineKeyboard([[
@@ -342,7 +353,7 @@ export const useTelegramBot = () => {
         const response = await telegramService.userOpensChat({ telegram_id });
         if (!response.user) return ctx.reply(response.message, initialKeyboard);
 
-        const urlHost = getUrlForDomain({ telegram_id, wallet: response.user.wallets[0].address, type: 'market_sell'})
+        const urlHost = getUrlForDomainTrade({ telegram_id, wallet: response.user.wallets[0].address, type: 'market_sell'})
 
         const keyboard = Markup.inlineKeyboard([[
             ...response.user.wallets.map((_wallet, index) => {
@@ -365,7 +376,7 @@ export const useTelegramBot = () => {
         const response = await telegramService.userOpensChat({ telegram_id });
         if (!response.user) return ctx.reply(response.message, initialKeyboard);
 
-        const urlHost = getUrlForDomain({ telegram_id, wallet: response.user.wallets[0].address, type: 'limit_buy'});
+        const urlHost = getUrlForDomainTrade({ telegram_id, wallet: response.user.wallets[0].address, type: 'limit_buy'});
 
         const keyboard = Markup.inlineKeyboard([[
             ...response.user.wallets.map((_wallet, index) => {
@@ -388,7 +399,7 @@ export const useTelegramBot = () => {
         const response = await telegramService.userOpensChat({ telegram_id });
         if (!response.user) return ctx.reply(response.message, initialKeyboard);
 
-        const urlHost = getUrlForDomain({ telegram_id, wallet: response.user.wallets[0].address, type: 'limit_sell'})
+        const urlHost = getUrlForDomainTrade({ telegram_id, wallet: response.user.wallets[0].address, type: 'limit_sell'})
 
         const keyboard = Markup.inlineKeyboard([[
             ...response.user.wallets.map((_wallet, index) => {
@@ -488,9 +499,17 @@ export const useTelegramBot = () => {
     bot.launch();
 }
 
-type UrlType = 'market_buy' | 'market_sell' | 'limit_buy' | 'limit_sell'
+type UrlType = 'market_buy' | 'market_sell' | 'limit_buy' | 'limit_sell';
 
-const getUrlForDomain = ({ telegram_id, wallet, type }:{ telegram_id: string, wallet: string, type: UrlType }) => {
+const getUrlForDomainTrade = ({ telegram_id, wallet, type }:{ telegram_id: string, wallet: string, type: UrlType }) => {
     const url = `${INTEGRATION_WEB_HOST}/integrations/${type}?user_id=${telegram_id}&wallet_address=${wallet}`;
     return url;
 }
+
+type UrlTypeWallet = 'import_wallet';
+
+const getUrlForDomainWallet = ({ token, type }:{ token: string, type: UrlTypeWallet }) => {
+    const url = `${INTEGRATION_WEB_HOST}/integrations/${type}?token=${token}`;
+    return url;
+}
+

@@ -13,7 +13,7 @@ export enum TokenType {
     emailVerification = 'EMAIL_VERIFICATION_SECRET'
 }
 
-class AuthorizationRepo {
+class EncryptionRepository {
     key: string;
     jwt: typeof jwt;
     uuid: any;
@@ -80,4 +80,4 @@ class AuthorizationRepo {
     }
 }
 
-export default AuthorizationRepo;
+export default EncryptionRepository;

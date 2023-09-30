@@ -143,22 +143,16 @@ export class MessageTradeTemplete {
 export class MessageWalletTemplete {
     static defaultDollarToEth = 1608;
     
-    static createANewWallet = ({ wallets }:{ wallets: IUser['wallets']}) => (
-        `
-        ________________________________________________
-        🦄 Goatbot 🦄
-        Click on "Add New" to create a new wallet
-        ________________________________________________
-        `
+    static createANewWallet = () => (
+        "══════[ 🐐 GoatBot 🐐 ]══════\n"+
+        " Click on 'Add New' to create a new wallet\n"+
+        "_______________________________________________\n"
     )
         
-    static importAWallet = ({ wallets }:{ wallets: IUser['wallets']}) => (
-        `
-        ________________________________________________
-        🦄 Goatbot 🦄
-        Enter the wallet private key and send to add wallet
-        ________________________________________________
-        `
+    static importAWallet = () => (
+        "══════[ 🐐 GoatBot 🐐 ]══════\n"+
+        "Enter the wallet private key and send to add wallet\n"+
+        "_______________________________________________\n"
     )
 
     static generateWalletEntities = ({ wallets }:{ wallets: IUser['wallets']}) => {
