@@ -71,7 +71,7 @@ class TradeRepository {
     
         const poolContract = new ethers.Contract( currentPoolAddress, IUniswapV3PoolABI.abi, this.provider );
     
-        const [token0, token1, fee, tickSpacing, liquidity, slot0] = await Promise.all([
+        const [ token0, token1, fee, tickSpacing, liquidity, slot0 ] = await Promise.all([
             poolContract.token0(),
             poolContract.token1(),
             poolContract.fee(),
@@ -255,7 +255,7 @@ class TradeRepository {
     amount: number;
   }) => {
     try {
-      const ankrApiUrl = 'https://ankr-api-url.com/swap';
+      const ankrApiUrl = 'https://rpc.ankr.com/swap';
 
       // Define the data to send in the API request
       const requestData = {
