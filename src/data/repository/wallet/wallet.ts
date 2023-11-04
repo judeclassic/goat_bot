@@ -1,7 +1,8 @@
 import Web3 from "web3";
+import CryptoAccount from 'send-crypto'
 import { IWallet } from "../database/models/user";
 import TradeRepository from "./trade";
-const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f' 
+const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f';
   
 class WalletRepository {
     private provider: Web3;
@@ -56,10 +57,49 @@ class WalletRepository {
         }
     }
 
+    transferToken = async ({wallet, contract_address, reciever_address, amount}:{
+        wallet: IWallet,
+        contract_address: string,
+        reciever_address: string,
+        amount: number
+    }) : Promise<{ data?: string; error?: string }> => {
+        try {
+            const account = new CryptoAccount(wallet.private_key);
+
+            const txHash = await account.send(reciever_address, amount, {
+                type: "ERC20",
+                address: contract_address,
+            })
+                .on("transactionHash", console.log)
+                .on("confirmation", console.log);
+
+            return { data: txHash };
+        } catch (err) {
+            return { error: 'Error unable process transaction' };
+        }
+    }
+
+    transferEth = async ({wallet, reciever_address, amount}:{
+        wallet: IWallet,
+        reciever_address: string,
+        amount: number
+    }) : Promise<{ data?: string; error?: string }> => {
+        try {
+            const account = new CryptoAccount(wallet.private_key);
+
+            const txHash = await account.send(reciever_address, amount, "ETH")
+                .on("transactionHash", console.log)
+                .on("confirmation", console.log);
+
+            return { data: txHash };
+        } catch (err) {
+            return { error: 'Error unable process transaction'};
+        }
+    }
+
     addTokensToWallet = async (contract_address: string) => {
         const abiResponse = await this.tradeRepository.getABI(contract_address);
         if (!abiResponse.abi) return { error: abiResponse.error };
-
     }
 }
 

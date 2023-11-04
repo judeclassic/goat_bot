@@ -20,6 +20,18 @@ class IntegrationController {
         sendResponse(200, { data: response, status: true });
     };
 
+    getCoinByContractAddress = async (
+        { query }: { query: { contract_address: string } },
+        sendResponse: (code: number, response: IResponse<any>)=>void
+    )  => {
+        const { contract_address } = query;
+
+        const response = await this._integrationService.getCoinByContractAddress({ contract_address });
+        if (!response) return sendResponse(401, { error: response, status: false });
+
+        sendResponse(200, { data: response, status: true });
+    };
+
     getListOfTokensInWallet = async (
         { query }: { query: { user_id: string; wallet_address: string } },
         sendResponse: (code: number, response: IResponse<any>)=>void
@@ -60,6 +72,37 @@ class IntegrationController {
         if (!response.data) return sendResponse(401, { error: response.errors, status: false });
 
         sendResponse(200, { data: response, status: true });
+    };
+
+    transferEth = async (
+        { body }: { body: any },
+        sendResponse: (code: number, response: IResponse<any>)=>void
+    )  => {
+        const response = await this._integrationService.transferEth(body);
+        if (!response.data) return sendResponse(401, { error: response.errors, status: false });
+
+        sendResponse(200, { data: response, status: true });
+    };
+
+    transferToken = async (
+        { body }: { body: any },
+        sendResponse: (code: number, response: IResponse<any>)=>void
+    )  => {
+        console.log(body);
+        const response = await this._integrationService.transferToken(body);
+        if (!response.data) return sendResponse(401, { error: response.errors, status: false });
+
+        sendResponse(200, { data: response, status: true });
+    };
+
+    getBalance = async (
+        { params }: { params: any },
+        sendResponse: (code: number, response: IResponse<any>)=>void
+    )  => {
+        const response = await this._integrationService.getBalance(params.token);
+        if (!response.data) return sendResponse(401, { error: response.errors, status: false });
+
+        sendResponse(200, { data: response.data, status: true });
     };
 }
 

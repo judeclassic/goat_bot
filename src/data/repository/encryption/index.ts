@@ -39,7 +39,13 @@ class EncryptionRepository {
     }
 
     public decryptToken = (data: any, type: TokenType) => {
-        return this.jwt.decode(data);
+        try {
+            const token = this.getTokenKeyByType(type);
+            return this.jwt.verify(data, token.key);
+        } catch (err) {
+            console.log(err);
+            return null
+        }
     }
 
     public createSpecialKey = ({prefix='', suffix='', removeDashes=false}) => {

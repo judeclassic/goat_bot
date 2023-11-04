@@ -5,7 +5,7 @@ export class MessageTemplete {
     static defaultDollarToEth = 1608;
 
     static welcome = () => (
-        "🐐✨ Welcome to GoatBot! 🚀\n\n"+
+        "══════[ 🐐 GoatBot 🐐 ]══════\n"+
         "🎉 Congrats on finding the G.O.A.T (Greatest Of All Telegram) Crypto bot! We're here to turbocharge your crypto journey.\n\n"+
         
         "📖 Quick Guide:\n\n"+
@@ -15,6 +15,11 @@ export class MessageTemplete {
         "4. Earning 🌱: Grow your seeds into mighty oaks! Dive into referrals 🤝 & stake your claim 🏰.\n\n"+
         "5. Settings ⚙️: Tailor GoatBot in your style! Customize, tweak, and make it truly yours.\n"
     );
+
+    static defaultMessage = (message: string) => (
+        "══════[ 🐐 GoatBot 🐐 ]══════\n"+
+        ` ${message}\n`
+    )
 
     static generateWalletEntities = ({ wallets }:{ wallets: IUser['wallets']}) => {
         let offset = 0;
@@ -152,6 +157,17 @@ export class MessageWalletTemplete {
     static importAWallet = () => (
         "══════[ 🐐 GoatBot 🐐 ]══════\n"+
         "Enter the wallet private key and send to add wallet\n"+
+        "_______________________________________________\n"
+    )
+
+    static sendEtherium = () => (
+        "══════[ 🐐 GoatBot 🐐 ]══════\n"+
+        "Enter to send etherium\n"+
+        "_______________________________________________\n"
+    )
+    static sendToken = () => (
+        "══════[ 🐐 GoatBot 🐐 ]══════\n"+
+        "Enter to send token\n"+
         "_______________________________________________\n"
     )
 

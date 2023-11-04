@@ -75,10 +75,27 @@ class TelegramService {
             const token = this.encryptionRepository.encryptToken({ telegram_id });
 
             return { status: true, token };
-        }catch (err) {
+        } catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }
     }
+
+    generateUserIDTokenAndWallet = async ( { telegram_id, wallet_number }: { telegram_id: string, wallet_number: number } ) => {
+        try {
+            const { user } = await this.getCurrentUser(telegram_id);
+            if (!user) return { status: false, message: 'unable to get current user' };
+
+            const wallet = user.wallets[wallet_number];
+            if (!wallet) return { status: false, message: 'unable to get current wallet' };
+
+            const token = this.encryptionRepository.encryptToken({ telegram_id, wallet_address: wallet.address });
+
+            return { status: true, token, wallet_address: wallet.address };
+        } catch (err) {
+            return { status: false, message: 'error please send "/start" request again' };
+        }
+    }
+
     userImportWallet = async ( { telegram_id, private_key }: { telegram_id: string, private_key: string } ) => {
         try {
             const { user } = await this.getCurrentUser(telegram_id);
@@ -98,7 +115,7 @@ class TelegramService {
             await user.save()
 
             return { status: true, user };
-        }catch (err) {
+        } catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }
     }
@@ -138,7 +155,6 @@ class TelegramService {
                     contract_address: '',
                     balance: _wallet.balance
                 }] as IOtherWallet[]}
-                
             }
 
             return { status: true, balances };
@@ -151,7 +167,6 @@ class TelegramService {
         const user = await this.userModel.findOne({ telegram_id });
         if (!user) {
             const wallets = [await this.walletRepository.createWallet()]
-
             const user = await this.userModel.create({ telegram_id, wallets });
             if (!user) return { message: 'unable to create your account' };
             return { user };
