@@ -1,6 +1,5 @@
 import IResponse from "../../../data/types/response/response";
 import IntegrationService from "./integration.service";
-import IntegrationValidator from "./integration.validator";
 
 
 class IntegrationController {
@@ -11,7 +10,7 @@ class IntegrationController {
     }
 
     getGasPrices = async (
-        { },
+        _: any,
         sendResponse: (code: number, response: IResponse<any>)=>void
     )  => {
         const response = await this._integrationService.getGasPrices();

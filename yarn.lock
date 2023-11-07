@@ -15,13 +15,12 @@
     "@jridgewell/gen-mapping" "^0.3.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@ankr.com/ankr.js@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@ankr.com/ankr.js/-/ankr.js-0.4.0.tgz#24241b18c1a47097ef0e66eccdd485578270f2f7"
-  integrity sha512-7yA/NM/XSzx7vXartN6PDGN6toS/dueFt7Yp/+LiRDa6dB7FfGa380YHNWipf81CqSkwQEeHVWvS+fts+TWXeg==
+"@ankr.com/ankr.js@^0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@ankr.com/ankr.js/-/ankr.js-0.4.2.tgz#d89bab791a65b5beb4392c642d6b4962951f33d1"
+  integrity sha512-gXgY+13/85zDD8NAHSnvSrPL7De5sQo8M3HSQmLxLy79J/xen0pdQsDyAZqwFeDwZLrzsizB8mvZi9z6hN9cvg==
   dependencies:
     axios "^0.26.1"
-    typescript "^4.6.2"
 
 "@aws-crypto/crc32@3.0.0":
   version "3.0.0"
@@ -6841,11 +6840,6 @@ typeforce@^1.11.3, typeforce@^1.11.5:
   version "1.18.0"
   resolved "https://registry.yarnpkg.com/typeforce/-/typeforce-1.18.0.tgz#d7416a2c5845e085034d70fcc5b6cc4a90edbfdc"
   integrity sha512-7uc1O8h1M1g0rArakJdf0uLRSSgFcYexrVoKo+bzJd32gd4gDy2L/Z+8/FjPnU9ydY3pEnVPtr9FyscYY60K1g==
-
-typescript@^4.6.2:
-  version "4.9.5"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"
-  integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==
 
 uid-number@^0.0.6:
   version "0.0.6"
