@@ -183,21 +183,24 @@ class TradeRepository {
       const amountIn = ethers.utils.parseEther(amount.toString());
       // const minAmountOut = ethers.utils.parseUnits(minTokenAmount, 18)
 
-      const uniswapRouter = new ethers.Contract(V3_UNISWAP_ROUTER_CONTRACT, IUniswapV3PoolABI.abi, ethereumWallet);
+      const uniswapRouterAbi = ['function exactInputSingle() external'];
 
-      const tx = await uniswapRouter.ExactInputSingleParams({
+      const uniswapRouter = new ethers.Contract(V3_UNISWAP_ROUTER_CONTRACT, uniswapRouterAbi, ethereumWallet);
+
+      const tx = await uniswapRouter.exactInputSingle({
         tokenIn: ETH_CONTRACT_ADDRESS,
         tokenOut: contract_address,
-        fee: 500,
+        fee: gas_fee,
         recipient: ethereumWallet.address,
         deadline: Math.floor(Date.now() / 1000) + 300,
         amountIn: amountIn,
         amountOutMinimum: 0, // Set your desired minimum output amount
       });
-  
-      const receipt = await tx.wait();
-      return receipt;
+
+      // console.log("TX: ", tx)
+      return tx
     } catch(err) {
+      // console.log("Error: ", err)
       return err;
     }
   }
