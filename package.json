@@ -3,7 +3,7 @@
   "scripts": {
     "prestart": "tsc",
     "start": "node build/index.js",
-    "dev": "NODE_ENV=development nodemon src/index.ts"
+    "dev": "nodemon src/index.ts"
   },
   "dependencies": {
     "@ankr.com/ankr.js": "^0.4.0",
