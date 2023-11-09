@@ -1,17 +1,17 @@
 import { Token, TradeType } from '@uniswap/sdk-core'
 import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
-import { computePoolAddress, Trade } from '@uniswap/v3-sdk'
-import { ethers, Wallet, utils } from 'ethers'
-import { CurrentConfig } from './config'
+import { Trade } from '@uniswap/v3-sdk'
+import { ethers } from 'ethers'
 import { IOtherWallet, IWallet } from '../database/models/user'
 import axios from 'axios';
 import { tokenSwapAbi } from './our_abi'
 
 export const POOL_FACTORY_CONTRACT_ADDRESS = '0x1F98431c8aD98523631AE4a59f267346ea31F984'
-// export const WETH_CONTRACT_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
 export const SWETH_CONTRACT_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
-const CONTRACT_ADDRESS = ''
 export const FEE_PERCENT = 0.5;
+
+export const V3_UNISWAP_ROUTER_CONTRACT = "0xe592427a0aece92de3edee1f18e0157c05861564"
+export const ETH_CONTRACT_ADDRESS = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe"
 
 const ETHERSCAN_API_KEY = 'XRSGJ71XPY5V7B76ICCSEPPVT9ZVFHXQTN';
 const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f'  
@@ -59,32 +59,6 @@ class TradeRepository {
         this.provider = new ethers.providers.JsonRpcProvider(YOUR_ANKR_PROVIDER_URL);
         if (!this.provider) throw new Error('No provider');
         this.poolContract = new ethers.Contract( POOL_FACTORY_CONTRACT_ADDRESS, IUniswapV3PoolABI.abi, this.provider );
-    }
-    
-    getPoolInfo = async ({ contract_address }: { contract_address: string }): Promise<PoolInfo> => {
-        const currentPoolAddress = computePoolAddress({
-            factoryAddress: contract_address,
-            tokenA: CurrentConfig.tokens.in,
-            tokenB: CurrentConfig.tokens.out,
-            fee: CurrentConfig.tokens.poolFee,
-        });
-    
-        const poolContract = new ethers.Contract( currentPoolAddress, IUniswapV3PoolABI.abi, this.provider );
-    
-        const [token0, token1, fee, tickSpacing, liquidity, slot0] = await Promise.all([
-            poolContract.token0(),
-            poolContract.token1(),
-            poolContract.fee(),
-            poolContract.tickSpacing(),
-            poolContract.liquidity(),
-            poolContract.slot0(),
-        ]);
-    
-        return { token0, token1, fee, tickSpacing, liquidity, sqrtPriceX96: slot0[0], tick: slot0[1] };
-    };
-
-    getWalletAddress = (wallet: IWallet) => {
-      return new ethers.Wallet(wallet.private_key, this.provider);
     }
 
     getABI = async (contractAddress: string) => {
@@ -195,7 +169,7 @@ class TradeRepository {
         console.log(err)
         return []
       }
-    }
+  }
 
   swapEthToToken = async ({ contract_address, amount, slippage, wallet, gas_fee }:{
     contract_address: string, 
@@ -205,85 +179,29 @@ class TradeRepository {
     gas_fee: number
   }) => {
     try {
-      const ethereumWallet = new Wallet(wallet.address);
-      const fromAddress = wallet.address;
-    
-      // Get the nonce of the sender address
-      const nonce = await ethereumWallet.getTransactionCount();
-    
-      // Create a transaction to send Ether to Ankr for swapping
-      const tx = {
-        to: contract_address,
-        value: utils.parseEther(amount.toString()), // Amount in Ether
-        nonce,
-      };
-    
-      // Sign the transaction
-      const txWithSignature = await ethereumWallet.signTransaction(tx);
-    
-      // Send the transaction to the Ethereum network
-      const txResponse = await this.poolContract.provider.sendTransaction(txWithSignature);
-    
-      // Wait for the transaction to be mined
-      await txResponse.wait();
-    
-      // Now, you can interact with the Ankr API to get your swapped tokens
-      // You will need to check the Ankr API documentation for the specific endpoint and parameters.
-    
-      // Example:
-      const ankrResponse = await this.performAnkrSwap({
-        fromToken: 'ETH',
-        toToken: contract_address,
-        amount: amount,
+      const ethereumWallet = new ethers.Wallet(wallet.private_key, this.provider);
+      const amountIn = ethers.utils.parseEther(amount.toString());
+      // const minAmountOut = ethers.utils.parseUnits(minTokenAmount, 18)
+
+      const uniswapRouterAbi = ['function exactInputSingle() external'];
+
+      const uniswapRouter = new ethers.Contract(V3_UNISWAP_ROUTER_CONTRACT, uniswapRouterAbi, ethereumWallet);
+
+      const tx = await uniswapRouter.exactInputSingle({
+        tokenIn: ETH_CONTRACT_ADDRESS,
+        tokenOut: contract_address,
+        fee: gas_fee,
+        recipient: ethereumWallet.address,
+        deadline: Math.floor(Date.now() / 1000) + 300,
+        amountIn: amountIn,
+        amountOutMinimum: 0, // Set your desired minimum output amount
       });
-    
-      // Handle the Ankr response as needed
-      console.log('Ankr Response:', ankrResponse);
-      return ankrResponse;
+
+      // console.log("TX: ", tx)
+      return tx
     } catch(err) {
+      // console.log("Error: ", err)
       return err;
-    }
-  }
-
-  performAnkrSwap = async ({
-    fromToken,
-    toToken,
-    amount,
-  }: {
-    fromToken: string;
-    toToken: string;
-    amount: number;
-  }) => {
-    try {
-      const ankrApiUrl = 'https://ankr-api-url.com/swap';
-
-      // Define the data to send in the API request
-      const requestData = {
-        fromToken,
-        toToken,
-        amount,
-      };
-
-      // Set the request headers
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${YOUR_ANKR_PROVIDER_API_KEY}`,
-      };
-
-      // Send a POST request to the Ankr API
-      const response = await axios.post(ankrApiUrl, requestData, { headers });
-
-      // Check the status of the response
-      if (response.status === 200) {
-        // The token swap was successful
-        return { success: true, message: 'Token swap successful' };
-      } else {
-        // Handle the response according to your application's requirements
-        return { success: false, message: 'Token swap failed' };
-      }
-    } catch (error) {
-      // Handle any errors that occurred during the API request
-      return { success: false, message: 'Ankr API error: ' + error };
     }
   }
   
