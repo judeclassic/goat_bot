@@ -1,11 +1,19 @@
-import { Token, TradeType } from '@uniswap/sdk-core'
+import { Token, TradeType, CurrencyAmount, Percent, } from '@uniswap/sdk-core'
 import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
 import { Trade } from '@uniswap/v3-sdk'
-import { ethers } from 'ethers'
+import {
+  AlphaRouter,
+  // ChainId,
+   SwapOptionsSwapRouter02,
+  // SwapRoute,
+   SwapType,
+} from '@uniswap/smart-order-router'
+import JSBI from "jsbi";
+import { ethers, BigNumber } from 'ethers'
 import { IOtherWallet, IWallet } from '../database/models/user'
 import axios from 'axios';
 import { tokenSwapAbi } from './our_abi'
-
+import { ERC20ABI } from "./erc20_aba";
 export const POOL_FACTORY_CONTRACT_ADDRESS = '0x1F98431c8aD98523631AE4a59f267346ea31F984'
 export const SWETH_CONTRACT_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
 export const FEE_PERCENT = 0.5;
@@ -16,6 +24,8 @@ export const ETH_CONTRACT_ADDRESS = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe"
 const ETHERSCAN_API_KEY = 'XRSGJ71XPY5V7B76ICCSEPPVT9ZVFHXQTN';
 const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f'  
 const YOUR_ANKR_PROVIDER_API_KEY = '56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f'  
+
+const V3_SWAP_CONTRACT_ADDRESS = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45';
 
 export type TokenTrade = Trade<Token, Token, TradeType>
 
@@ -54,9 +64,11 @@ interface PoolInfo {
 class TradeRepository {
     provider: ethers.providers.JsonRpcProvider;
     poolContract: ethers.Contract;
+    //infuraProvider: ethers.providers.JsonRpcProvider;
 
     constructor() {
         this.provider = new ethers.providers.JsonRpcProvider(YOUR_ANKR_PROVIDER_URL);
+        //this.infuraProvider = new ethers.providers.JsonRpcProvider(INFURA_URL);
         if (!this.provider) throw new Error('No provider');
         this.poolContract = new ethers.Contract( POOL_FACTORY_CONTRACT_ADDRESS, IUniswapV3PoolABI.abi, this.provider );
     }
@@ -179,28 +191,78 @@ class TradeRepository {
     gas_fee: number
   }) => {
     try {
-      const ethereumWallet = new ethers.Wallet(wallet.private_key, this.provider);
-      const amountIn = ethers.utils.parseEther(amount.toString());
-      // const minAmountOut = ethers.utils.parseUnits(minTokenAmount, 18)
+      const INFURA_URL = process.env.INFURA;
 
-      const uniswapRouterAbi = ['function exactInputSingle() external'];
+      const web3Provider = new ethers.providers.JsonRpcProvider(INFURA_URL);
 
-      const uniswapRouter = new ethers.Contract(V3_UNISWAP_ROUTER_CONTRACT, uniswapRouterAbi, ethereumWallet);
+      const ChainId = 1;
+      const router = new AlphaRouter({chainId: ChainId, provider: web3Provider});
 
-      const tx = await uniswapRouter.exactInputSingle({
-        tokenIn: ETH_CONTRACT_ADDRESS,
-        tokenOut: contract_address,
-        fee: gas_fee,
-        recipient: ethereumWallet.address,
-        deadline: Math.floor(Date.now() / 1000) + 300,
-        amountIn: amountIn,
-        amountOutMinimum: 0, // Set your desired minimum output amount
-      });
+      const name0 = 'Wrapped Ether';
+      const symbol0 = 'WETH';
+      const decimal0 = 18;
+      const address0 = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
 
-      // console.log("TX: ", tx)
-      return tx
+      const decimal1 = 18;
+      const address1 = contract_address;
+
+      const WETH = new Token(ChainId, address0, decimal0, symbol0, name0);
+      const ERC20 = new Token(ChainId, address1, decimal1);
+
+      const wei = ethers.utils.parseUnits(amount.toString(), 18);
+      const inputAmount = CurrencyAmount.fromRawAmount(WETH, JSBI.BigInt(wei));
+
+      const options: SwapOptionsSwapRouter02 = {
+        recipient: wallet.address,
+        slippageTolerance: new Percent(slippage, 100),
+        deadline: Math.floor(Date.now()/1000 + 1800),
+        type: SwapType.SWAP_ROUTER_02,
+      }
+
+      const route = await router.route(
+        inputAmount,
+        ERC20,
+        TradeType.EXACT_INPUT,
+        options
+      )
+
+      //console.log(`qoute is ${route?.quote.toFixed(10)}`)
+
+      const transaction = {
+      data: route?.methodParameters?.calldata,
+      to: V3_SWAP_CONTRACT_ADDRESS,
+      value: BigNumber.from(route?.methodParameters?.value),
+      from: wallet.address,
+      gasPrice: BigNumber.from(route?.gasPriceWei),
+      gasLimit: ethers.utils.hexlify(1000000),
+      }
+
+      const wallets = new ethers.Wallet(wallet.private_key);
+      const connectedWallet = wallets.connect(web3Provider);
+
+      const approveAmout = ethers.utils.parseUnits('1', 18).toString();
+
+      const contract0 = new ethers.Contract(address0, ERC20ABI, web3Provider);
+
+      // approve v3 swap contract
+      const approveV3Contract = await contract0.connect(connectedWallet).approve(
+      V3_SWAP_CONTRACT_ADDRESS,
+      approveAmout
+      );
+
+      //console.log(`approve v3 contract ${approveV3Contract}`)
+
+      const tradeTransaction = await connectedWallet.sendTransaction(transaction);
+
+      //console.log(`trade transaction ${tradeTransaction}`)
+
+
+      return {
+        amoount: route?.quote.toFixed(10),
+        trade: tradeTransaction
+      }
     } catch(err) {
-      // console.log("Error: ", err)
+       console.log("Error: ", err)
       return err;
     }
   }
@@ -212,41 +274,81 @@ class TradeRepository {
     wallet: IWallet,
     gas_fee: number
   }) => {
+
     try {
-        const walletAddress = new ethers.Wallet(wallet.private_key, this.provider);
-        const tokenContract = new ethers.Contract(contract_address, tokenSwapAbi, walletAddress);
+       
+        const INFURA_URL = process.env.INFURA;
 
-        const feeAmount = ethers.utils.parseEther((amount * FEE_PERCENT /100).toString());
-        const { amountIn, amountOut } = deriveAmounts(amount, slippage);
-        const swapPath = [
-          contract_address,
-          SWETH_CONTRACT_ADDRESS,
-        ]
-        const swapDeadline = getDeadline();
-        const gasPrice = await this.provider.getGasPrice();
+        const web3Provider = new ethers.providers.JsonRpcProvider(INFURA_URL);
+        const ChainId = 1;
+        const router = new AlphaRouter({chainId: ChainId, provider: web3Provider});
     
-        // Then, call the swap function
-        const tx = await tokenContract.swapETHForTokenWithFee(
-          feeAmount,
-          amountOut,
-          swapPath,
-          wallet.address,
-          swapDeadline,
-          { value: amountIn, gasPrice, gasLimit: 50000 });
+        const decimal0 = 18;
+        const address0 = contract_address
 
-        // const tx = await tokenContract.swapTokenForETHWithFee(
-        //     amountIn,
-        //     feeAmount,
-        //     amountOut,
-        //     swapPath,
-        //     wallet.address,
-        //     swapDeadline
-        // );
-        const receipt = await tx.wait();
-        return receipt;
-        } catch (err) {
-          return err;
+        const name1 = 'Wrapped Ether';
+        const symbol1 = 'WETH';
+        const decimal1 = 18;
+        const address1 = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
+
+        const WETH = new Token(ChainId, address1, decimal1, symbol1, name1);
+        const erc20Token = new Token(ChainId, address0, decimal0);
+
+        const wei = ethers.utils.parseUnits(amount.toString(), 18);
+        const inputAmount = CurrencyAmount.fromRawAmount(erc20Token, JSBI.BigInt(wei));
+
+        const options: SwapOptionsSwapRouter02 = {
+          //recipient: wallet.address,
+          recipient: wallet.address,
+          slippageTolerance: new Percent(slippage, 100),
+          deadline: Math.floor(Date.now()/1000 + 1800),
+          type: SwapType.SWAP_ROUTER_02,
         }
+
+        const route = await router.route(
+          inputAmount,
+          WETH,
+          TradeType.EXACT_INPUT,
+          options
+        )
+
+        //console.log(`qoute is ${route?.quote.toFixed(10)}`)
+
+        const transaction = {
+          data: route?.methodParameters?.calldata,
+          to: V3_SWAP_CONTRACT_ADDRESS,
+          value: BigNumber.from(route?.methodParameters?.value),
+          from: wallet.address,
+          gasPrice: BigNumber.from(route?.gasPriceWei),
+          gasLimit: ethers.utils.hexlify(1000000),
+        }
+
+        const wallets = new ethers.Wallet(wallet.private_key);
+        const connectedWallet = wallets.connect(web3Provider);
+
+        const approveAmout = ethers.utils.parseUnits('3', 18).toString();
+
+        const contract0 = new ethers.Contract(address0, ERC20ABI, web3Provider);
+
+        // approve v3 swap contract
+        const approveV3Contract = await contract0.connect(connectedWallet).approve(
+          V3_SWAP_CONTRACT_ADDRESS,
+          approveAmout
+        );
+
+        //console.log(`approve v3 contract ${approveV3Contract}`)
+
+        const tradeTransaction = await connectedWallet.sendTransaction(transaction);
+
+        //console.log(`trade transaction ${tradeTransaction}`)
+
+        return {
+          amoount: route?.quote.toFixed(10),
+           trade: tradeTransaction
+        }
+      } catch (err) {
+        return err;
+      }
   }
 }
 

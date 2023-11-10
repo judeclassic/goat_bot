@@ -75,6 +75,7 @@ class IntegrationService {
     if (!wallet) return { error: [{ message: 'unable to get wallet information' }]};
 
     const response = await this._tradeRepository.swapEthToToken({ contract_address, amount, slippage, wallet, gas_fee });
+
     if ( !response ) {
       return { error: [{ message: 'unable to place trade' }]};
     }
@@ -97,6 +98,7 @@ class IntegrationService {
       if (!wallet) return { error: [{ message: 'unable to get wallet information' }]};
 
       const response = await this._tradeRepository.swapTokenToEth({ contract_address, amount, slippage, wallet, gas_fee });
+
       if ( !response ) {
         return { error: [{ message: 'unable to place trade' }]};
       }
