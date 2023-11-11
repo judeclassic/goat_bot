@@ -3,23 +3,27 @@ import EncryptionRepository, { TokenType } from "../../../data/repository/encryp
 import TradeRepository from "../../../data/repository/wallet/trade";
 import WalletRepository from "../../../data/repository/wallet/wallet";
 import IError from "../../../data/types/error/error";
+import { LimitMarketModel } from "../../../data/repository/database/models/limit";
 
 class IntegrationService {
   private _userModel: typeof UserModel;
   private _tradeRepository: TradeRepository;
   private _walletRepository: WalletRepository;
   private _encryptionRepository: EncryptionRepository;
+  private _limitMarketModel: typeof LimitMarketModel;
 
-  constructor ({ userModel, tradeRepository, encryptionRepository, walletRepository} : {
+  constructor ({ userModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel} : {
     userModel: typeof UserModel;
     tradeRepository: TradeRepository;
     encryptionRepository: EncryptionRepository;
     walletRepository: WalletRepository;
+    limitMarketModel: typeof LimitMarketModel;
   }){
     this._userModel = userModel;
     this._tradeRepository = tradeRepository;
     this._encryptionRepository = encryptionRepository;
     this._walletRepository = walletRepository;
+    this._limitMarketModel = limitMarketModel;
 
   }
 
@@ -105,6 +109,65 @@ class IntegrationService {
 
       return { response };
   };
+
+  public limitBuy = async ({ userId, marketType, contractAddress, amount, slippage, walletAddress }:{
+    userId: string,
+    marketType: string,
+    slippage: number;
+    contractAddress: string,
+    amount: number
+    walletAddress: string
+  }) => {
+      const user = await this._userModel.findOne({ telegram_id: userId});
+      console.log(user)
+      if (!user) return { errors: [{ message: 'user not found'}] };
+
+      const wallet = user.wallets.find((wallet) => wallet.address === walletAddress);
+      if (!wallet) return { error: [{ message: 'unable to get wallet information' }]};
+
+      const newLimitBuy = new this._limitMarketModel({
+        userId,
+        marketType,
+        contractAddress,
+        amount,
+        slippage,
+        walletAddress
+      })
+
+      const saveNewLimitBuy = await newLimitBuy.save();
+
+      return { limitBuy: saveNewLimitBuy };
+  };
+
+
+  public limitSell = async ({ userId, marketType, contractAddress, amount, slippage, walletAddress }:{
+    userId: string,
+    marketType: string,
+    slippage: number;
+    contractAddress: string,
+    amount: number
+    walletAddress: string
+  }) => {
+      const user = await this._userModel.findOne({ telegram_id: userId});
+      if (!user) return { errors: [{ message: 'user not found'}] };
+
+      const wallet = user.wallets.find((wallet) => wallet.address === walletAddress);
+      if (!wallet) return { error: [{ message: 'unable to get wallet information' }]};
+
+      const newLimitSell = new this._limitMarketModel({
+        userId,
+        marketType,
+        contractAddress,
+        amount,
+        slippage,
+        walletAddress
+      })
+
+      const saveNewLimitSell = await newLimitSell.save();
+
+      return { limitSell: saveNewLimitSell };
+  };
+
 
   public importWallet = async ({ token, private_key }:{
     token: string,

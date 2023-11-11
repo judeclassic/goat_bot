@@ -226,6 +226,18 @@ class TradeRepository {
         options
       )
 
+      // get ether balance in wei
+      const balanceWei = await web3Provider.getBalance(wallet.address);
+
+      // Convert Wei to Ether
+      const balanceEther = ethers.utils.formatEther(balanceWei);
+
+      if (parseInt(balanceEther) < amount) {
+        return {
+          message: "you don't have enough ether"
+        }
+      }
+
       //console.log(`qoute is ${route?.quote.toFixed(10)}`)
 
       const transaction = {
@@ -259,6 +271,7 @@ class TradeRepository {
 
       return {
         amoount: route?.quote.toFixed(10),
+        ether: balanceEther,
         trade: tradeTransaction
       }
     } catch(err) {
@@ -330,6 +343,25 @@ class TradeRepository {
 
         const contract0 = new ethers.Contract(address0, ERC20ABI, web3Provider);
 
+        const transferEvents = await contract0.queryFilter(contract0.filters.Transfer(null, connectedWallet, null));
+
+        //cheeck if wallet contain the token before
+        if (transferEvents.length < 1) {
+          return {
+            message: "you don't have this token"
+          }
+        }
+
+        const balance = await contract0.balanceOf(connectedWallet);
+        const balanceEther = ethers.utils.formatEther(balance);
+
+        //check if you have enough erc20 in your wallet
+        if (parseInt(balanceEther) < amount) {
+          return {
+            message: "your balance is low for this token"
+          }
+        }
+
         // approve v3 swap contract
         const approveV3Contract = await contract0.connect(connectedWallet).approve(
           V3_SWAP_CONTRACT_ADDRESS,
@@ -344,7 +376,7 @@ class TradeRepository {
 
         return {
           amoount: route?.quote.toFixed(10),
-           trade: tradeTransaction
+          trade: tradeTransaction
         }
       } catch (err) {
         return err;

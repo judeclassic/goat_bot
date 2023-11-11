@@ -7,6 +7,7 @@ import AuthorizationRepo from './data/repository/encryption';
 import RequestHandler from './data/repository/server/router';
 import integrationUserRoutes from './features/web/integration/integration.routes';
 import { initLogger } from './data/repository/logger.ts';
+import { continueMarketCheck } from "./data/repository/wallet/limitSellBuy";
 
 
 dotEnv.config();
@@ -16,6 +17,7 @@ dBConnection.connect();
 export default server((app, _server) => {
     cors();
     useTelegramBot();
+    continueMarketCheck();
 
     const authenticationRepo = new AuthorizationRepo();
     const router = new RequestHandler({ router: app,  authenticationRepo, host: '/api' });

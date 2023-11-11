@@ -63,6 +63,26 @@ class IntegrationController {
         sendResponse(200, { data: response, status: true });
     };
 
+    limitBuyCoin = async (
+        { body }: { body: any },
+        sendResponse: (code: number, response: IResponse<any>)=>void
+    )  => {
+        const response = await this._integrationService.limitBuy(body);
+        if (!response) return sendResponse(401, { error: [{ message: response }], status: false });
+
+        sendResponse(200, { data: response, status: true });
+    };
+
+    limitSellCoin = async (
+        { body }: { body: any },
+        sendResponse: (code: number, response: IResponse<any>)=>void
+    )  => {
+        const response = await this._integrationService.limitSell(body);
+        if (!response) return sendResponse(401, { error: [{ message: response }], status: false });
+
+        sendResponse(200, { data: response, status: true });
+    };
+
     importWallet = async (
         { body }: { body: any },
         sendResponse: (code: number, response: IResponse<any>)=>void

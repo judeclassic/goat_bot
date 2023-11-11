@@ -5,13 +5,14 @@ import TradeRepository from "../../../data/repository/wallet/trade";
 import WalletRepository from "../../../data/repository/wallet/wallet";
 import IntegrationController from "./integration.controller";
 import IntegrationService from "./integration.service";
+import { LimitMarketModel as limitMarketModel } from "../../../data/repository/database/models/limit";
 
 const integrationUserRoutes = async ({router}: {router: RequestHandler}) => {
     const tradeRepository = new TradeRepository();
     const walletRepository = new WalletRepository();
     const encryptionRepository = new EncryptionRepository();
 
-    const integrationService = new IntegrationService({ userModel, tradeRepository, encryptionRepository, walletRepository });
+    const integrationService = new IntegrationService({ userModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel });
     const integrationController = new IntegrationController({ integrationService});
     
     router.get('/getgasprices', integrationController.getGasPrices);
@@ -22,8 +23,8 @@ const integrationUserRoutes = async ({router}: {router: RequestHandler}) => {
     router.postWithBody('/marketbuy', integrationController.buyCoin);
     router.postWithBody('/marketsell', integrationController.sellCoin);
 
-    router.postWithBody('/limitbuy', integrationController.buyCoin);
-    router.postWithBody('/limitsell', integrationController.sellCoin);
+    router.postWithBody('/limitbuy', integrationController.limitBuyCoin);
+    router.postWithBody('/limitsell', integrationController.limitSellCoin);
 
     router.postWithBody('/import_wallet', integrationController.importWallet);
     router.get('/get_balance/:token', integrationController.getBalance);
