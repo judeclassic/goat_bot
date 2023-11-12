@@ -23,8 +23,10 @@ export default server((app, _server) => {
     const router = new RequestHandler({ router: app,  authenticationRepo, host: '/api' });
 
     router.extend('/integrations', integrationUserRoutes);
-    if (process.env.NODE_ENV === 'development') initLogger.useExpressMonganMiddleWare(app);
-    if (process.env.NODE_ENV === 'development') initLogger.checkRoutes(router);
+    // if (process.env.NODE_ENV === 'development') 
+    initLogger.useExpressMonganMiddleWare(app);
+    // if (process.env.NODE_ENV === 'development') 
+    initLogger.checkRoutes(router);
 });
 
 
