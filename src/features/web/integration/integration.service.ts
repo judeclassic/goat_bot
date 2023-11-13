@@ -30,25 +30,25 @@ class IntegrationService {
   public getGasPrices = async () => {
     const gasPricesResponse = await this._tradeRepository.getGasPrices();
     if ( !gasPricesResponse.success || !gasPricesResponse.gasPrices ) {
-      return { error: 'unable to get gas prices' };
+      return { errors: 'unable to get gas prices' };
     } 
     return { data: gasPricesResponse.gasPrices };
   };
 
   public getListOfTokensInWallet = async ({ user_id, wallet_address } : {
     user_id: string, wallet_address: string
-  }): Promise<{ error?: IError[], data?: any[] }> => {
+  }): Promise<{ errors?: IError[], data?: any[] }> => {
     const user = await this._userModel.findOne({ telegram_id: user_id });
-    if (!user) return { error: [{ message: 'unable to get user information' }]};
+    if (!user) return { errors: [{ message: 'unable to get user information' }]};
 
     const wallet = user.wallets[0]
     wallet.address = wallet_address;
     // const wallet = user.wallets.find((wallet) => wallet.address === wallet_address);
-    // if (!wallet) return { error: [{ message: 'unable to get wallet information' }]};
+    // if (!wallet) return { errors: [{ message: 'unable to get wallet information' }]};
 
     const tokensResponse = await this._tradeRepository.getListOfTokensInWallet({ wallet });
     if ( !tokensResponse ) {
-      return { error: [{ message: 'unable to get list of token' }]};
+      return { errors: [{ message: 'unable to get list of token' }]};
     } 
     return { data: tokensResponse };
   };
@@ -58,67 +58,76 @@ class IntegrationService {
   }) => {
     const response = await this._tradeRepository.getCoinByContractAddress({ contract_address });
     if ( !response ) {
-      return { error: [{ message: 'unable to place trade' }]};
+      return { errors: [{ message: 'unable to place trade' }]};
     }
 
     return { response };
   };
 
-  public buyCoin = async ({ user_id, wallet_address, contract_address, amount, slippage, gas_fee }:{
-    user_id: string,
+  public buyCoin = async ({ token, wallet_address, contract_address, amount, slippage, gas_fee, decimal }:{
+    token: string,
     wallet_address: string,
     slippage: number;
     contract_address: string,
     amount: number
+    decimal: number
     gas_fee: number
   }) => {
-    const user = await this._userModel.findOne({ telegram_id: user_id });
+    const decoded: any = this._encryptionRepository.decryptToken(token, TokenType.accessToken);
+    if (!decoded?.telegram_id) return { errors: [{ message: 'Invalid request'}] };
+    const user = await this._userModel.findOne({ telegram_id: decoded?.telegram_id });
     if (!user) return { errors: [{ message: 'user not found'}] };
 
     const wallet = user.wallets.find((wallet) => wallet.address === wallet_address);
-    if (!wallet) return { error: [{ message: 'unable to get wallet information' }]};
+    if (!wallet) return { errors: [{ message: 'unable to get wallet information' }]};
 
-    const response = await this._tradeRepository.swapEthToToken({ contract_address, amount, slippage, wallet, gas_fee });
+    const response = await this._tradeRepository.swapEthToToken({ contract_address, amount, slippage, wallet, gas_fee, decimal });
 
     if ( !response ) {
-      return { error: [{ message: 'unable to place trade' }]};
+      return { errors: [{ message: 'unable to place trade' }]};
     }
 
     return { response };
   };
 
-  public sellCoin = async ({ user_id, wallet_address, contract_address, amount, slippage, gas_fee }:{
-    user_id: string,
+  public sellCoin = async ({ token, wallet_address, contract_address, amount, slippage, decimal, gas_fee } : {
+    token: string,
     wallet_address: string,
     slippage: number;
     contract_address: string,
     amount: number
+    decimal: number
     gas_fee: number
   }) => {
-      const user = await this._userModel.findOne({ telegram_id: user_id });
+      const decoded: any = this._encryptionRepository.decryptToken(token, TokenType.accessToken);
+      if (!decoded?.telegram_id) return { errors: [{ message: 'Invalid request'}] };
+
+      const user = await this._userModel.findOne({ telegram_id: decoded?.telegram_id });
       if (!user) return { errors: [{ message: 'user not found'}] };
 
       const wallet = user.wallets.find((wallet) => wallet.address === wallet_address);
-      if (!wallet) return { error: [{ message: 'unable to get wallet information' }]};
+      if (!wallet) return { errors: [{ message: 'unable to get wallet information' }]};
 
-      const response = await this._tradeRepository.swapTokenToEth({ contract_address, amount, slippage, wallet, gas_fee });
+      const response = await this._tradeRepository.swapTokenToEth({ contract_address, amount, slippage, wallet, decimal, gas_fee });
 
       if ( !response ) {
-        return { error: [{ message: 'unable to place trade' }]};
+        return { errors: [{ message: 'unable to place trade' }]};
       }
 
       return { response };
   };
 
-  public limitBuy = async ({ userId, marketType, contractAddress, amount, slippage, walletAddress }:{
-    userId: string,
+  public limitBuy = async ({ token, marketType, contractAddress, amount, slippage, walletAddress }:{
+    token: string,
     marketType: string,
     slippage: number;
     contractAddress: string,
     amount: number
     walletAddress: string
   }) => {
-      const user = await this._userModel.findOne({ telegram_id: userId});
+    const decoded: any = this._encryptionRepository.decryptToken(token, TokenType.accessToken);
+    if (!decoded?.telegram_id) return { errors: [{ message: 'Invalid request'}] };
+      const user = await this._userModel.findOne({ telegram_id: decoded?.telegram_id});
       console.log(user)
       if (!user) return { errors: [{ message: 'user not found'}] };
 
@@ -126,7 +135,7 @@ class IntegrationService {
       if (!wallet) return { error: [{ message: 'unable to get wallet information' }]};
 
       const newLimitBuy = new this._limitMarketModel({
-        userId,
+        userId: decoded?.telegram_id,
         marketType,
         contractAddress,
         amount,
@@ -140,22 +149,25 @@ class IntegrationService {
   };
 
 
-  public limitSell = async ({ userId, marketType, contractAddress, amount, slippage, walletAddress }:{
-    userId: string,
+  public limitSell = async ({ token, marketType, contractAddress, amount, slippage, walletAddress }:{
+    token: string,
     marketType: string,
     slippage: number;
     contractAddress: string,
     amount: number
     walletAddress: string
   }) => {
-      const user = await this._userModel.findOne({ telegram_id: userId});
+      const decoded: any = this._encryptionRepository.decryptToken(token, TokenType.accessToken);
+      if (!decoded?.telegram_id) return { errors: [{ message: 'Invalid request'}] };
+      
+      const user = await this._userModel.findOne({ telegram_id: decoded?.telegram_id});
       if (!user) return { errors: [{ message: 'user not found'}] };
 
       const wallet = user.wallets.find((wallet) => wallet.address === walletAddress);
-      if (!wallet) return { error: [{ message: 'unable to get wallet information' }]};
+      if (!wallet) return { errors: [{ message: 'unable to get wallet information' }]};
 
       const newLimitSell = new this._limitMarketModel({
-        userId,
+        userId: decoded?.telegram_id,
         marketType,
         contractAddress,
         amount,
@@ -241,8 +253,6 @@ class IntegrationService {
 
   public getBalance = async (token: string) => {
       const decoded: any = this._encryptionRepository.decryptToken(token, TokenType.accessToken);
-
-      console.log(decoded);
 
       if (!decoded?.telegram_id) return { errors: [{ message: 'Unable to load wallet'}] };
       if (!decoded?.wallet_address) return { errors: [{ message: 'Unable to load wallet'}] };

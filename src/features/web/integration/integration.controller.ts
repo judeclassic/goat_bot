@@ -1,3 +1,4 @@
+import IError from "../../../data/types/error/error";
 import IResponse from "../../../data/types/response/response";
 import IntegrationService from "./integration.service";
 
@@ -14,21 +15,26 @@ class IntegrationController {
         sendResponse: (code: number, response: IResponse<any>)=>void
     )  => {
         const response = await this._integrationService.getGasPrices();
-        if (!response.data) return sendResponse(401, { error: [{ message: response.error }], status: false });
+        if (!response.data) return sendResponse(401, { error: [{ message: response.errors }], status: false });
 
         sendResponse(200, { data: response, status: true });
     };
 
     getCoinByContractAddress = async (
-        { query }: { query: { contract_address: string } },
+        { params }: { params: { token: string } },
         sendResponse: (code: number, response: IResponse<any>)=>void
     )  => {
-        const { contract_address } = query;
 
-        const response = await this._integrationService.getCoinByContractAddress({ contract_address });
+        const response = await this._integrationService.getCoinByContractAddress({ contract_address: params.token });
         if (!response) return sendResponse(401, { error: response, status: false });
+        if (!response.response) {
+            return sendResponse(401, {status: false, error: [{message: 'unable to get token'}]});
+        }
+        if (!response.response.success) {
+            return sendResponse(401, { status: false, data: [{ message: response.response.message} as IError] });
+        }
 
-        sendResponse(200, { data: response, status: true });
+        sendResponse(200, { data: response.response.contract, status: true });
     };
 
     getListOfTokensInWallet = async (
@@ -38,7 +44,7 @@ class IntegrationController {
         const { user_id, wallet_address } = query;
 
         const response = await this._integrationService.getListOfTokensInWallet({ user_id, wallet_address });
-        if (!response.data) return sendResponse(401, { error: response.error, status: false });
+        if (!response.data) return sendResponse(401, { error: response.errors, status: false });
 
         sendResponse(200, { data: response, status: true });
     };
@@ -48,9 +54,23 @@ class IntegrationController {
         sendResponse: (code: number, response: IResponse<any>)=>void
     )  => {
         const response = await this._integrationService.buyCoin(body);
-        if (!response) return sendResponse(401, { error: [{ message: response }], status: false });
+        if (response.errors) return sendResponse(401, { error: response.errors, status: false });
 
-        sendResponse(200, { data: response, status: true });
+        if (!response.response.status) {
+            return sendResponse(401, {
+                error: [{ message: response.response.message as string ?? 'unable to make transaction' }],
+                status: false
+            });
+        }
+
+        sendResponse(200, {
+            data: {
+                amount: response.response.amount,
+                ether: response.response.ether,
+                trade: response.response.trade,
+            },
+            status: true
+        });
     };
 
     sellCoin = async (
@@ -58,7 +78,14 @@ class IntegrationController {
         sendResponse: (code: number, response: IResponse<any>)=>void
     )  => {
         const response = await this._integrationService.sellCoin(body);
-        if (!response) return sendResponse(401, { error: response, status: false });
+        if (!response.response) return sendResponse(401, { error: response.errors, status: false });
+
+        if (!response?.response?.status) {
+            return sendResponse(401, {
+                error: [{ message: response?.response?.message as string ?? 'unable to make transaction' }],
+                status: false
+            });
+        }
 
         sendResponse(200, { data: response, status: true });
     };

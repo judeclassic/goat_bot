@@ -181,7 +181,8 @@ export const useTelegramBot = () => {
             [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
         ]);
 
-        ctx.reply(MessageTradeTemplete.marketBuyWalletAddress({ wallets: response.user.wallets }), keyboard);
+        const { text, entities } = MessageWalletTemplete.generateExportWalletEntities({wallets: response.user.wallets})
+        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
     });
 
     [ 1, 2, 3 ].forEach((data, wallet_number) => {
@@ -293,8 +294,6 @@ export const useTelegramBot = () => {
             if (!response.token) return ctx.reply(response.message!, initialKeyboard);
 
             const urlHost = getUrlForDomainWallet({ token: response.token, type: 'transfer_token'});
-
-            console.log(urlHost);
 
             const modifiedKeyboard = Markup.inlineKeyboard([
                 Markup.button.webApp('Click here to send', urlHost),
@@ -413,7 +412,6 @@ export const useTelegramBot = () => {
             if (!response.token) return ctx.reply(response.message!, initialKeyboard);
 
             const urlHost = getUrlForDomainTrade({ token: response.token, wallet: response.wallet_address, type: 'market_buy'});
-            console.log(urlHost);
 
             const modifiedKeyboard = Markup.inlineKeyboard([
                 Markup.button.webApp('Click here to proceed', urlHost),
@@ -461,7 +459,8 @@ export const useTelegramBot = () => {
             if (!response.token) return ctx.reply(response.message!, initialKeyboard);
 
             const urlHost = getUrlForDomainTrade({ token: response.token, wallet: response.wallet_address, type: 'market_sell'});
-
+            console.log(urlHost);
+            
             const modifiedKeyboard = Markup.inlineKeyboard([
                 Markup.button.webApp('Click here to send', urlHost),
                 Markup.button.callback('🔙 Back', 'wallet-menu')
@@ -487,10 +486,11 @@ export const useTelegramBot = () => {
         if (!tokenResponse.token) return ctx.reply(tokenResponse.message??'', initialKeyboard);
 
         const urlHost = getUrlForDomainTrade({ token: tokenResponse.token, wallet: response.user.wallets[0].address, type: 'limit_buy'});
+        console.log(urlHost);
 
         const keyboard = Markup.inlineKeyboard([[
-            ...response.user.wallets.map((_wallet, index) => {
-                return Markup.button.webApp(`Wallet ${index+1}`, `${urlHost}`);
+            ...response.user.wallets.map((wallet, index) => {
+                return Markup.button.webApp(`Wallet ${index+1}`, `${getUrlForDomainTrade({ token: tokenResponse.token, wallet: wallet.address, type: 'limit_buy'})}`);
             })],
             [Markup.button.callback('🔙 Back', 'trade-menu')],
         ]);
