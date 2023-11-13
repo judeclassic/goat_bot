@@ -1,5 +1,5 @@
 import { Telegraf, Markup } from 'telegraf';
-import { MessageTemplete, MessageWalletTemplete, MessageTradeTemplete } from '../../data/handler/template/message';
+import { MessageTemplete, MessageWalletTemplete, MessageTradeTemplete, MessageEarnTemplate } from '../../data/handler/template/message';
 import { UserModel } from '../../data/repository/database/models/user';
 import EncryptionRepository from '../../data/repository/encryption';
 import TradeRepository from '../../data/repository/wallet/trade';
@@ -566,9 +566,9 @@ export const useTelegramBot = () => {
 
     bot.action('earn-menu', async (ctx) => {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('📈 Stake & earn', 'participate-in-staking'),
+            // Markup.button.callback('📈 Stake & earn', 'participate-in-staking'),
             Markup.button.callback('👫 Refer & earn', 'refer-friends-and-earn'),
-            Markup.button.callback('📘 View earnings', 'view-earnings-history'),
+            // Markup.button.callback('📘 View earnings', 'view-earnings-history'),
             Markup.button.callback('🔙 Back', 'menu'),
         ]);
 
@@ -579,6 +579,31 @@ export const useTelegramBot = () => {
         if (!response.user) return ctx.reply(response.message, keyboard);
 
         const { text, entities } = MessageWalletTemplete.generateWalletEntities({wallets: response.user.wallets})
+        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+    });
+
+    bot.action('refer-friends-and-earn', async (ctx) => {
+        const intialKeyboard = Markup.inlineKeyboard([
+            [ Markup.button.callback('📈 Claim Earnings', '') ],
+            [ Markup.button.callback('🔙 Back', 'menu') ],
+        ]);
+
+        if (!ctx.chat) return ctx.reply('unable to process message', intialKeyboard);
+
+        const telegram_id = ctx.chat.id.toString();
+        const response = await telegramService.userOpensChat({ telegram_id });
+        const tokenResponse = await telegramService.generateUserIDToken({ telegram_id });
+        if (!response.user) return ctx.reply(response.message, intialKeyboard);
+        if (!tokenResponse.token) return ctx.reply(tokenResponse.message!, intialKeyboard);
+
+        const urlHost = getUrlForDomainWallet({ token: tokenResponse.token, type: 'transfer_token'});
+
+        const keyboard = Markup.inlineKeyboard([
+            [ Markup.button.webApp('📈 Claim Earnings', urlHost) ],
+            [ Markup.button.callback('🔙 Back', 'earn-menu') ],
+        ]);
+
+        const { text, entities } = MessageEarnTemplate.generateReferalMessage({ user: response.user })
         ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
     });
 

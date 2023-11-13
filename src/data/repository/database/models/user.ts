@@ -21,6 +21,13 @@ export interface IUser {
     name?: string;
     telegram_id: string;
     wallets: IWallet[],
+    referal: {
+        referalCode: string;
+        totalReferrals: number;
+        totalEarnings: number;
+        totalGOATHeld: number;
+        HeldFor: Date;
+    };
     passcode?: string;
     previous_command: string;
 }
@@ -68,6 +75,13 @@ const UserSchema = new Schema<IUser>({
         type: String,
     },
     wallets: [WalletSchema],
+    referal: {
+        referalCode: String,
+        totalReferrals: Number,
+        totalEarnings: Number,
+        totalGOATHeld: Number,
+        HeldFor: Date,
+    },
     passcode: {
         type: String,
     },
