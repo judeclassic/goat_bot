@@ -226,6 +226,12 @@ class TradeRepository {
         options
       )
 
+      if (!route) {
+        return {
+          message: "unable to initial route for this pair"
+        }
+      }
+
       // get ether balance in wei
       const balanceWei = await web3Provider.getBalance(wallet.address);
 
@@ -252,22 +258,24 @@ class TradeRepository {
       const wallets = new ethers.Wallet(wallet.private_key);
       const connectedWallet = wallets.connect(web3Provider);
 
-      const approveAmout = ethers.utils.parseUnits('1', 18).toString();
+      const approveAmout = ethers.utils.parseUnits(amount.toString(), 18).toString();
 
       const contract0 = new ethers.Contract(address0, ERC20ABI, web3Provider);
 
-      // approve v3 swap contract
-      const approveV3Contract = await contract0.connect(connectedWallet).approve(
-      V3_SWAP_CONTRACT_ADDRESS,
-      approveAmout
-      );
+      // Estimate gas limit
+      const gasLimit = await  contract0.estimateGas.approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
+      const gasLimitInEthe = ethers.utils.formatEther(gasLimit);
 
-      //console.log(`approve v3 contract ${approveV3Contract}`)
+        // Build transaction
+      const buildApproveTransaction = await contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout, {
+        gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
+        gasPrice: ethers.utils.parseUnits('20', 'gwei'), // Set your preferred gas price
+      });
+
+      // Wait for the transaction to be mined
+      const approveTransaction = await buildApproveTransaction;
 
       const tradeTransaction = await connectedWallet.sendTransaction(transaction);
-
-      //console.log(`trade transaction ${tradeTransaction}`)
-
 
       return {
         amoount: route?.quote.toFixed(10),
@@ -343,36 +351,30 @@ class TradeRepository {
 
         const contract0 = new ethers.Contract(address0, ERC20ABI, web3Provider);
 
-        const transferEvents = await contract0.queryFilter(contract0.filters.Transfer(null, connectedWallet, null));
+        // const balance = await contract0.balanceOf(connectedWallet);
+        // const balanceEther = ethers.utils.formatEther(balance);
 
-        //cheeck if wallet contain the token before
-        if (transferEvents.length < 1) {
-          return {
-            message: "you don't have this token"
-          }
-        }
+        // if (parseInt(balanceEther) < amount) {
+        //   return {
+        //     message: "you don't have enough token"
+        //   }
+        // }
 
-        const balance = await contract0.balanceOf(connectedWallet);
-        const balanceEther = ethers.utils.formatEther(balance);
 
-        //check if you have enough erc20 in your wallet
-        if (parseInt(balanceEther) < amount) {
-          return {
-            message: "your balance is low for this token"
-          }
-        }
+        // Estimate gas limit
+        const gasLimit = await  contract0.estimateGas.approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
+        const gasLimitInEthe = ethers.utils.formatEther(gasLimit);
 
-        // approve v3 swap contract
-        const approveV3Contract = await contract0.connect(connectedWallet).approve(
-          V3_SWAP_CONTRACT_ADDRESS,
-          approveAmout
-        );
+        // Build transaction
+        const buildApproveTransaction = await contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout, {
+          gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
+          gasPrice: ethers.utils.parseUnits('20', 'gwei'), // Set your preferred gas price
+        });
 
-        //console.log(`approve v3 contract ${approveV3Contract}`)
+        // Wait for the transaction to be mined
+        const approveTransaction = await buildApproveTransaction;
 
         const tradeTransaction = await connectedWallet.sendTransaction(transaction);
-
-        //console.log(`trade transaction ${tradeTransaction}`)
 
         return {
           amoount: route?.quote.toFixed(10),
@@ -380,6 +382,7 @@ class TradeRepository {
         }
       } catch (err) {
         return err;
+        console.log(`error: ${err}`)
       }
   }
 }
