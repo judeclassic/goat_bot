@@ -233,7 +233,7 @@ export class MessageWalletTemplete {
             offset += `▰ Wallet_w${index + 1} ▰\n\n`.length;
     
             // Add entity for balance and transactions
-            const balanceText = `Bal: ${wallet.balance} ETH (${this.defaultDollarToEth * wallet.balance}) \- Txs: 0\n`;
+            const balanceText = `Bal: ${wallet.balance} ETH\n`;
             offset += balanceText.length;
     
             // Add entity for wallet address (bold and text_link)
@@ -316,4 +316,37 @@ export class MessageWalletTemplete {
         ________________________________________________
         `
     )
+}
+
+
+export class MessageEarnTemplate {
+    static generateReferalMessage = ({ user }:{user: IUser}) => {
+        const entities: any = [];
+    
+        let text = 
+            "══════[ 🐐 GoatBot 🐐 ]══════\n\n"+
+            "Introducing a seamless referral experience on GoatBot! When your friends join using your referral \n"+
+            "code, both of you earn 1 $GOAT. To unlock this bonus, ensure you hold 4 GOAT tokens in your wallet \n"+
+            "for 30 days per referred user. Start referring and accumulating $GOAT today! \n\n"+
+            "Dive into goatbot referral program🤝 . Refer, earn, hold $GOAT & claim your earnings. \n\n"+
+            "══🔳 Your Referral Info 🔳══\n\n"+
+            "Referral Code\n"+
+            ">"+(user?.referal?.referalCode ?? "code")+"<\n\n";
+
+        entities.push({
+            offset: text.length - ((user?.referal?.referalCode ?? "code")?.length + 3),
+            length: (user?.referal?.referalCode ?? "code").length,
+            type: 'code',
+        });
+        
+        text += 
+            "Total Referrals\n"+
+            "> "+(user?.referal?.totalEarnings ?? 0)+" <\n\n"+
+            "Total Earnings\n"+
+            "> "+(user?.referal?.totalEarnings ?? 0)+" <\n\n"+
+            "Help for\n"+
+            "> "+(user?.referal?.HeldFor ?? 0)+"/30 days <\n\n";
+    
+        return { text, entities };
+    }
 }

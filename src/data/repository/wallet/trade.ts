@@ -87,16 +87,15 @@ class TradeRepository {
     getCoinByContractAddress = async ({ contract_address }:{ contract_address: string }) => {
       try {
         const response = await axios.get(`https://api.etherscan.io/api?module=account&action=tokentx&contractaddress=${contract_address}&page=1&offset=1&sort=desc&apikey=${ETHERSCAN_API_KEY}`);
-
         if (response.data.status === "1") {
             return {
                 success: true,
                 contract: {
-                    name: "",
-                    symbol: "",
-                    contract_address: "",
-                    image: "",
-                    price: 0.00005
+                    coin_name: response?.data?.result?.[0].tokenName,
+                    coin_symbol: response?.data?.result?.[0].tokenSymbol,
+                    decimal: response?.data?.result?.[0].tokenDecimal,
+                    contract_address: response?.data?.result?.[0].contractAddress,
+                    balance: response?.data?.result?.[0].value
                 }
             };
         } else {
@@ -141,6 +140,8 @@ class TradeRepository {
         if (response.data.status === '1') {
           return response.data.result.map((info: any) => ({
               coin_name: info.tokenSymbol,
+              coin_symbol: response?.data?.result?.[0].tokenSymbol,
+              decimal: response?.data?.result?.[0].tokenDecimal,
               contract_address: info.contractAddress,
               balance: info.value,
             })) as IOtherWallet[];
@@ -160,37 +161,39 @@ class TradeRepository {
         
         const response = await axios.get(url);
 
-        console.log(response.data)
-
         if (response.data.status === '1') {
           for (let i = 0; i < response.data.result.length; ) {
             if (balances.has(response.data.result[i].contractAddress)) continue;
             if (response.data.result[i].contractAddress) {
-
+              balances.set(response.data.result[i].contractAddress, {
+                coin_name: response.data.result[i].tokenSymbol,
+                coin_symbol: response?.data?.result?.[0].tokenSymbol,
+                decimal: response?.data?.result?.[0].tokenDecimal,
+                contract_address: response.data.result[i].contractAddress,
+                balance: response.data.result[i].value,
+              })
             }
+            if (i > 10) break;
           }
-          return response.data.result.map((info: any) => ({
-              coin_name: info.tokenSymbol,
-              contract_address: info.contractAddress,
-              balance: info.value,
-            })) as IOtherWallet[];
+          return Array.from(balances.values());
         } else {
             return [] as IOtherWallet[];
         }
       } catch (err) {
-        console.log(err)
-        return []
+        return [] as IOtherWallet[]
       }
   }
 
-  swapEthToToken = async ({ contract_address, amount, slippage, wallet, gas_fee }:{
+  swapEthToToken = async ({ contract_address, amount, slippage, wallet, decimal }:{
     contract_address: string, 
     amount: number,
     slippage: number,
     wallet: IWallet,
+    decimal: number,
     gas_fee: number
   }) => {
     try {
+      console.log({ contract_address, amount, slippage, wallet, decimal })
       const INFURA_URL = process.env.INFURA;
 
       const web3Provider = new ethers.providers.JsonRpcProvider(INFURA_URL);
@@ -203,7 +206,7 @@ class TradeRepository {
       const decimal0 = 18;
       const address0 = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
 
-      const decimal1 = 18;
+      const decimal1 = parseInt(decimal.toString());
       const address1 = contract_address;
 
       const WETH = new Token(ChainId, address0, decimal0, symbol0, name0);
@@ -239,7 +242,8 @@ class TradeRepository {
       const balanceEther = ethers.utils.formatEther(balanceWei);
 
       if (parseInt(balanceEther) < amount) {
-        return {
+        return { 
+          status: false,
           message: "you don't have enough ether"
         }
       }
@@ -247,12 +251,12 @@ class TradeRepository {
       //console.log(`qoute is ${route?.quote.toFixed(10)}`)
 
       const transaction = {
-      data: route?.methodParameters?.calldata,
-      to: V3_SWAP_CONTRACT_ADDRESS,
-      value: BigNumber.from(route?.methodParameters?.value),
-      from: wallet.address,
-      gasPrice: BigNumber.from(route?.gasPriceWei),
-      gasLimit: ethers.utils.hexlify(1000000),
+        data: route?.methodParameters?.calldata,
+        to: V3_SWAP_CONTRACT_ADDRESS,
+        value: BigNumber.from(route?.methodParameters?.value),
+        from: wallet.address,
+        gasPrice: BigNumber.from(route?.gasPriceWei),
+        gasLimit: ethers.utils.hexlify(1000000),
       }
 
       const wallets = new ethers.Wallet(wallet.private_key);
@@ -278,33 +282,34 @@ class TradeRepository {
       const tradeTransaction = await connectedWallet.sendTransaction(transaction);
 
       return {
-        amoount: route?.quote.toFixed(10),
+        status: true,
+        amount: route?.quote.toFixed(10),
         ether: balanceEther,
         trade: tradeTransaction
       }
     } catch(err) {
-       console.log("Error: ", err)
-      return err;
+        console.log("Error: ", err)
+        return {status: false, message: "unable to complete transaction" };
     }
   }
   
-  swapTokenToEth = async ({ contract_address, amount, slippage, wallet, gas_fee }: {
+  swapTokenToEth = async ({ contract_address, amount, decimal, slippage, wallet, gas_fee }: {
     contract_address: string, 
     amount: number,
     slippage: number,
+    decimal: number,
     wallet: IWallet,
     gas_fee: number
   }) => {
 
     try {
-       
         const INFURA_URL = process.env.INFURA;
 
         const web3Provider = new ethers.providers.JsonRpcProvider(INFURA_URL);
         const ChainId = 1;
         const router = new AlphaRouter({chainId: ChainId, provider: web3Provider});
     
-        const decimal0 = 18;
+        const decimal0 = parseInt(decimal.toString());
         const address0 = contract_address
 
         const name1 = 'Wrapped Ether';
@@ -351,25 +356,32 @@ class TradeRepository {
 
         const contract0 = new ethers.Contract(address0, ERC20ABI, web3Provider);
 
-        // const balance = await contract0.balanceOf(connectedWallet);
-        // const balanceEther = ethers.utils.formatEther(balance);
+        const transferEvents = await contract0.queryFilter(contract0.filters.Transfer(null, connectedWallet, null));
 
-        // if (parseInt(balanceEther) < amount) {
-        //   return {
-        //     message: "you don't have enough token"
-        //   }
-        // }
+        //cheeck if wallet contain the token before
+        if (transferEvents.length < 1) {
+          return {
+            message: "you don't have this token"
+          }
+        }
 
 
         // Estimate gas limit
         const gasLimit = await  contract0.estimateGas.approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
         const gasLimitInEthe = ethers.utils.formatEther(gasLimit);
 
-        // Build transaction
-        const buildApproveTransaction = await contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout, {
-          gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
-          gasPrice: ethers.utils.parseUnits('20', 'gwei'), // Set your preferred gas price
-        });
+        //check if you have enough erc20 in your wallet
+        if (parseInt(balanceEther) < amount) {
+          return {
+            message: "your balance is low for this token"
+          }
+        }
+
+        // approve v3 swap contract
+        const approveV3Contract = await contract0.connect(connectedWallet).approve(
+          V3_SWAP_CONTRACT_ADDRESS,
+          approveAmout
+        );
 
         // Wait for the transaction to be mined
         const approveTransaction = await buildApproveTransaction;
@@ -377,12 +389,12 @@ class TradeRepository {
         const tradeTransaction = await connectedWallet.sendTransaction(transaction);
 
         return {
-          amoount: route?.quote.toFixed(10),
+          status: true,
+          amount: route?.quote.toFixed(10),
           trade: tradeTransaction
         }
       } catch (err) {
         return err;
-        console.log(`error: ${err}`)
       }
   }
 }

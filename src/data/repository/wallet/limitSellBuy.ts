@@ -207,5 +207,9 @@ export const LimitBuySell = async () => {
 }
 
 export const continueMarketCheck = async () => {
-    setInterval(LimitBuySell, 1000 * 60 * 2);
+    try {
+        setInterval(LimitBuySell, 1000 * 60 * 2);
+    } catch (err) {
+        console.log(err);
+    }
 }
