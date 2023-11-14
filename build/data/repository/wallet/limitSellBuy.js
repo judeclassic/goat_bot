@@ -22,7 +22,6 @@ const limit_1 = require("../database/models/limit");
 const user_1 = require("../database/models/user");
 const LimitBuySell = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
-    console.log('meee');
     const V3_SWAP_CONTRACT_ADDRESS = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45';
     const INFURA_URL = process.env.INFURA;
     const web3Provider = new ethers_1.ethers.providers.JsonRpcProvider(INFURA_URL);
@@ -60,7 +59,6 @@ const LimitBuySell = () => __awaiter(void 0, void 0, void 0, function* () {
                 type: smart_order_router_1.SwapType.SWAP_ROUTER_02,
             };
             const route = yield router.route(inputAmount, ERC20, sdk_core_1.TradeType.EXACT_INPUT, options);
-            //console.log(`qoute is ${route?.quote.toFixed(10)}`)
             let equivalentAmount = route === null || route === void 0 ? void 0 : route.quote.toFixed(10);
             // get ether balance in wei
             const balanceWei = yield web3Provider.getBalance(limitbuySell.walletAddress);
@@ -83,11 +81,17 @@ const LimitBuySell = () => __awaiter(void 0, void 0, void 0, function* () {
             };
             const wallets = new ethers_1.ethers.Wallet(private_key);
             const connectedWallet = wallets.connect(web3Provider);
-            const approveAmout = ethers_1.ethers.utils.parseUnits('1', 18).toString();
+            const approveAmout = ethers_1.ethers.utils.parseUnits(limitbuySell.amount.toString(), 18).toString();
             const contract0 = new ethers_1.ethers.Contract(address0, erc20_aba_1.ERC20ABI, web3Provider);
-            // approve v3 swap contract
-            const approveV3Contract = yield contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
-            //console.log(`approve v3 contract ${approveV3Contract}`)
+            // Estimate gas limit
+            const gasLimit = yield contract0.estimateGas.approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
+            // Build transaction
+            const buildApproveTransaction = yield contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout, {
+                gasLimit: gasLimit.mul(2),
+                gasPrice: ethers_1.ethers.utils.parseUnits('20', 'gwei'), // Set your preferred gas price
+            });
+            // Wait for the transaction to be mined
+            const approveTransaction = yield buildApproveTransaction;
             const tradeTransaction = yield connectedWallet.sendTransaction(transaction);
         }
         if (limitbuySell.marketType == 'sell') {
@@ -125,28 +129,37 @@ const LimitBuySell = () => __awaiter(void 0, void 0, void 0, function* () {
             };
             const wallets = new ethers_1.ethers.Wallet(private_key);
             const connectedWallet = wallets.connect(web3Provider);
-            const approveAmout = ethers_1.ethers.utils.parseUnits('3', 18).toString();
+            const approveAmout = ethers_1.ethers.utils.parseUnits(limitbuySell.amount.toString(), 18).toString();
             const contract0 = new ethers_1.ethers.Contract(address0, erc20_aba_1.ERC20ABI, web3Provider);
-            const transferEvents = yield contract0.queryFilter(contract0.filters.Transfer(null, limitbuySell.walletAddress, null));
-            //cheeck if wallet contain the token before
-            if (transferEvents.length < 1) {
+            const balance = yield contract0.balanceOf(limitbuySell.walletAddress);
+            if (!balance) {
                 continue;
             }
-            const balance = yield contract0.balanceOf(limitbuySell.walletAddress);
             const balanceEther = ethers_1.ethers.utils.formatEther(balance);
             //check if you have enough erc20 in your wallet
             if (parseInt(balanceEther) < limitbuySell.amount) {
                 continue;
             }
-            // approve v3 swap contract
-            const approveV3Contract = yield contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
-            //console.log(`approve v3 contract ${approveV3Contract}`)
+            // Estimate gas limit
+            const gasLimit = yield contract0.estimateGas.approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
+            // Build transaction
+            const buildApproveTransaction = yield contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout, {
+                gasLimit: gasLimit.mul(2),
+                gasPrice: ethers_1.ethers.utils.parseUnits('20', 'gwei'), // Set your preferred gas price
+            });
+            // Wait for the transaction to be mined
+            const approveTransaction = yield buildApproveTransaction;
             const tradeTransaction = yield connectedWallet.sendTransaction(transaction);
         }
     }
 });
 exports.LimitBuySell = LimitBuySell;
 const continueMarketCheck = () => __awaiter(void 0, void 0, void 0, function* () {
-    setInterval(exports.LimitBuySell, 1000 * 60 * 2);
+    try {
+        setInterval(exports.LimitBuySell, 1000 * 60 * 2);
+    }
+    catch (err) {
+        console.log(err);
+    }
 });
 exports.continueMarketCheck = continueMarketCheck;

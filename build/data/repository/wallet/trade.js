@@ -193,13 +193,23 @@ class TradeRepository {
                 };
                 const wallets = new ethers_1.ethers.Wallet(wallet.private_key);
                 const connectedWallet = wallets.connect(web3Provider);
-                const approveAmout = ethers_1.ethers.utils.parseUnits('1', 18).toString();
+                const approveAmout = ethers_1.ethers.utils.parseUnits(amount.toString(), 18).toString();
                 const contract0 = new ethers_1.ethers.Contract(address0, erc20_aba_1.ERC20ABI, web3Provider);
-                // approve v3 swap contract
-                const approveV3Contract = yield contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
-                //console.log(`approve v3 contract ${approveV3Contract}`)
+                // // approve v3 swap contract
+                // const approveV3Contract = await contract0.connect(connectedWallet).approve(
+                // V3_SWAP_CONTRACT_ADDRESS,
+                // approveAmout
+                // );
+                // Estimate gas limit
+                const gasLimit = yield contract0.estimateGas.approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
+                // Build transaction
+                const buildApproveTransaction = yield contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout, {
+                    gasLimit: gasLimit.mul(2),
+                    gasPrice: ethers_1.ethers.utils.parseUnits('20', 'gwei'), // Set your preferred gas price
+                });
+                // Wait for the transaction to be mined
+                const approveTransaction = yield buildApproveTransaction;
                 const tradeTransaction = yield connectedWallet.sendTransaction(transaction);
-                //console.log(`trade transaction ${tradeTransaction}`)
                 return {
                     status: true,
                     amount: route === null || route === void 0 ? void 0 : route.quote.toFixed(10),
@@ -248,16 +258,8 @@ class TradeRepository {
                 };
                 const wallets = new ethers_1.ethers.Wallet(wallet.private_key);
                 const connectedWallet = wallets.connect(web3Provider);
-                const approveAmout = ethers_1.ethers.utils.parseUnits('3', 18).toString();
+                const approveAmout = ethers_1.ethers.utils.parseUnits(amount.toString(), 18).toString();
                 const contract0 = new ethers_1.ethers.Contract(address0, erc20_aba_1.ERC20ABI, web3Provider);
-                const transferEvents = yield contract0.queryFilter(contract0.filters.Transfer(null, connectedWallet, null));
-                //cheeck if wallet contain the token before
-                if (transferEvents.length < 1) {
-                    return {
-                        status: false,
-                        message: "you don't have this token"
-                    };
-                }
                 const balance = yield contract0.balanceOf(connectedWallet);
                 const balanceEther = ethers_1.ethers.utils.formatEther(balance);
                 //check if you have enough erc20 in your wallet
@@ -267,11 +269,21 @@ class TradeRepository {
                         message: "your balance is low for this token"
                     };
                 }
-                // approve v3 swap contract
-                const approveV3Contract = yield contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
-                //console.log(`approve v3 contract ${approveV3Contract}`)
+                // // approve v3 swap contract
+                // const approveV3Contract = await contract0.connect(connectedWallet).approve(
+                //   V3_SWAP_CONTRACT_ADDRESS,
+                //   approveAmout
+                // );
+                // Estimate gas limit
+                const gasLimit = yield contract0.estimateGas.approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
+                // Build transaction
+                const buildApproveTransaction = yield contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout, {
+                    gasLimit: gasLimit.mul(2),
+                    gasPrice: ethers_1.ethers.utils.parseUnits('20', 'gwei'), // Set your preferred gas price
+                });
+                // Wait for the transaction to be mined
+                const approveTransaction = yield buildApproveTransaction;
                 const tradeTransaction = yield connectedWallet.sendTransaction(transaction);
-                //console.log(`trade transaction ${tradeTransaction}`)
                 return {
                     status: true,
                     amount: route === null || route === void 0 ? void 0 : route.quote.toFixed(10),

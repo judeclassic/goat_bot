@@ -1,7 +1,7 @@
 "use strict";
 var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MessageWalletTemplete = exports.MessageTradeTemplete = exports.MessageTemplete = void 0;
+exports.MessageEarnTemplate = exports.MessageWalletTemplete = exports.MessageTradeTemplete = exports.MessageTemplete = void 0;
 const etherscanBaseUrl = "https://etherscan.io/address/";
 class MessageTemplete {
 }
@@ -165,7 +165,7 @@ MessageWalletTemplete.generateExportWalletEntities = ({ wallets }) => {
         });
         offset += `▰ Wallet_w${index + 1} ▰\n\n`.length;
         // Add entity for balance and transactions
-        const balanceText = `Bal: ${wallet.balance} ETH (${_b.defaultDollarToEth * wallet.balance}) \- Txs: 0\n`;
+        const balanceText = `Bal: ${wallet.balance} ETH\n`;
         offset += balanceText.length;
         // Add entity for wallet address (bold and text_link)
         entities.push({ offset: offset + " address: ".length, length: wallet.address.length, type: 'code' });
@@ -225,3 +225,31 @@ MessageWalletTemplete.removeAWalletConfirm = ({ wallet }) => (`
         ________________________________________________
         `);
 exports.MessageWalletTemplete = MessageWalletTemplete;
+class MessageEarnTemplate {
+}
+MessageEarnTemplate.generateReferalMessage = ({ user }) => {
+    var _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
+    const entities = [];
+    let text = "══════[ 🐐 GoatBot 🐐 ]══════\n\n" +
+        "Introducing a seamless referral experience on GoatBot! When your friends join using your referral \n" +
+        "code, both of you earn 1 $GOAT. To unlock this bonus, ensure you hold 4 GOAT tokens in your wallet \n" +
+        "for 30 days per referred user. Start referring and accumulating $GOAT today! \n\n" +
+        "Dive into goatbot referral program🤝 . Refer, earn, hold $GOAT & claim your earnings. \n\n" +
+        "══🔳 Your Referral Info 🔳══\n\n" +
+        "Referral Code\n" +
+        ">" + ((_d = (_c = user === null || user === void 0 ? void 0 : user.referal) === null || _c === void 0 ? void 0 : _c.referalCode) !== null && _d !== void 0 ? _d : "code") + "<\n\n";
+    entities.push({
+        offset: text.length - (((_g = ((_f = (_e = user === null || user === void 0 ? void 0 : user.referal) === null || _e === void 0 ? void 0 : _e.referalCode) !== null && _f !== void 0 ? _f : "code")) === null || _g === void 0 ? void 0 : _g.length) + 3),
+        length: ((_j = (_h = user === null || user === void 0 ? void 0 : user.referal) === null || _h === void 0 ? void 0 : _h.referalCode) !== null && _j !== void 0 ? _j : "code").length,
+        type: 'code',
+    });
+    text +=
+        "Total Referrals\n" +
+            "> " + ((_l = (_k = user === null || user === void 0 ? void 0 : user.referal) === null || _k === void 0 ? void 0 : _k.totalEarnings) !== null && _l !== void 0 ? _l : 0) + " <\n\n" +
+            "Total Earnings\n" +
+            "> " + ((_o = (_m = user === null || user === void 0 ? void 0 : user.referal) === null || _m === void 0 ? void 0 : _m.totalEarnings) !== null && _o !== void 0 ? _o : 0) + " <\n\n" +
+            "Help for\n" +
+            "> " + ((_q = (_p = user === null || user === void 0 ? void 0 : user.referal) === null || _p === void 0 ? void 0 : _p.HeldFor) !== null && _q !== void 0 ? _q : 0) + "/30 days <\n\n";
+    return { text, entities };
+};
+exports.MessageEarnTemplate = MessageEarnTemplate;

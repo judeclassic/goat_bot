@@ -512,9 +512,9 @@ const useTelegramBot = () => {
     }));
     bot.action('earn-menu', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         const keyboard = telegraf_1.Markup.inlineKeyboard([
-            telegraf_1.Markup.button.callback('📈 Stake & earn', 'participate-in-staking'),
+            // Markup.button.callback('📈 Stake & earn', 'participate-in-staking'),
             telegraf_1.Markup.button.callback('👫 Refer & earn', 'refer-friends-and-earn'),
-            telegraf_1.Markup.button.callback('📘 View earnings', 'view-earnings-history'),
+            // Markup.button.callback('📘 View earnings', 'view-earnings-history'),
             telegraf_1.Markup.button.callback('🔙 Back', 'menu'),
         ]);
         if (!ctx.chat)
@@ -524,6 +524,29 @@ const useTelegramBot = () => {
         if (!response.user)
             return ctx.reply(response.message, keyboard);
         const { text, entities } = message_1.MessageWalletTemplete.generateWalletEntities({ wallets: response.user.wallets });
+        ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
+    }));
+    bot.action('refer-friends-and-earn', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+        const intialKeyboard = telegraf_1.Markup.inlineKeyboard([
+            [telegraf_1.Markup.button.callback('📈 Claim', '')],
+            [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
+        ]);
+        if (!ctx.chat)
+            return ctx.reply('unable to process message', intialKeyboard);
+        const telegram_id = ctx.chat.id.toString();
+        const response = yield telegramService.userOpensChat({ telegram_id });
+        const tokenResponse = yield telegramService.generateUserIDToken({ telegram_id });
+        if (!response.user)
+            return ctx.reply(response.message, intialKeyboard);
+        if (!tokenResponse.token)
+            return ctx.reply(tokenResponse.message, intialKeyboard);
+        const urlHost = getUrlForDomainWallet({ token: tokenResponse.token, type: 'transfer_token' });
+        const keyboard = telegraf_1.Markup.inlineKeyboard([
+            [telegraf_1.Markup.button.webApp('📈 Claim', urlHost)],
+            [telegraf_1.Markup.button.webApp('📈 Enter referral', urlHost)],
+            [telegraf_1.Markup.button.callback('🔙 Back', 'earn-menu')],
+        ]);
+        const { text, entities } = message_1.MessageEarnTemplate.generateReferalMessage({ user: response.user });
         ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
     }));
     bot.action('setting-menu', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
@@ -542,10 +565,6 @@ const useTelegramBot = () => {
         ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
         ctx.reply(message_1.MessageTemplete.welcome(), keyboard);
     }));
-    bot.on('message', (text) => {
-        console.log(text.message);
-    });
-    // Start the bot
     bot.launch();
 };
 exports.useTelegramBot = useTelegramBot;
