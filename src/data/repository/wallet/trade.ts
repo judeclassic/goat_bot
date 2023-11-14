@@ -256,23 +256,29 @@ class TradeRepository {
       const wallets = new ethers.Wallet(wallet.private_key);
       const connectedWallet = wallets.connect(web3Provider);
 
-      const approveAmout = ethers.utils.parseUnits('1', 18).toString();
+      const approveAmout = ethers.utils.parseUnits(amount.toString(), 18).toString();
 
       const contract0 = new ethers.Contract(address0, ERC20ABI, web3Provider);
 
-      // approve v3 swap contract
-      const approveV3Contract = await contract0.connect(connectedWallet).approve(
-      V3_SWAP_CONTRACT_ADDRESS,
-      approveAmout
-      );
+      // // approve v3 swap contract
+      // const approveV3Contract = await contract0.connect(connectedWallet).approve(
+      // V3_SWAP_CONTRACT_ADDRESS,
+      // approveAmout
+      // );
 
-      //console.log(`approve v3 contract ${approveV3Contract}`)
+      // Estimate gas limit
+      const gasLimit = await contract0.estimateGas.approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
+
+      // Build transaction
+      const buildApproveTransaction = await contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout, {
+        gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
+        gasPrice: ethers.utils.parseUnits('20', 'gwei'), // Set your preferred gas price
+      });
+
+      // Wait for the transaction to be mined
+      const approveTransaction = await buildApproveTransaction;
 
       const tradeTransaction = await connectedWallet.sendTransaction(transaction);
-
-      //console.log(`trade transaction ${tradeTransaction}`)
-
-
       return {
         status: true,
         amount: route?.quote.toFixed(10),
@@ -344,19 +350,10 @@ class TradeRepository {
         const wallets = new ethers.Wallet(wallet.private_key);
         const connectedWallet = wallets.connect(web3Provider);
 
-        const approveAmout = ethers.utils.parseUnits('3', 18).toString();
+        const approveAmout = ethers.utils.parseUnits(amount.toString(), 18).toString();
 
         const contract0 = new ethers.Contract(address0, ERC20ABI, web3Provider);
 
-        const transferEvents = await contract0.queryFilter(contract0.filters.Transfer(null, connectedWallet, null));
-
-        //cheeck if wallet contain the token before
-        if (transferEvents.length < 1) {
-          return {
-            status: false,
-            message: "you don't have this token"
-          }
-        }
 
         const balance = await contract0.balanceOf(connectedWallet);
         const balanceEther = ethers.utils.formatEther(balance);
@@ -369,17 +366,25 @@ class TradeRepository {
           }
         }
 
-        // approve v3 swap contract
-        const approveV3Contract = await contract0.connect(connectedWallet).approve(
-          V3_SWAP_CONTRACT_ADDRESS,
-          approveAmout
-        );
+        // // approve v3 swap contract
+        // const approveV3Contract = await contract0.connect(connectedWallet).approve(
+        //   V3_SWAP_CONTRACT_ADDRESS,
+        //   approveAmout
+        // );
 
-        //console.log(`approve v3 contract ${approveV3Contract}`)
+        // Estimate gas limit
+        const gasLimit = await contract0.estimateGas.approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout);
+
+        // Build transaction
+        const buildApproveTransaction = await contract0.connect(connectedWallet).approve(V3_SWAP_CONTRACT_ADDRESS, approveAmout, {
+          gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
+          gasPrice: ethers.utils.parseUnits('20', 'gwei'), // Set your preferred gas price
+        });
+
+        // Wait for the transaction to be mined
+        const approveTransaction = await buildApproveTransaction;
 
         const tradeTransaction = await connectedWallet.sendTransaction(transaction);
-
-        //console.log(`trade transaction ${tradeTransaction}`)
 
         return {
           status: true,
