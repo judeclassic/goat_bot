@@ -584,7 +584,7 @@ export const useTelegramBot = () => {
 
     bot.action('refer-friends-and-earn', async (ctx) => {
         const intialKeyboard = Markup.inlineKeyboard([
-            [ Markup.button.callback('📈 Claim Earnings', '') ],
+            [ Markup.button.callback('📈 Claim', '') ],
             [ Markup.button.callback('🔙 Back', 'menu') ],
         ]);
 
@@ -599,7 +599,8 @@ export const useTelegramBot = () => {
         const urlHost = getUrlForDomainWallet({ token: tokenResponse.token, type: 'transfer_token'});
 
         const keyboard = Markup.inlineKeyboard([
-            [ Markup.button.webApp('📈 Claim Earnings', urlHost) ],
+            [ Markup.button.webApp('📈 Claim', urlHost) ],
+            [ Markup.button.webApp('📈 Enter referral', urlHost) ],
             [ Markup.button.callback('🔙 Back', 'earn-menu') ],
         ]);
 
@@ -624,12 +625,6 @@ export const useTelegramBot = () => {
         ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
         ctx.reply(MessageTemplete.welcome() ,keyboard);
     });
-
-    bot.on('message', (text) => {
-        console.log(text.message);
-    });
-    
-    // Start the bot
     bot.launch();
 }
 
