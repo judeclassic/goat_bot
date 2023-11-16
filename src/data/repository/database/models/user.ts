@@ -25,8 +25,8 @@ export interface IUser {
         referalCode: string;
         totalReferrals: number;
         totalEarnings: number;
-        totalGOATHeld: number;
-        HeldFor: Date;
+        totalGoatHeld: number;
+        claimableEarnings: number;
     };
     passcode?: string;
     previous_command: string;
@@ -79,8 +79,8 @@ const UserSchema = new Schema<IUser>({
         referalCode: String,
         totalReferrals: Number,
         totalEarnings: Number,
-        totalGOATHeld: Number,
-        HeldFor: Date,
+        claimableEarnings: Number,
+        totalGoatHeld: Number,
     },
     passcode: {
         type: String,

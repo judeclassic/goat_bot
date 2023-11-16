@@ -167,9 +167,25 @@ class TelegramService {
         const user = await this.userModel.findOne({ telegram_id });
         if (!user) {
             const wallets = [await this.walletRepository.createWallet()]
-            const user = await this.userModel.create({ telegram_id, wallets });
+            const user = await this.userModel.create({ telegram_id, wallets, referal: {
+                referalCode: this.encryptionRepository.generateRandomStringCode(6),
+                totalReferrals: 0,
+                totalEarnings: 0,
+                claimableEarnings: 0,
+                totalGoatHeld: 0,
+            } });
             if (!user) return { message: 'unable to create your account' };
             return { user };
+        }
+        if (!user?.referal?.referalCode) {
+            user.referal = {
+                referalCode: this.encryptionRepository.generateRandomStringCode(6),
+                totalReferrals: 0,
+                totalEarnings: 0,
+                claimableEarnings: 0,
+                totalGoatHeld: 0,
+            };
+            await user.save();
         }
         return { user };
     }
