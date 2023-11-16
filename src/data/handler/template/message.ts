@@ -1,6 +1,10 @@
 import { IOtherWallet, IUser, IWallet } from "../../repository/database/models/user";
 const etherscanBaseUrl = "https://etherscan.io/address/";
 
+const fromWethToEth = (value: number) => {
+    return Math.round(value / 1000000000000000000);
+};
+
 export class MessageTemplete {
     static defaultDollarToEth = 1608;
 
@@ -44,7 +48,7 @@ export class MessageTemplete {
             });
             offset += `▰ Wallet_w${index + 1} ▰\n\n`.length;
     
-            const balanceText = `Bal: ${wallet.balance} ETH (${this.defaultDollarToEth * wallet.balance}) \- Txs: 0\n`;
+            const balanceText = `Bal: ${fromWethToEth(wallet.balance)} ETH (${this.defaultDollarToEth * fromWethToEth(wallet.balance)}) \- \n`;
             offset += balanceText.length;
     
             entities.push({ offset: offset, length: wallet.address.length, type: 'code' });
@@ -81,7 +85,7 @@ export class MessageTemplete {
             offset += `▰ Wallet_w${index + 1} ▰\n\n`.length;
     
             // Add entity for balance and transactions
-            const balanceText = `Bal: ${wallet.balance} ETH\n`;
+            const balanceText = `Bal: ${fromWethToEth(wallet.balance)} ETH\n`;
             offset += balanceText.length;
     
             // Add entity for wallet address (bold and text_link)
@@ -123,7 +127,7 @@ export class MessageTemplete {
             offset += `▰ Wallet_w${index + 1} ▰\n\n`.length;
     
             // Add entity for balance and transactions
-            const balanceText = `Bal: ${balance.balance} ${balance.coin_name} (${this.defaultDollarToEth * balance.balance}) \- Txs: 0\n`;
+            const balanceText = `Bal: ${fromWethToEth(balance.balance)} ${balance.coin_name} (${this.defaultDollarToEth * fromWethToEth(balance.balance)}) \- \n`;
             offset += balanceText.length;
     
             // Add entity for wallet address (bold and text_link)
