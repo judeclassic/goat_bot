@@ -50,8 +50,8 @@ const UserSchema = new mongoose_1.Schema({
         referalCode: String,
         totalReferrals: Number,
         totalEarnings: Number,
-        totalGOATHeld: Number,
-        HeldFor: Date,
+        claimableEarnings: Number,
+        totalGoatHeld: Number,
     },
     passcode: {
         type: String,

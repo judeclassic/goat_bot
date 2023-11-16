@@ -145,13 +145,30 @@ class TelegramService {
             }
         });
         this.getCurrentUser = (telegram_id) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
             const user = yield this.userModel.findOne({ telegram_id });
             if (!user) {
                 const wallets = [yield this.walletRepository.createWallet()];
-                const user = yield this.userModel.create({ telegram_id, wallets });
+                const user = yield this.userModel.create({ telegram_id, wallets, referal: {
+                        referalCode: this.encryptionRepository.generateRandomStringCode(6),
+                        totalReferrals: 0,
+                        totalEarnings: 0,
+                        claimableEarnings: 0,
+                        totalGoatHeld: 0,
+                    } });
                 if (!user)
                     return { message: 'unable to create your account' };
                 return { user };
+            }
+            if (!((_a = user === null || user === void 0 ? void 0 : user.referal) === null || _a === void 0 ? void 0 : _a.referalCode)) {
+                user.referal = {
+                    referalCode: this.encryptionRepository.generateRandomStringCode(6),
+                    totalReferrals: 0,
+                    totalEarnings: 0,
+                    claimableEarnings: 0,
+                    totalGoatHeld: 0,
+                };
+                yield user.save();
             }
             return { user };
         });
