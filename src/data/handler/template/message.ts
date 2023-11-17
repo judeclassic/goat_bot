@@ -1,12 +1,7 @@
 import { IOtherWallet, IUser, IWallet } from "../../repository/database/models/user";
 const etherscanBaseUrl = "https://etherscan.io/address/";
 
-const fromWethToEth = (value: number) => {
-    return Math.round(value / 1000000000000000000);
-};
-
 export class MessageTemplete {
-    static defaultDollarToEth = 1608;
 
     static welcome = () => (
         "══════[ 🐐 GoatBot 🐐 ]══════\n"+
@@ -48,7 +43,7 @@ export class MessageTemplete {
             });
             offset += `▰ Wallet_w${index + 1} ▰\n\n`.length;
     
-            const balanceText = `Bal: ${fromWethToEth(wallet.balance)} ETH (${this.defaultDollarToEth * fromWethToEth(wallet.balance)}) \- \n`;
+            const balanceText = `Bal: ${wallet.balance} ETH (${wallet.balance_in_dollar}) \- \n`;
             offset += balanceText.length;
     
             entities.push({ offset: offset, length: wallet.address.length, type: 'code' });
@@ -85,7 +80,7 @@ export class MessageTemplete {
             offset += `▰ Wallet_w${index + 1} ▰\n\n`.length;
     
             // Add entity for balance and transactions
-            const balanceText = `Bal: ${fromWethToEth(wallet.balance)} ETH\n`;
+            const balanceText = `Bal: ${wallet.balance} ETH\n`;
             offset += balanceText.length;
     
             // Add entity for wallet address (bold and text_link)
@@ -103,15 +98,16 @@ export class MessageTemplete {
         return { text, entities };
     };
 
-    static generateWalletBalanceEntities = ({ balances }:{ balances: IOtherWallet[]}) => {
+    static generateWalletBalanceEntities = (
+        { message = "Elevate Your Crypto Trades with GOATBOT– Greatest Of All Telegram Bots",balances }:{ message?: string, balances: IOtherWallet[]}
+    ) => {
         let offset = 0;
         const entities: any = [];
-    
         
         const header = 
             "══════[ 🐐 GoatBot 🐐 ]══════\n\n"+
             "🐐 GoatBot | Website | Tutorials\n"+
-            "Elevate Your Crypto Trades with GOATBOT– Greatest Of All Telegram Bots \n\n"+
+            `${message} \n\n`+
             "══🔳 Your Wallets 🔳══\n\n"
         offset += header.length;
     
@@ -127,7 +123,7 @@ export class MessageTemplete {
             offset += `▰ Wallet_w${index + 1} ▰\n\n`.length;
     
             // Add entity for balance and transactions
-            const balanceText = `Bal: ${fromWethToEth(balance.balance)} ${balance.coin_name} (${this.defaultDollarToEth * fromWethToEth(balance.balance)}) \- \n`;
+            const balanceText = `Bal: ${balance.balance} ${balance.coin_name} (${balance.balance_in_dollar}) \- \n`;
             offset += balanceText.length;
     
             // Add entity for wallet address (bold and text_link)
@@ -136,6 +132,10 @@ export class MessageTemplete {
     
             return `▰ Wallet_w${index + 1} ▰\n${balanceText}${balance.contract_address}\n\n`;
         });
+
+        if (walletTexts.length < 1) {
+            walletTexts.push("You have no token in your wallet")
+        }
     
         const text = header + walletTexts.join('');
     

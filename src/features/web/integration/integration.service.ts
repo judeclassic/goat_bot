@@ -35,18 +35,19 @@ class IntegrationService {
     return { data: gasPricesResponse.gasPrices };
   };
 
-  public getListOfTokensInWallet = async ({ user_id, wallet_address } : {
-    user_id: string, wallet_address: string
-  }): Promise<{ errors?: IError[], data?: any[] }> => {
-    const user = await this._userModel.findOne({ telegram_id: user_id });
+  public getListOfTokensInWallet = async ({ token } : { token: string}): Promise<{ errors?: IError[], data?: any[] }> => {
+    const decoded: any = this._encryptionRepository.decryptToken(token, TokenType.accessToken);
+    if (!decoded?.telegram_id) return { errors: [{ message: 'Invalid request'}] };
+
+    const user = await this._userModel.findOne({ telegram_id: decoded.telegram_id });
     if (!user) return { errors: [{ message: 'unable to get user information' }]};
 
-    const wallet = user.wallets[0]
-    wallet.address = wallet_address;
-    // const wallet = user.wallets.find((wallet) => wallet.address === wallet_address);
-    // if (!wallet) return { errors: [{ message: 'unable to get wallet information' }]};
+    const wallet = user.wallets.find(_wallet => _wallet.address === decoded.wallet_address)
+    if (!wallet) return { errors: [{ message: 'unable to get this wallet information' }]};
 
-    const tokensResponse = await this._tradeRepository.getListOfTokensInWallet({ wallet });
+    const tokensResponse = await this._walletRepository.getOtherTokens(wallet);
+    console.log(tokensResponse);
+
     if ( !tokensResponse ) {
       return { errors: [{ message: 'unable to get list of token' }]};
     } 
@@ -223,11 +224,15 @@ class IntegrationService {
       const wallet = user.wallets.find((value) => value.address === decoded?.wallet_address);
       if (!wallet) return { errors: [{ message: 'wallet not found'}] };
 
-      const transaction = await this._walletRepository.transferToken({ wallet, amount, contract_address, reciever_address });
-      if (!transaction.data) return { errors: [{ message: transaction.error ?? 'wallet not found'}] };
-    
-
-      return { data: transaction }
+      if ( contract_address === "eth") {
+        const transaction = await this._walletRepository.transferToken({ wallet, amount, contract_address, reciever_address });
+        if (!transaction.data) return { errors: [{ message: transaction.error ?? 'wallet not found'}] };
+      } else {
+        const transaction = await this._walletRepository.transferEth({ wallet, amount, reciever_address });
+        if (!transaction.data) return { errors: [{ message: transaction.error ?? 'wallet not found'}] };
+      }
+      
+      return { data: "transaction" }
   };
 
   public transferEth = async ({ token, amount, reciever_address }:{

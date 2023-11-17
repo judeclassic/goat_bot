@@ -2,9 +2,11 @@ import { Schema, model, PaginateModel } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 
 export interface IOtherWallet {
+    logo: string;
     coin_name: string;
     contract_address: string;
-    balance: number;
+    balance_in_dollar: string;
+    balance: string;
 }
 
 export interface IWallet {
@@ -12,7 +14,8 @@ export interface IWallet {
     address: string;
     seed_phrase?: string;
     public_key?: string;
-    balance: number;
+    balance_in_dollar: string;
+    balance: string;
     others: IOtherWallet[]
 }
 
@@ -40,9 +43,6 @@ const OtherWalletSchema = new Schema<IOtherWallet>({
     contract_address: {
         type: String,
     },
-    balance: {
-        type: Number,
-    },
 })
 
 const WalletSchema = new Schema<IWallet>({
@@ -57,9 +57,6 @@ const WalletSchema = new Schema<IWallet>({
     },
     public_key: {
         type: String,
-    },
-    balance: {
-        type: Number,
     },
     others: {
         type: [OtherWalletSchema],
