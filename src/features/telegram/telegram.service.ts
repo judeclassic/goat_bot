@@ -1,7 +1,7 @@
 import { SessionMessage, SessionType } from '../../data/handler/type';
 import { IOtherWallet, IWallet, UserModel } from '../../data/repository/database/models/user';
 import EncryptionRepository from '../../data/repository/encryption';
-import TradeRepository from '../../data/repository/wallet/trade';
+import TradeRepository from '../../data/repository/wallet/__trade';
 import WalletRepository from '../../data/repository/wallet/wallet';
 
 class TelegramService {

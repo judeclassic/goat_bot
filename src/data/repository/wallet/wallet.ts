@@ -1,9 +1,9 @@
 import Web3 from "web3";
 import CryptoAccount from 'send-crypto'
 import { IOtherWallet, IWallet } from "../database/models/user";
-import TradeRepository from "./trade";
-const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f';
-const ANKR_PROVIDER_URL = 'https://rpc.ankr.com/multichain/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f';
+import TradeRepository from "./__trade";
+export const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f';
+export const ANKR_PROVIDER_URL = 'https://rpc.ankr.com/multichain/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f';
 
 import { AnkrProvider } from '@ankr.com/ankr.js';
   
@@ -60,6 +60,7 @@ class WalletRepository {
             return tokens.assets.map((value) => ({
                     logo: value.thumbnail,
                     coin_name: value.tokenName,
+                    coin_symbol: value.tokenSymbol,
                     contract_address: value.contractAddress,
                     balance: proximate(value.balance),
                     balance_in_dollar: proximate(value.balanceUsd)
@@ -83,6 +84,7 @@ class WalletRepository {
                     logo: value.thumbnail,
                     coin_name: value.tokenName,
                     contract_address: value.contractAddress,
+                    decimal: value.tokenDecimals,
                     balance: value.balance,
                     balance_in_dollar: value.balanceUsd
                 })) as IOtherWallet[]

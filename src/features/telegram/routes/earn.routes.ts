@@ -1,8 +1,7 @@
 import { Telegraf, Markup } from 'telegraf';
 import { MessageEarnTemplate, MessageTemplete } from '../../../data/handler/template/message';
-import { UserModel } from '../../../data/repository/database/models/user';
 import EncryptionRepository from '../../../data/repository/encryption';
-import TradeRepository from '../../../data/repository/wallet/trade';
+import TradeRepository from '../../../data/repository/wallet/__trade';
 import WalletRepository from '../../../data/repository/wallet/wallet';
 import TelegramService from '../telegram.service';
 
@@ -16,43 +15,51 @@ export const useEarnBotRoutes = ({bot, walletRepository, tradeRepository, encryp
     telegramService: TelegramService
 }) => {
     bot.action('earn-menu', async (ctx) => {
-        const keyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('👫 Refer & earn', 'refer-friends-and-earn')],
-            [Markup.button.callback('🔙 Back', 'menu')],
-        ]);
+        try {
+            const keyboard = Markup.inlineKeyboard([
+                [Markup.button.callback('👫 Refer & earn', 'refer-friends-and-earn')],
+                [Markup.button.callback('🔙 Back', 'menu')],
+            ]);
 
-        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+            if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
-        const telegram_id = ctx.chat.id.toString();
-        const response = await telegramService.userOpensChat({ telegram_id });
-        if (!response.user) return ctx.reply(response.message, keyboard);
+            const telegram_id = ctx.chat.id.toString();
+            const response = await telegramService.userOpensChat({ telegram_id });
+            if (!response.user) return ctx.reply(response.message, keyboard);
 
-        const { text, entities } = MessageTemplete.generateWalletEntities("Earning 🌱: Grow your seeds into mighty oaks! Dive into referrals 🤝 & stake your claim", response.user.wallets);
-        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+            const { text, entities } = MessageTemplete.generateWalletEntities("Earning 🌱: Grow your seeds into mighty oaks! Dive into referrals 🤝 & stake your claim", response.user.wallets);
+            ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        } catch (err) {
+            console.log(err)
+        }
     });
 
     bot.action('refer-friends-and-earn', async (ctx) => {
-        const intialKeyboard = Markup.inlineKeyboard([
-            [ Markup.button.callback('🔙 Back', 'menu') ],
-        ]);
+        try {
+            const intialKeyboard = Markup.inlineKeyboard([
+                [ Markup.button.callback('🔙 Back', 'menu') ],
+            ]);
 
-        if (!ctx.chat) return ctx.reply('unable to process message', intialKeyboard);
+            if (!ctx.chat) return ctx.reply('unable to process message', intialKeyboard);
 
-        const telegram_id = ctx.chat.id.toString();
-        const response = await telegramService.userOpensChat({ telegram_id });
-        const tokenResponse = await telegramService.generateUserIDToken({ telegram_id });
-        if (!response.user) return ctx.reply(response.message, intialKeyboard);
-        if (!tokenResponse.token) return ctx.reply(tokenResponse.message!, intialKeyboard);
+            const telegram_id = ctx.chat.id.toString();
+            const response = await telegramService.userOpensChat({ telegram_id });
+            const tokenResponse = await telegramService.generateUserIDToken({ telegram_id });
+            if (!response.user) return ctx.reply(response.message, intialKeyboard);
+            if (!tokenResponse.token) return ctx.reply(tokenResponse.message!, intialKeyboard);
 
-        const urlHost = getUrlForDomainWallet({ token: tokenResponse.token, type: 'transfer_token'});
+            const urlHost = getUrlForDomainWallet({ token: tokenResponse.token, type: 'transfer_token'});
 
-        const keyboard = Markup.inlineKeyboard([
-            [ Markup.button.webApp('💼 Claim reward', urlHost) ],
-            [ Markup.button.webApp('📈 Enter ref code', urlHost) ],
-            [ Markup.button.callback('🔙 Back', 'earn-menu') ],
-        ]);
+            const keyboard = Markup.inlineKeyboard([
+                [ Markup.button.webApp('💼 Claim reward', urlHost) ],
+                [ Markup.button.webApp('📈 Enter ref code', urlHost) ],
+                [ Markup.button.callback('🔙 Back', 'earn-menu') ],
+            ]);
 
-        ctx.reply(MessageEarnTemplate.generateReferalMessage(response), keyboard);
+            ctx.reply(MessageEarnTemplate.generateReferalMessage(response), keyboard);
+        } catch (err) {
+            console.log(err)
+        }
     });
 }
 

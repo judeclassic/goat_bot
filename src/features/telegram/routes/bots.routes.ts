@@ -1,7 +1,7 @@
 import { Telegraf, Markup } from 'telegraf';
 import { MessageTemplete } from '../../../data/handler/template/message';
 import EncryptionRepository from '../../../data/repository/encryption';
-import TradeRepository from '../../../data/repository/wallet/trade';
+import TradeRepository from '../../../data/repository/wallet/__trade';
 import WalletRepository from '../../../data/repository/wallet/wallet';
 import TelegramService from '../telegram.service';
 
@@ -16,22 +16,26 @@ export const useBotsBotRoutes = ({bot, walletRepository, tradeRepository, encryp
 }) => {
     
     bot.action('bots-menu', async (ctx) => {
-        const keyboard = Markup.inlineKeyboard([
-            [   Markup.button.callback('🎯 Sniper bot', 'activate-sniper-bot'),
-                Markup.button.callback('🚀 Frontrunner bot', 'activate-frontrunner-bot')],
-            [   Markup.button.callback('🪞 Mirror bot', 'activate-mirror-bot'),
-                Markup.button.callback('📊 Bot stats', 'check-bot-performance')],
-            [Markup.button.callback('🔙 Back', 'menu')],
-        ]);
+        try {
+            const keyboard = Markup.inlineKeyboard([
+                [   Markup.button.callback('🎯 Sniper bot', 'activate-sniper-bot'),
+                    Markup.button.callback('🚀 Frontrunner bot', 'activate-frontrunner-bot')],
+                [   Markup.button.callback('🪞 Mirror bot', 'activate-mirror-bot'),
+                    Markup.button.callback('📊 Bot stats', 'check-bot-performance')],
+                [Markup.button.callback('🔙 Back', 'menu')],
+            ]);
 
-        if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+            if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
 
-        const telegram_id = ctx.chat.id.toString();
-        const response = await telegramService.userOpensChat({ telegram_id });
-        if (!response.user) return ctx.reply(response.message, keyboard);
+            const telegram_id = ctx.chat.id.toString();
+            const response = await telegramService.userOpensChat({ telegram_id });
+            if (!response.user) return ctx.reply(response.message, keyboard);
 
-        const { text, entities } = MessageTemplete.generateWalletEntities("Bot Center 🤖: Automate like a pro! Sniper 🎯, frontrunner 🏃, mirror 🪞 bots & beyond.", response.user.wallets);
-        ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+            const { text, entities } = MessageTemplete.generateWalletEntities("Bot Center 🤖: Automate like a pro! Sniper 🎯, frontrunner 🏃, mirror 🪞 bots & beyond.", response.user.wallets);
+            ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+        } catch (err) {
+            console.log(err)
+        }
     });
 
     bot.action( `activate-sniper-bot`, async (ctx) => {

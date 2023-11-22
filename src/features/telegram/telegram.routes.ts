@@ -2,7 +2,7 @@ import { Telegraf, Markup } from 'telegraf';
 import { MessageTemplete } from '../../data/handler/template/message';
 import { UserModel } from '../../data/repository/database/models/user';
 import EncryptionRepository from '../../data/repository/encryption';
-import TradeRepository from '../../data/repository/wallet/trade';
+import TradeRepository from '../../data/repository/wallet/__trade';
 import WalletRepository from '../../data/repository/wallet/wallet';
 import { useBotsBotRoutes } from './routes/bots.routes';
 import { useEarnBotRoutes } from './routes/earn.routes';

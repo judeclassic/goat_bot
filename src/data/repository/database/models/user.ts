@@ -4,9 +4,12 @@ import mongoosePaginate from "mongoose-paginate-v2";
 export interface IOtherWallet {
     logo: string;
     coin_name: string;
+    coin_symbol: string;
+    decimal: number;
     contract_address: string;
     balance_in_dollar: string;
     balance: string;
+    constant_price?: string;
 }
 
 export interface IWallet {

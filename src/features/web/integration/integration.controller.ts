@@ -64,11 +64,7 @@ class IntegrationController {
         }
 
         sendResponse(200, {
-            data: {
-                amount: response.response.amount,
-                ether: response.response.ether,
-                trade: response.response.trade,
-            },
+            data: { message: response.response.message },
             status: true
         });
     };
