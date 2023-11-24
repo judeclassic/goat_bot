@@ -251,20 +251,8 @@ class TradeRepository {
       const wallete = new ethers.Wallet(WALLET_SECRET);
       const connectedWallet = wallete.connect(web3Provider);
 
-      const ChainId = 1;
-       
-  
-      // const name0 = 'Wrapped Ether';
-      // const address0 = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
-
-      // const name1 = 'Dai Stablecoin';
-      // const address1 = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
-      //const address1 = '0x892367625303E8535756081A322B00F7F1aC655d';
-
-      const name0 = tokenIn.name;
       const address0 = tokenIn.address
 
-      const name1 = tokenOut.name
       const address1 = tokenOut.address
 
       const contract0 = new ethers.Contract( address0, WRAPPEDETHABI, web3Provider);
@@ -300,16 +288,22 @@ class TradeRepository {
       console.log(4)
       await seee()
 
+      const txGasLimit = await this.getGasPrices()
+      const low = txGasLimit.gasPrices?.low
+      const med = txGasLimit.gasPrices?.average + 5
+      const highGas= txGasLimit.gasPrices?.high 
+
       const approveAmout = ethers.utils.parseUnits(amount.toString(), 18).toString();
 
-      const gasLimit = await contract0.estimateGas.approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout);
-      console.log('limit')
-      // approve v3 swap contract
+      //const gasLimit = await contract0.estimateGas.approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout);
+      
+
+      //approve v3 swap contract
       const approveV3Contract = await contract0.connect(connectedWallet).approve(
       V2_SWAP_CONTRACT_ADDRESS,
       approveAmout, {
-        gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
-        gasPrice: ethers.utils.parseUnits('20', 'gwei'), // Set your preferred gas price
+        //gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
+        gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
       }
       );
 
@@ -321,24 +315,24 @@ class TradeRepository {
 
       const approveStatu = approveRecc.status
 
-      //console.log('approve status', approveStatu)
+      console.log('approve status', approveStatu)
 
       console.log(6)
 
       const amountIn = ethers.utils.parseUnits(amount.toString(), 18).toString();
-      const currentTimestamp = Math.floor(Date.now() / 1000);
-      const times = await web3Provider.send("evm_setNextBlockTimestamp", [currentTimestamp * 2])
+      const currentTimestamp = Math.floor(Date.now() / 1000) + 1800;
+      //const times = await web3Provider.send("evm_setNextBlockTimestamp", [currentTimestamp * 2])
 
       const tx = await router.connect(connectedWallet).swapExactTokensForTokens(
           amountIn,
           0,
           [address0, address1],
           connectedWallet.address,
-          times,
+          currentTimestamp,
           {
               // gasLimit: 1000000
-              //gasPrice: ethers.utils.parseUnits('60', 'gwei'), // Adjust the gas price
-              gasLimit: 3000000,
+              gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
+              //gasLimit: 3000000,
           }
       )
 
@@ -390,27 +384,14 @@ class TradeRepository {
       const wallete = new ethers.Wallet(WALLET_SECRET);
       const connectedWallet = wallete.connect(web3Provider);
 
-      const ChainId = 1;
-       
-  
-      // const name0 = 'Wrapped Ether';
-      // const address0 = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
-
-      // const name1 = 'Dai Stablecoin';
-      // const address1 = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
-      //const address1 = '0x892367625303E8535756081A322B00F7F1aC655d';
-
-      const name0 = tokenIn.name;
       const address0 = tokenIn.address
 
-      const name1 = tokenOut.name
       const address1 = tokenOut.address
 
       const contract0 = new ethers.Contract( address0, ERC20ABI, web3Provider);
       const contract1 = new ethers.Contract(address1, WRAPPEDETHABI, web3Provider);
       const router = new ethers.Contract(V2_SWAP_CONTRACT_ADDRESS, routerArtifact.abi, web3Provider)
-      console.log(contract1)
-
+      
       //console.log(2)
 
       async function seee () {
@@ -430,22 +411,24 @@ class TradeRepository {
 
       await seee()
 
-
-      //  
+      const txGasLimit = await this.getGasPrices()
+      const low = txGasLimit.gasPrices?.low
+      const med = txGasLimit.gasPrices?.average
+      const highGas= txGasLimit.gasPrices?.high + 5
 
       console.log(4)
       await seee()
 
       const approveAmout = ethers.utils.parseUnits(amount.toString(), 18).toString();
 
-      const gasLimit = await contract0.estimateGas.approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout);
+      //const gasLimit = await contract0.estimateGas.approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout);
   
       // approve v3 swap contract
       const approveV3Contract = await contract0.connect(connectedWallet).approve(
       V2_SWAP_CONTRACT_ADDRESS,
       approveAmout, {
-        gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
-        gasPrice: ethers.utils.parseUnits('20', 'gwei'), // Set your preferred gas price
+        //gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
+        gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
       }
       );
 
@@ -467,15 +450,16 @@ class TradeRepository {
       console.log(7)
 
       const amountIn = ethers.utils.parseUnits(amount.toString(), 18).toString();
-      const currentTimestamp = Math.floor(Date.now() / 1000);
-      const times = await web3Provider.send("evm_setNextBlockTimestamp", [currentTimestamp * 2])
+      const currentTimestamp = Math.floor(Date.now() / 1000) + 1800;
+      //const times = await web3Provider.send("evm_setNextBlockTimestamp", [currentTimestamp * 2])
 
       const tx = await router.connect(connectedWallet).swapExactTokensForTokens(
           amountIn,
           0,
           [address0, address1],
           connectedWallet.address,
-          times,
+          //times,
+          currentTimestamp,
           {
               // gasLimit: 1000000
               //gasPrice: ethers.utils.parseUnits('60', 'gwei'), // Adjust the gas price
@@ -514,7 +498,10 @@ class TradeRepository {
 
       //convert wrapped eth to ether
       const convertToEth = await contract1.connect(connectedWallet).withdraw(
-        ethers.utils.parseUnits(amoutToWithdraw.toString(), 18).toString()
+        ethers.utils.parseUnits(amoutToWithdraw.toString(), 18).toString(),
+        {
+          gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
+        }
       );
 
       console.log(11)
