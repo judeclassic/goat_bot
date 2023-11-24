@@ -12,19 +12,18 @@ const encryption_1 = __importDefault(require("./data/repository/encryption"));
 const router_1 = __importDefault(require("./data/repository/server/router"));
 const integration_routes_1 = __importDefault(require("./features/web/integration/integration.routes"));
 const logger_ts_1 = require("./data/repository/logger.ts");
-const limitSellBuy_1 = require("./data/repository/wallet/limitSellBuy");
 dotenv_1.default.config();
 const dBConnection = new connect_1.default();
 dBConnection.connect();
 exports.default = (0, server_1.default)((app, _server) => {
     (0, cors_1.default)();
     (0, telegram_routes_1.useTelegramBot)();
-    (0, limitSellBuy_1.continueMarketCheck)();
+    // continueMarketCheck();
     const authenticationRepo = new encryption_1.default();
     const router = new router_1.default({ router: app, authenticationRepo, host: '/api' });
     router.extend('/integrations', integration_routes_1.default);
     // if (process.env.NODE_ENV === 'development') 
     logger_ts_1.initLogger.useExpressMonganMiddleWare(app);
-    // if (process.env.NODE_ENV === 'development') 
+    // if (process.env.NODE_ENV === 'development')
     logger_ts_1.initLogger.checkRoutes(router);
 });

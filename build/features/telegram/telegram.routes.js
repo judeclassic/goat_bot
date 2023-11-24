@@ -17,7 +17,7 @@ const telegraf_1 = require("telegraf");
 const message_1 = require("../../data/handler/template/message");
 const user_1 = require("../../data/repository/database/models/user");
 const encryption_1 = __importDefault(require("../../data/repository/encryption"));
-const trade_1 = __importDefault(require("../../data/repository/wallet/trade"));
+const __trade_1 = __importDefault(require("../../data/repository/wallet/__trade"));
 const wallet_1 = __importDefault(require("../../data/repository/wallet/wallet"));
 const bots_routes_1 = require("./routes/bots.routes");
 const earn_routes_1 = require("./routes/earn.routes");
@@ -29,7 +29,7 @@ const useTelegramBot = () => {
     const YOUR_BOT_TOKEN = process.env.YOUR_BOT_TOKEN;
     const bot = new telegraf_1.Telegraf(YOUR_BOT_TOKEN);
     const walletRepository = new wallet_1.default();
-    const tradeRepository = new trade_1.default();
+    const tradeRepository = new __trade_1.default();
     const encryptionRepository = new encryption_1.default();
     const telegramService = new telegram_service_1.default({ userModel: user_1.UserModel, walletRepository, tradeRepository, encryptionRepository });
     bot.start((ctx) => __awaiter(void 0, void 0, void 0, function* () {

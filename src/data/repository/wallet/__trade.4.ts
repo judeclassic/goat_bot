@@ -462,8 +462,4 @@ class TradeRepository {
   }
 }
 
-export default TradeRepository;Stack(
-    children: [
-        
-    ]
-)
+export default TradeRepository;

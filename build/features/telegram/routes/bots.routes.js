@@ -15,21 +15,26 @@ const message_1 = require("../../../data/handler/template/message");
 const INTEGRATION_WEB_HOST = 'https://goatbot.app';
 const useBotsBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionRepository, telegramService }) => {
     bot.action('bots-menu', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        const keyboard = telegraf_1.Markup.inlineKeyboard([
-            [telegraf_1.Markup.button.callback('🎯 Sniper bot', 'activate-sniper-bot'),
-                telegraf_1.Markup.button.callback('🚀 Frontrunner bot', 'activate-frontrunner-bot')],
-            [telegraf_1.Markup.button.callback('🪞 Mirror bot', 'activate-mirror-bot'),
-                telegraf_1.Markup.button.callback('📊 Bot stats', 'check-bot-performance')],
-            [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
-        ]);
-        if (!ctx.chat)
-            return ctx.reply('unable to process message', keyboard);
-        const telegram_id = ctx.chat.id.toString();
-        const response = yield telegramService.userOpensChat({ telegram_id });
-        if (!response.user)
-            return ctx.reply(response.message, keyboard);
-        const { text, entities } = message_1.MessageTemplete.generateWalletEntities("Bot Center 🤖: Automate like a pro! Sniper 🎯, frontrunner 🏃, mirror 🪞 bots & beyond.", response.user.wallets);
-        ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
+        try {
+            const keyboard = telegraf_1.Markup.inlineKeyboard([
+                [telegraf_1.Markup.button.callback('🎯 Sniper bot', 'activate-sniper-bot'),
+                    telegraf_1.Markup.button.callback('🚀 Frontrunner bot', 'activate-frontrunner-bot')],
+                [telegraf_1.Markup.button.callback('🪞 Mirror bot', 'activate-mirror-bot'),
+                    telegraf_1.Markup.button.callback('📊 Bot stats', 'check-bot-performance')],
+                [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
+            ]);
+            if (!ctx.chat)
+                return ctx.reply('unable to process message', keyboard);
+            const telegram_id = ctx.chat.id.toString();
+            const response = yield telegramService.userOpensChat({ telegram_id });
+            if (!response.user)
+                return ctx.reply(response.message, keyboard);
+            const { text, entities } = message_1.MessageTemplete.generateWalletEntities("Bot Center 🤖: Automate like a pro! Sniper 🎯, frontrunner 🏃, mirror 🪞 bots & beyond.", response.user.wallets);
+            ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
+        }
+        catch (err) {
+            console.log(err);
+        }
     }));
     bot.action(`activate-sniper-bot`, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         const initialKeyboard = telegraf_1.Markup.inlineKeyboard([

@@ -16,13 +16,19 @@ const LimitSchema = new mongoose_1.Schema({
         type: Number,
         required: true,
     },
+    price: {
+        type: Number,
+        required: true,
+    },
     walletAddress: {
         type: String,
         required: true,
     },
-    contractAddress: {
-        type: String,
-        required: true,
+    tokenInfo: {
+        contractAddress: String,
+        tokenName: String,
+        tokenSymbol: String,
+        decimal: Number
     },
     slippage: {
         type: Number,

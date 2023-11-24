@@ -1,12 +1,9 @@
 "use strict";
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageEarnTemplate = exports.MessageTemplete = void 0;
 const etherscanBaseUrl = "https://etherscan.io/address/";
 class MessageTemplete {
 }
-_a = MessageTemplete;
-MessageTemplete.defaultDollarToEth = 1608;
 MessageTemplete.welcome = () => ("══════[ 🐐 GoatBot 🐐 ]══════\n" +
     "🎉 Congrats on finding the G.O.A.T (Greatest Of All Telegram) Crypto bot! We're here to turbocharge your crypto journey.\n\n" +
     "📖 Quick Guide:\n\n" +
@@ -36,7 +33,7 @@ MessageTemplete.generateWalletEntities = (message, wallets) => {
             url: `https://etherscan.io/address/${wallet.address}`
         });
         offset += `▰ Wallet_w${index + 1} ▰\n\n`.length;
-        const balanceText = `Bal: ${wallet.balance} ETH (${_a.defaultDollarToEth * wallet.balance}) \- Txs: 0\n`;
+        const balanceText = `Bal: ${wallet.balance} ETH (${wallet.balance_in_dollar}) \- \n`;
         offset += balanceText.length;
         entities.push({ offset: offset, length: wallet.address.length, type: 'code' });
         offset += `${wallet.address}\`\n`.length;
@@ -76,32 +73,37 @@ MessageTemplete.generateExportWalletEntities = ({ wallets }) => {
     const text = header + walletTexts.join('');
     return { text, entities };
 };
-MessageTemplete.generateWalletBalanceEntities = ({ balances }) => {
+MessageTemplete.generateWalletBalanceEntities = ({ message = "Elevate Your Crypto Trades with GOATBOT– Greatest Of All Telegram Bots", balances }) => {
     let offset = 0;
     const entities = [];
     const header = "══════[ 🐐 GoatBot 🐐 ]══════\n\n" +
         "🐐 GoatBot | Website | Tutorials\n" +
-        "Elevate Your Crypto Trades with GOATBOT– Greatest Of All Telegram Bots \n\n" +
+        `${message} \n\n` +
         "══🔳 Your Wallets 🔳══\n\n";
     offset += header.length;
+    console.log(balances);
     const walletTexts = balances.map((balance, index) => {
+        var _a, _b, _c, _d;
         // Add entity for "Wallet_wX"
         entities.push({ offset: offset + 2, length: `Wallet_w${index + 1}`.length, type: 'bold' });
         entities.push({
             offset: offset + 2,
             length: `Wallet_w${index + 1}`.length,
             type: 'text_link',
-            url: `https://etherscan.io/address/${balance.contract_address}`
+            url: `https://etherscan.io/address/${(_a = balance.contract_address) !== null && _a !== void 0 ? _a : "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}`
         });
         offset += `▰ Wallet_w${index + 1} ▰\n\n`.length;
         // Add entity for balance and transactions
-        const balanceText = `Bal: ${balance.balance} ${balance.coin_name} (${_a.defaultDollarToEth * balance.balance}) \- Txs: 0\n`;
+        const balanceText = `Bal: ${balance.balance} ${balance.coin_name} (${balance.balance_in_dollar}) \- \n`;
         offset += balanceText.length;
         // Add entity for wallet address (bold and text_link)
-        entities.push({ offset: offset, length: balance.contract_address.length, type: 'code' });
-        offset += `${balance.contract_address}\`\n`.length;
-        return `▰ Wallet_w${index + 1} ▰\n${balanceText}${balance.contract_address}\n\n`;
+        entities.push({ offset: offset, length: ((_b = balance.contract_address) !== null && _b !== void 0 ? _b : "eth").length, type: 'code' });
+        offset += `${(_c = balance.contract_address) !== null && _c !== void 0 ? _c : "eth"}\`\n`.length;
+        return `▰ Wallet_w${index + 1} ▰\n${balanceText}${(_d = balance.contract_address) !== null && _d !== void 0 ? _d : "eth"}\n\n`;
     });
+    if (walletTexts.length < 1) {
+        walletTexts.push("You have no token in your wallet");
+    }
     const text = header + walletTexts.join('');
     return { text, entities };
 };
@@ -109,7 +111,7 @@ exports.MessageTemplete = MessageTemplete;
 class MessageEarnTemplate {
 }
 MessageEarnTemplate.generateReferalMessage = ({ user }) => {
-    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
     const entities = [];
     let text = "══════[ 🐐 GoatBot 🐐 ]══════\n\n" +
         "Introducing a seamless referral experience on GoatBot! When your friends join using your referral \n" +
@@ -117,16 +119,16 @@ MessageEarnTemplate.generateReferalMessage = ({ user }) => {
         "for 30 days per referred user. Start referring and accumulating $GOAT today! \n\n" +
         "Dive into goatbot referral program🤝 . Refer, earn, hold $GOAT & claim your earnings. \n\n" +
         "══🔳 Your Referral Info 🔳══\n\n" +
-        "Referral Code: " + ((_c = (_b = user === null || user === void 0 ? void 0 : user.referal) === null || _b === void 0 ? void 0 : _b.referalCode) !== null && _c !== void 0 ? _c : "code") + "<\n\n";
+        "Referral Code: " + ((_b = (_a = user === null || user === void 0 ? void 0 : user.referal) === null || _a === void 0 ? void 0 : _a.referalCode) !== null && _b !== void 0 ? _b : "code") + "<\n\n";
     entities.push({
-        offset: text.length - (((_f = ((_e = (_d = user === null || user === void 0 ? void 0 : user.referal) === null || _d === void 0 ? void 0 : _d.referalCode) !== null && _e !== void 0 ? _e : "code")) === null || _f === void 0 ? void 0 : _f.length) + 3),
-        length: ((_h = (_g = user === null || user === void 0 ? void 0 : user.referal) === null || _g === void 0 ? void 0 : _g.referalCode) !== null && _h !== void 0 ? _h : "code").length,
+        offset: text.length - (((_e = ((_d = (_c = user === null || user === void 0 ? void 0 : user.referal) === null || _c === void 0 ? void 0 : _c.referalCode) !== null && _d !== void 0 ? _d : "code")) === null || _e === void 0 ? void 0 : _e.length) + 3),
+        length: ((_g = (_f = user === null || user === void 0 ? void 0 : user.referal) === null || _f === void 0 ? void 0 : _f.referalCode) !== null && _g !== void 0 ? _g : "code").length,
         type: 'code',
     });
     text +=
-        "Total Referrals: " + ((_k = (_j = user === null || user === void 0 ? void 0 : user.referal) === null || _j === void 0 ? void 0 : _j.totalEarnings) !== null && _k !== void 0 ? _k : 0) + " <\n\n" +
-            "Total Earnings: " + ((_m = (_l = user === null || user === void 0 ? void 0 : user.referal) === null || _l === void 0 ? void 0 : _l.totalEarnings) !== null && _m !== void 0 ? _m : 0) + " $Goat <\n\n" +
-            "Claimable Earnings: " + ((_p = (_o = user === null || user === void 0 ? void 0 : user.referal) === null || _o === void 0 ? void 0 : _o.claimableEarnings) !== null && _p !== void 0 ? _p : 0) + " $Goat <\n\n";
+        "Total Referrals: " + ((_j = (_h = user === null || user === void 0 ? void 0 : user.referal) === null || _h === void 0 ? void 0 : _h.totalEarnings) !== null && _j !== void 0 ? _j : 0) + " <\n\n" +
+            "Total Earnings: " + ((_l = (_k = user === null || user === void 0 ? void 0 : user.referal) === null || _k === void 0 ? void 0 : _k.totalEarnings) !== null && _l !== void 0 ? _l : 0) + " $Goat <\n\n" +
+            "Claimable Earnings: " + ((_o = (_m = user === null || user === void 0 ? void 0 : user.referal) === null || _m === void 0 ? void 0 : _m.claimableEarnings) !== null && _o !== void 0 ? _o : 0) + " $Goat <\n\n";
     return { text, entities };
 };
 exports.MessageEarnTemplate = MessageEarnTemplate;

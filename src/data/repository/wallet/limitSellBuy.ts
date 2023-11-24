@@ -5,8 +5,8 @@ import TradeRepository from './trade';
 export const LimitBuySell = async ({ tradeRepository } : { tradeRepository: TradeRepository}) => {
     const limitbuySells = await LimitMarketModel.find();
 
-    for (let i = 0; i < limitbuySells.length; i++) {
-        const limitbuySell = limitbuySells[i];
+    for (const element of limitbuySells) {
+        const limitbuySell = element;
 
         console.log(limitbuySell);
 

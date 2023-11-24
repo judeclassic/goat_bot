@@ -13,9 +13,6 @@ const OtherWalletSchema = new mongoose_1.Schema({
     contract_address: {
         type: String,
     },
-    balance: {
-        type: Number,
-    },
 });
 const WalletSchema = new mongoose_1.Schema({
     private_key: {
@@ -29,9 +26,6 @@ const WalletSchema = new mongoose_1.Schema({
     },
     public_key: {
         type: String,
-    },
-    balance: {
-        type: Number,
     },
     others: {
         type: [OtherWalletSchema],

@@ -21,8 +21,7 @@ class TelegramService {
                     const wallet = yield this.walletRepository.getWallet(element);
                     wallets.push(wallet);
                 }
-                user.wallets = wallets;
-                return { status: true, user };
+                return { status: true, user: Object.assign(Object.assign({}, user), { wallets }) };
             }
             catch (err) {
                 return { status: false, message: 'error please send "/start" request again' };
@@ -46,24 +45,21 @@ class TelegramService {
                     return { status: false, message: 'error please send "/start" request again' };
                 user.wallets.push(wallet);
                 yield user.save();
-                return { status: true, user };
+                return { status: true, user: Object.assign(Object.assign({}, user), { wallets }) };
             }
             catch (err) {
                 return { status: false, message: 'error please send "/start" request again' };
             }
         });
-        this.generateUserIDToken = ({ telegram_id }) => __awaiter(this, void 0, void 0, function* () {
+        this.generateUserIDToken = ({ telegram_id, wallet_address }) => {
             try {
-                const { user } = yield this.getCurrentUser(telegram_id);
-                if (!user)
-                    return { status: false, message: 'unable to get current user' };
-                const token = this.encryptionRepository.encryptToken({ telegram_id });
+                const token = this.encryptionRepository.encryptToken({ telegram_id, wallet_address });
                 return { status: true, token };
             }
             catch (err) {
                 return { status: false, message: 'error please send "/start" request again' };
             }
-        });
+        };
         this.generateUserIDTokenAndWallet = ({ telegram_id, wallet_number }) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const { user } = yield this.getCurrentUser(telegram_id);
@@ -97,7 +93,7 @@ class TelegramService {
                     return { status: false, message: 'invalid private key' };
                 user.wallets.push(wallet);
                 yield user.save();
-                return { status: true, user };
+                return { status: true, user: Object.assign(Object.assign({}, user), { wallets }) };
             }
             catch (err) {
                 return { status: false, message: 'error please send "/start" request again' };
@@ -117,7 +113,7 @@ class TelegramService {
                 }
                 user.wallets = wallets;
                 yield user.save();
-                return { status: true, user };
+                return { status: true, user: Object.assign(Object.assign({}, user), { wallets }) };
             }
             catch (err) {
                 return { status: false, message: 'error please send "/start" request again' };
@@ -128,17 +124,8 @@ class TelegramService {
                 const { user } = yield this.getCurrentUser(telegram_id);
                 if (!user)
                     return { status: false, message: 'unable to get current user' };
-                const wallet = user.wallets[wallet_number];
-                const balances = yield this.tradeRepository.getListOfTokensInWallet({ wallet });
-                if (balances.length === 0) {
-                    const _wallet = yield this.walletRepository.getWallet(wallet);
-                    return { status: true, balances: [{
-                                coin_name: 'Eth',
-                                contract_address: '',
-                                balance: _wallet.balance
-                            }] };
-                }
-                return { status: true, balances };
+                const wallet = yield this.walletRepository.getWallet(user.wallets[wallet_number]);
+                return { status: true, tokens: wallet.others };
             }
             catch (err) {
                 return { status: false, message: 'error please send "/start" request again' };
