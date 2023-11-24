@@ -113,10 +113,13 @@ export const useTradeBotRoutes = ({bot, walletRepository, tradeRepository, encry
             if (!response.user) return ctx.reply(response.message, initialKeyboard);
 
             const keyboard = Markup.inlineKeyboard([[
-                ...response.user.wallets.map((_wallet, index) => {
-                    return Markup.button.callback(`Wallet ${index+1}`, `sell-market-order-${index+1}`);
+                ...response.user.wallets.map((wallet, index) => {
+                    const linkResponse = telegramService.generateUserIDToken({ telegram_id, wallet_address: wallet.address });
+                    const urlHost = getUrlForDomainTrade({ token: linkResponse.token?? "", wallet: wallet.address?? "", type: 'market_sell'});
+                    console.log(urlHost);
+                    return Markup.button.webApp(` Wallet ${index+1}`, urlHost);
                 })],
-                [Markup.button.callback('🔙 Back', 'trade-menu')]
+                [Markup.button.callback('🔙 Back', 'trade-menu')],
             ]);
 
             const { text, entities } = MessageTemplete.generateWalletEntities("🔴 Sell Now 💸: Got profits? Or just reshuffling your assets? Easily liquidate your holdings at current market rates. Profit-taking has never been this seamless", response.user.wallets);
@@ -177,7 +180,10 @@ export const useTradeBotRoutes = ({bot, walletRepository, tradeRepository, encry
 
             const keyboard = Markup.inlineKeyboard([[
                 ...response.user.wallets.map((wallet, index) => {
-                    return Markup.button.webApp(`Wallet ${index+1}`, `${getUrlForDomainTrade({ token: tokenResponse.token, wallet: wallet.address, type: 'limit_buy'})}`);
+                    const linkResponse = telegramService.generateUserIDToken({ telegram_id, wallet_address: wallet.address });
+                    const urlHost = getUrlForDomainTrade({ token: linkResponse.token?? "", wallet: wallet.address?? "", type: 'limit_buy'});
+                    console.log(urlHost);
+                    return Markup.button.webApp(` Wallet ${index+1}`, urlHost);
                 })],
                 [Markup.button.callback('🔙 Back', 'trade-menu')],
             ]);
@@ -207,8 +213,11 @@ export const useTradeBotRoutes = ({bot, walletRepository, tradeRepository, encry
             const urlHost = getUrlForDomainTrade({ token: tokenResponse.token, wallet: response.user.wallets[0].address, type: 'limit_sell'})
 
             const keyboard = Markup.inlineKeyboard([[
-                ...response.user.wallets.map((_wallet, index) => {
-                    return Markup.button.webApp(`Wallet ${index+1}`, `${urlHost}`);
+                ...response.user.wallets.map((wallet, index) => {
+                    const linkResponse = telegramService.generateUserIDToken({ telegram_id, wallet_address: wallet.address });
+                    const urlHost = getUrlForDomainTrade({ token: linkResponse.token?? "", wallet: wallet.address?? "", type: 'limit_sell'});
+                    console.log(urlHost);
+                    return Markup.button.webApp(` Wallet ${index+1}`, urlHost);
                 })],
                 [Markup.button.callback('🔙 Back', 'trade-menu')],
             ]);
