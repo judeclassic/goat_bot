@@ -48,7 +48,35 @@ export const useEarnBotRoutes = ({bot, walletRepository, tradeRepository, encryp
             if (!response.user) return ctx.reply(response.message, intialKeyboard);
             if (!tokenResponse.token) return ctx.reply(tokenResponse.message!, intialKeyboard);
 
-            const urlHost = getUrlForDomainWallet({ token: tokenResponse.token, type: 'transfer_token'});
+            const urlHost = getUrlForDomainEarn({ token: tokenResponse.token, type: 'add_refer_code'});
+
+            const keyboard = Markup.inlineKeyboard([
+                [ Markup.button.callback('💼 Claim reward', "add_refer_code") ],
+                [ Markup.button.webApp('📈 Enter ref code', urlHost) ],
+                [ Markup.button.callback('🔙 Back', 'earn-menu') ],
+            ]);
+
+            ctx.reply(MessageEarnTemplate.generateReferalMessage(response), keyboard);
+        } catch (err) {
+            console.log(err)
+        }
+    });
+
+    bot.action('add_refer_code', async (ctx) => {
+        try {
+            const intialKeyboard = Markup.inlineKeyboard([
+                [ Markup.button.callback('🔙 Back', 'menu') ],
+            ]);
+
+            if (!ctx.chat) return ctx.reply('unable to process message', intialKeyboard);
+
+            const telegram_id = ctx.chat.id.toString();
+            const response = await telegramService.claimReferral({ telegram_id });
+            const tokenResponse = await telegramService.generateUserIDToken({ telegram_id });
+            if (!response.user) return ctx.reply(response.message, intialKeyboard);
+            if (!tokenResponse.token) return ctx.reply(tokenResponse.message!, intialKeyboard);
+
+            const urlHost = getUrlForDomainEarn({ token: tokenResponse.token, type: 'add_refer_code'});
 
             const keyboard = Markup.inlineKeyboard([
                 [ Markup.button.webApp('💼 Claim reward', urlHost) ],
@@ -63,9 +91,9 @@ export const useEarnBotRoutes = ({bot, walletRepository, tradeRepository, encryp
     });
 }
 
-type UrlTypeWallet = 'import_wallet' | 'transfer_token' | 'transfer_etherium';
+type UrlTypeWallet = 'add_refer_code';
 
-const getUrlForDomainWallet = ({ token, type }:{ token: string, type: UrlTypeWallet }) => {
+const getUrlForDomainEarn = ({ token, type }:{ token: string, type: UrlTypeWallet }) => {
     const url = `${INTEGRATION_WEB_HOST}/integrations/${type}?token=${token}`;
     return url;
 }

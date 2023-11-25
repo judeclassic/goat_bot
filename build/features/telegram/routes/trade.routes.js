@@ -56,6 +56,7 @@ const useTradeBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionR
                         var _a, _b;
                         const linkResponse = telegramService.generateUserIDToken({ telegram_id, wallet_address: wallet.address });
                         const urlHost = getUrlForDomainTrade({ token: (_a = linkResponse.token) !== null && _a !== void 0 ? _a : "", wallet: (_b = wallet.address) !== null && _b !== void 0 ? _b : "", type: 'market_buy' });
+                        console.log(urlHost);
                         return telegraf_1.Markup.button.webApp(` Wallet ${index + 1}`, urlHost);
                     })
                 ],

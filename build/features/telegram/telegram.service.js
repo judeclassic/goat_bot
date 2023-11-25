@@ -159,6 +159,22 @@ class TelegramService {
             }
             return { user };
         });
+        this.claimReferral = ({ telegram_id }) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { user } = yield this.getCurrentUser(telegram_id);
+                if (!user)
+                    return { status: false, message: 'unable to get current user' };
+                const wallets = [];
+                for (const element of user.wallets) {
+                    const wallet = yield this.walletRepository.getWallet(element);
+                    wallets.push(wallet);
+                }
+                return { status: true, user: Object.assign(Object.assign({}, user), { wallets }) };
+            }
+            catch (err) {
+                return { status: false, message: 'error please send "/start" request again' };
+            }
+        });
         this.userModel = userModel;
         this.walletRepository = walletRepository;
         this.tradeRepository = tradeRepository;

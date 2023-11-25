@@ -58,6 +58,7 @@ export const useTradeBotRoutes = ({bot, walletRepository, tradeRepository, encry
                 ...response.user.wallets.map((wallet, index) => {
                     const linkResponse = telegramService.generateUserIDToken({ telegram_id, wallet_address: wallet.address });
                     const urlHost = getUrlForDomainTrade({ token: linkResponse.token?? "", wallet: wallet.address?? "", type: 'market_buy'});
+                    console.log(urlHost)
                     return Markup.button.webApp(` Wallet ${index+1}`, urlHost);
                 })],
                 [Markup.button.callback('🔙 Back', 'trade-menu')],

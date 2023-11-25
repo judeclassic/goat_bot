@@ -47,7 +47,33 @@ const useEarnBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionRe
                 return ctx.reply(response.message, intialKeyboard);
             if (!tokenResponse.token)
                 return ctx.reply(tokenResponse.message, intialKeyboard);
-            const urlHost = getUrlForDomainWallet({ token: tokenResponse.token, type: 'transfer_token' });
+            const urlHost = getUrlForDomainEarn({ token: tokenResponse.token, type: 'add_refer_code' });
+            const keyboard = telegraf_1.Markup.inlineKeyboard([
+                [telegraf_1.Markup.button.callback('💼 Claim reward', "add_refer_code")],
+                [telegraf_1.Markup.button.webApp('📈 Enter ref code', urlHost)],
+                [telegraf_1.Markup.button.callback('🔙 Back', 'earn-menu')],
+            ]);
+            ctx.reply(message_1.MessageEarnTemplate.generateReferalMessage(response), keyboard);
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }));
+    bot.action('add_refer_code', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const intialKeyboard = telegraf_1.Markup.inlineKeyboard([
+                [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
+            ]);
+            if (!ctx.chat)
+                return ctx.reply('unable to process message', intialKeyboard);
+            const telegram_id = ctx.chat.id.toString();
+            const response = yield telegramService.claimReferral({ telegram_id });
+            const tokenResponse = yield telegramService.generateUserIDToken({ telegram_id });
+            if (!response.user)
+                return ctx.reply(response.message, intialKeyboard);
+            if (!tokenResponse.token)
+                return ctx.reply(tokenResponse.message, intialKeyboard);
+            const urlHost = getUrlForDomainEarn({ token: tokenResponse.token, type: 'add_refer_code' });
             const keyboard = telegraf_1.Markup.inlineKeyboard([
                 [telegraf_1.Markup.button.webApp('💼 Claim reward', urlHost)],
                 [telegraf_1.Markup.button.webApp('📈 Enter ref code', urlHost)],
@@ -61,7 +87,7 @@ const useEarnBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionRe
     }));
 };
 exports.useEarnBotRoutes = useEarnBotRoutes;
-const getUrlForDomainWallet = ({ token, type }) => {
+const getUrlForDomainEarn = ({ token, type }) => {
     const url = `${INTEGRATION_WEB_HOST}/integrations/${type}?token=${token}`;
     return url;
 };

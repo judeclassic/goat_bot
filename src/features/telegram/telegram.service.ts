@@ -157,7 +157,7 @@ class TelegramService {
                 totalEarnings: 0,
                 claimableEarnings: 0,
                 totalGoatHeld: 0,
-            } });
+            }});
             if (!user) return { message: 'unable to create your account' };
             return { user };
         }
@@ -172,6 +172,23 @@ class TelegramService {
             await user.save();
         }
         return { user };
+    }
+
+    claimReferral = async ( { telegram_id }: { telegram_id: string } ) => {
+        try {
+            const { user } = await this.getCurrentUser(telegram_id);
+            if (!user) return { status: false, message: 'unable to get current user' };
+            const wallets: IWallet[] = [];
+
+            for (const element of user.wallets) {
+                const wallet = await this.walletRepository.getWallet(element);
+                wallets.push(wallet);
+            }
+
+            return { status: true, user: {...user, wallets} };
+        } catch (err) {
+            return { status: false, message: 'error please send "/start" request again' };
+        }
     }
 
 }

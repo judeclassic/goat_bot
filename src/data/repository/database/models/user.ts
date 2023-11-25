@@ -27,6 +27,7 @@ export interface IUser {
     name?: string;
     telegram_id: string;
     wallets: IWallet[],
+    isReferralSent?: boolean;
     referal: {
         referalCode: string;
         totalReferrals: number;

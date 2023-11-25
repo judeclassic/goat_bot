@@ -61,6 +61,7 @@ class WalletRepository {
                     logo: value.thumbnail,
                     coin_name: value.tokenName,
                     coin_symbol: value.tokenSymbol,
+                    decimal: value.tokenDecimals,
                     contract_address: value.contractAddress,
                     balance: proximate(value.balance),
                     balance_in_dollar: proximate(value.balanceUsd)
