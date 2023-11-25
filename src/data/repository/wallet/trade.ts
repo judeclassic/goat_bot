@@ -218,6 +218,8 @@ class TradeRepository {
           'WETH',
           'Wrapped Ether'
         )
+
+        console.log('jude')
         
         const tokenIn = new Token(
           ChainId.MAINNET,
@@ -226,7 +228,8 @@ class TradeRepository {
           tokenInfo.tokenSymbol,
           tokenInfo.tokenName
         )
-            
+        
+        console.log('dave')
         const response = await this.swapTokensToEthHelp({ tokenIn, tokenOut, amount, wallet });
         return response;
       } catch (err) {
@@ -435,6 +438,7 @@ class TradeRepository {
       V2_SWAP_CONTRACT_ADDRESS,
       approveAmout, {
         //gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
+        gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
         gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
       }
       );
@@ -445,7 +449,7 @@ class TradeRepository {
 
       const approveRecc = await approveV3Contract.wait()
 
-      const approveStatu = approveRecc.status
+      const approveStatu = approveRecc.statustsc
 
       console.log('approve status', approveStatu)
       console.log(6)
@@ -471,6 +475,7 @@ class TradeRepository {
               // gasLimit: 1000000
               //gasPrice: ethers.utils.parseUnits('60', 'gwei'), // Adjust the gas price
               //gasLimit: 3000000,
+              gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
               gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
           }
       )
@@ -508,6 +513,7 @@ class TradeRepository {
       const convertToEth = await contract1.connect(connectedWallet).withdraw(
         ethers.utils.parseUnits(amoutToWithdraw.toString(), 18).toString(),
         {
+          gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
           gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
         }
       );
