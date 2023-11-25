@@ -56,7 +56,6 @@ const useTradeBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionR
                         var _a, _b;
                         const linkResponse = telegramService.generateUserIDToken({ telegram_id, wallet_address: wallet.address });
                         const urlHost = getUrlForDomainTrade({ token: (_a = linkResponse.token) !== null && _a !== void 0 ? _a : "", wallet: (_b = wallet.address) !== null && _b !== void 0 ? _b : "", type: 'market_buy' });
-                        console.log(urlHost);
                         return telegraf_1.Markup.button.webApp(` Wallet ${index + 1}`, urlHost);
                     })
                 ],
@@ -68,31 +67,6 @@ const useTradeBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionR
             console.log(err);
         }
     }));
-    [1, 2, 3].forEach((index, wallet_number) => {
-        bot.action(`buy-market-order-${wallet_number + 1}`, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-            try {
-                const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
-                    [telegraf_1.Markup.button.callback('try again', `send-coin-${wallet_number + 1}`)],
-                    [telegraf_1.Markup.button.callback('🔙 Back', 'trade-menu')],
-                ]);
-                if (!ctx.chat)
-                    return ctx.reply('unable to delete', initialKeyboard);
-                const telegram_id = ctx.chat.id.toString();
-                const response = yield telegramService.generateUserIDTokenAndWallet({ telegram_id, wallet_number });
-                if (!response.token)
-                    return ctx.reply(response.message, initialKeyboard);
-                const urlHost = getUrlForDomainTrade({ token: response.token, wallet: response.wallet_address, type: 'market_buy' });
-                const modifiedKeyboard = telegraf_1.Markup.inlineKeyboard([
-                    telegraf_1.Markup.button.webApp('Click here to proceed', urlHost),
-                    telegraf_1.Markup.button.callback('🔙 Back', 'trade-menu')
-                ]);
-                ctx.reply(message_1.MessageTemplete.defaultMessage("Click here to proceed your buying token"), modifiedKeyboard);
-            }
-            catch (err) {
-                console.log(err);
-            }
-        }));
-    });
     bot.action('sell-market-order-menu', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
@@ -105,12 +79,14 @@ const useTradeBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionR
             if (!response.user)
                 return ctx.reply(response.message, initialKeyboard);
             const keyboard = telegraf_1.Markup.inlineKeyboard([[
-                    ...response.user.wallets.map((_wallet, index) => {
-                        return telegraf_1.Markup.button.callback(`Wallet ${index + 1}`, `sell-market-order-${index + 1}`);
+                    ...response.user.wallets.map((wallet, index) => {
+                        var _a, _b;
+                        const linkResponse = telegramService.generateUserIDToken({ telegram_id, wallet_address: wallet.address });
+                        const urlHost = getUrlForDomainTrade({ token: (_a = linkResponse.token) !== null && _a !== void 0 ? _a : "", wallet: (_b = wallet.address) !== null && _b !== void 0 ? _b : "", type: 'market_sell' });
+                        return telegraf_1.Markup.button.webApp(` Wallet ${index + 1}`, urlHost);
                     })
                 ],
-                [telegraf_1.Markup.button.callback('🔙 Back', 'trade-menu')]
-            ]);
+                [telegraf_1.Markup.button.callback('🔙 Back', 'trade-menu')],]);
             const { text, entities } = message_1.MessageTemplete.generateWalletEntities("🔴 Sell Now 💸: Got profits? Or just reshuffling your assets? Easily liquidate your holdings at current market rates. Profit-taking has never been this seamless", response.user.wallets);
             ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
         }
@@ -118,33 +94,7 @@ const useTradeBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionR
             console.log(err);
         }
     }));
-    [1, 2, 3].forEach((data, wallet_number) => {
-        try {
-            bot.action(`sell-market-order-${wallet_number + 1}`, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-                const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
-                    [telegraf_1.Markup.button.callback('try again', `send-coin-${wallet_number + 1}`)],
-                    [telegraf_1.Markup.button.callback('🔙 Back', 'trade-menu')]
-                ]);
-                if (!ctx.chat)
-                    return ctx.reply('unable to delete', initialKeyboard);
-                const telegram_id = ctx.chat.id.toString();
-                const response = yield telegramService.generateUserIDTokenAndWallet({ telegram_id, wallet_number });
-                if (!response.token)
-                    return ctx.reply(response.message, initialKeyboard);
-                const urlHost = getUrlForDomainTrade({ token: response.token, wallet: response.wallet_address, type: 'market_sell' });
-                console.log(urlHost);
-                const modifiedKeyboard = telegraf_1.Markup.inlineKeyboard([
-                    telegraf_1.Markup.button.webApp('Click here to send', urlHost),
-                    telegraf_1.Markup.button.callback('🔙 Back', 'trade-menu')
-                ]);
-                ctx.reply(message_1.MessageTemplete.defaultMessage("Click here to proceed your buying"), modifiedKeyboard);
-            }));
-        }
-        catch (err) {
-            console.log(err);
-        }
-    });
-    bot.action('buy-limit-order-menu', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    bot.action('sell-limit-order-menu', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
         try {
             const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
@@ -159,45 +109,15 @@ const useTradeBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionR
             const tokenResponse = yield telegramService.generateUserIDToken({ telegram_id });
             if (!tokenResponse.token)
                 return ctx.reply((_a = tokenResponse.message) !== null && _a !== void 0 ? _a : '', initialKeyboard);
-            const urlHost = getUrlForDomainTrade({ token: tokenResponse.token, wallet: response.user.wallets[0].address, type: 'limit_buy' });
-            console.log(urlHost);
             const keyboard = telegraf_1.Markup.inlineKeyboard([[
                     ...response.user.wallets.map((wallet, index) => {
-                        return telegraf_1.Markup.button.webApp(`Wallet ${index + 1}`, `${getUrlForDomainTrade({ token: tokenResponse.token, wallet: wallet.address, type: 'limit_buy' })}`);
+                        var _a, _b;
+                        const linkResponse = telegramService.generateUserIDToken({ telegram_id, wallet_address: wallet.address });
+                        const urlHost = getUrlForDomainTrade({ token: (_a = linkResponse.token) !== null && _a !== void 0 ? _a : "", wallet: (_b = wallet.address) !== null && _b !== void 0 ? _b : "", type: 'limit_sell' });
+                        return telegraf_1.Markup.button.webApp(` Wallet ${index + 1}`, urlHost);
                     })
                 ],
-                [telegraf_1.Markup.button.callback('🔙 Back', 'trade-menu')],
-            ]);
-            const { text, entities } = message_1.MessageTemplete.generateWalletEntities("🟡 Limit Buy Order 🔒: Be the market ninja! 🥷 Set a price point at which you wish to purchase, and let GoatBot do the rest. We'll buy when the price is just right!", response.user.wallets);
-            ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
-        }
-        catch (err) {
-            console.log(err);
-        }
-    }));
-    bot.action('sell-limit-order-menu', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        var _b;
-        try {
-            const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
-                [telegraf_1.Markup.button.callback('🔙 Back', 'trade-menu')],
-            ]);
-            if (!ctx.chat)
-                return ctx.reply('unable to process message', initialKeyboard);
-            const telegram_id = ctx.chat.id.toString();
-            const response = yield telegramService.userOpensChat({ telegram_id });
-            if (!response.user)
-                return ctx.reply(response.message, initialKeyboard);
-            const tokenResponse = yield telegramService.generateUserIDToken({ telegram_id });
-            if (!tokenResponse.token)
-                return ctx.reply((_b = tokenResponse.message) !== null && _b !== void 0 ? _b : '', initialKeyboard);
-            const urlHost = getUrlForDomainTrade({ token: tokenResponse.token, wallet: response.user.wallets[0].address, type: 'limit_sell' });
-            const keyboard = telegraf_1.Markup.inlineKeyboard([[
-                    ...response.user.wallets.map((_wallet, index) => {
-                        return telegraf_1.Markup.button.webApp(`Wallet ${index + 1}`, `${urlHost}`);
-                    })
-                ],
-                [telegraf_1.Markup.button.callback('🔙 Back', 'trade-menu')],
-            ]);
+                [telegraf_1.Markup.button.callback('🔙 Back', 'trade-menu')],]);
             const { text, entities } = message_1.MessageTemplete.generateWalletEntities("🟠 Limit Sell Order 🔒: Secure your profits or limit losses! Decide on a selling price, and GoatBot will execute the trade when your set price is hit. Sleep easy, knowing you're in control.", response.user.wallets);
             ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
         }

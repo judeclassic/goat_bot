@@ -55,6 +55,7 @@ class IntegrationService {
             if (!wallet)
                 return { errors: [{ message: 'unable to get wallet information' }] };
             const response = yield this._tradeRepository.swapEthToToken({ tokenInfo, amount, slippage, wallet, gas_fee });
+            console.log();
             if (!response) {
                 return { errors: [{ message: 'unable to place trade' }] };
             }
