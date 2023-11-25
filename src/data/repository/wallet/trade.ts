@@ -207,6 +207,8 @@ class TradeRepository {
     gas_fee: number
   }) => {
     try {
+        console.log('buy')
+
         const tokenOut = new Token(
           ChainId.MAINNET,
           '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
@@ -426,24 +428,24 @@ class TradeRepository {
 
       //const gasLimit = await contract0.estimateGas.approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout);
   
-      // approve v3 swap contract
-      // const approveV3Contract = await contract0.connect(connectedWallet).approve(
-      // V2_SWAP_CONTRACT_ADDRESS,
-      // approveAmout, {
-      //   //gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
-      //   gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
-      // }
-      // );
+      //approve v3 swap contract
+      const approveV3Contract = await contract0.connect(connectedWallet).approve(
+      V2_SWAP_CONTRACT_ADDRESS,
+      approveAmout, {
+        //gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
+        gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
+      }
+      );
 
       //console.log(`approve v3 contract ${approveV3Contract}`)
 
       console.log(5)
 
-      // const approveRecc = await approveV3Contract.wait()
+      const approveRecc = await approveV3Contract.wait()
 
-      // const approveStatu = approveRecc.status
+      const approveStatu = approveRecc.status
 
-      //console.log('approve status', approveStatu)
+      console.log('approve status', approveStatu)
       console.log(6)
 
       //fetch wrapped eth banlance before swap
@@ -501,16 +503,16 @@ class TradeRepository {
       console.log('wrapp to Eth', amoutToWithdraw)
 
       //convert wrapped eth to ether
-      // const convertToEth = await contract1.connect(connectedWallet).withdraw(
-      //   ethers.utils.parseUnits(amoutToWithdraw.toString(), 18).toString(),
-      //   {
-      //     gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
-      //   }
-      // );
+      const convertToEth = await contract1.connect(connectedWallet).withdraw(
+        ethers.utils.parseUnits(amoutToWithdraw.toString(), 18).toString(),
+        {
+          gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
+        }
+      );
 
       console.log(11)
 
-    // await convertToEth.wait()
+    await convertToEth.wait()
 
      console.log(12)
      await seee()
