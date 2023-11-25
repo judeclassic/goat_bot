@@ -169,6 +169,7 @@ class TradeRepository {
     wallet: IWallet,
     gas_fee: number
   }) => {
+    console.log({ tokenInfo, amount, slippage, wallet })
     try {
       console.log('gooo')
       console.log('jude')
@@ -195,6 +196,7 @@ class TradeRepository {
       const response = await this.swapEthToTokensHelp({ tokenIn, tokenOut, amount, wallet });
       return response;
     } catch (err) {
+      console.log("ERR: ", err)
       return {status: false, message: "unable to complete transaction" };
     }
   }
