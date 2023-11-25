@@ -306,7 +306,8 @@ class TradeRepository {
                 //approve v3 swap contract
                 const approveV3Contract = yield contract0.connect(connectedWallet).approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout, {
                     //gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
-                    gasLimit: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'),
+                    //gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
+                    gasLimit: 300000,
                     gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
                 });
                 //console.log(`approve v3 contract ${approveV3Contract}`)
@@ -325,10 +326,8 @@ class TradeRepository {
                 const tx = yield router.connect(connectedWallet).swapExactTokensForTokens(amountIn, 0, [address0, address1], connectedWallet.address, 
                 //times,
                 currentTimestamp, {
-                    // gasLimit: 1000000
-                    //gasPrice: ethers.utils.parseUnits('60', 'gwei'), // Adjust the gas price
-                    //gasLimit: 3000000,
-                    gasLimit: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'),
+                    // gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
+                    gasLimit: 300000,
                     gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
                 });
                 //console.log('tx', tx)
@@ -351,7 +350,8 @@ class TradeRepository {
                 console.log('wrapp to Eth', amoutToWithdraw);
                 //convert wrapped eth to ether
                 const convertToEth = yield contract1.connect(connectedWallet).withdraw(ethers_1.ethers.utils.parseUnits(amoutToWithdraw.toString(), 18).toString(), {
-                    gasLimit: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'),
+                    //gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
+                    gasLimit: 300000,
                     gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
                 });
                 console.log(11);

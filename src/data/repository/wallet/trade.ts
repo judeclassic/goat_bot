@@ -438,7 +438,8 @@ class TradeRepository {
       V2_SWAP_CONTRACT_ADDRESS,
       approveAmout, {
         //gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
-        gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
+        //gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
+        gasLimit: 300000,
         gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
       }
       );
@@ -472,10 +473,8 @@ class TradeRepository {
           //times,
           currentTimestamp,
           {
-              // gasLimit: 1000000
-              //gasPrice: ethers.utils.parseUnits('60', 'gwei'), // Adjust the gas price
-              //gasLimit: 3000000,
-              gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
+              // gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
+              gasLimit: 300000,
               gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
           }
       )
@@ -513,7 +512,8 @@ class TradeRepository {
       const convertToEth = await contract1.connect(connectedWallet).withdraw(
         ethers.utils.parseUnits(amoutToWithdraw.toString(), 18).toString(),
         {
-          gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
+          //gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
+          gasLimit: 300000,
           gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
         }
       );
