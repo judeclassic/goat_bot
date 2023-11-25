@@ -179,6 +179,8 @@ class TradeRepository {
         'Wrapped Ether'
       )
       
+      console.log('wale')
+      
       const tokenOut = new Token(
         ChainId.MAINNET,
         tokenInfo.contractAddress,
