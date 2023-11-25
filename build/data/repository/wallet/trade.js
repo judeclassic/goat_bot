@@ -154,6 +154,7 @@ class TradeRepository {
             }
         });
         this.swapEthToToken = ({ tokenInfo, amount, slippage, wallet }) => __awaiter(this, void 0, void 0, function* () {
+            console.log({ tokenInfo, amount, slippage, wallet });
             try {
                 console.log('gooo');
                 console.log('jude');
@@ -165,6 +166,7 @@ class TradeRepository {
                 return response;
             }
             catch (err) {
+                console.log("ERR: ", err);
                 return { status: false, message: "unable to complete transaction" };
             }
         });
