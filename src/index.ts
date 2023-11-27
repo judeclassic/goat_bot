@@ -20,6 +20,7 @@ export default server((app, _server) => {
     continueMarketCheck();
 
     const authenticationRepo = new AuthorizationRepo();
+    //const router = new RequestHandler({ router: app,  authenticationRepo, host: '/api' });
     const router = new RequestHandler({ router: app,  authenticationRepo, host: '/api' });
 
     router.extend('/integrations', integrationUserRoutes);
