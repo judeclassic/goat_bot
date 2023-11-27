@@ -1,7 +1,7 @@
 import { SessionMessage, SessionType } from '../../data/handler/type';
 import { IOtherWallet, IWallet, UserModel } from '../../data/repository/database/models/user';
 import EncryptionRepository from '../../data/repository/encryption';
-import TradeRepository from '../../data/repository/wallet/trade';
+import TradeRepository from '../../data/repository/wallet/__trade';
 import WalletRepository from '../../data/repository/wallet/wallet';
 
 class TelegramService {
@@ -21,7 +21,6 @@ class TelegramService {
         this.walletRepository = walletRepository;
         this.tradeRepository = tradeRepository;
         this.encryptionRepository = encryptionRepository;
-
     }
 
     userOpensChat = async ( { telegram_id }: { telegram_id: string } ) => {
@@ -34,9 +33,8 @@ class TelegramService {
                 const wallet = await this.walletRepository.getWallet(element);
                 wallets.push(wallet);
             }
-            user.wallets = wallets;
 
-            return { status: true, user };
+            return { status: true, user: {...user, wallets} };
         } catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }
@@ -61,18 +59,15 @@ class TelegramService {
             user.wallets.push(wallet);
             await user.save()
 
-            return { status: true, user };
+            return { status: true, user: {...user, wallets} };
         }catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }
     }
 
-    generateUserIDToken = async ( { telegram_id }: { telegram_id: string } ) => {
+    generateUserIDToken = ( { telegram_id, wallet_address }: { telegram_id: string; wallet_address?: string } ) => {
         try {
-            const { user } = await this.getCurrentUser(telegram_id);
-            if (!user) return { status: false, message: 'unable to get current user' };
-
-            const token = this.encryptionRepository.encryptToken({ telegram_id });
+            const token = this.encryptionRepository.encryptToken({ telegram_id, wallet_address });
 
             return { status: true, token };
         } catch (err) {
@@ -114,7 +109,7 @@ class TelegramService {
             user.wallets.push(wallet)
             await user.save()
 
-            return { status: true, user };
+            return { status: true, user: {...user, wallets} };
         } catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }
@@ -134,7 +129,7 @@ class TelegramService {
             user.wallets = wallets;
             await user.save()
 
-            return { status: true, user };
+            return { status: true, user: {...user, wallets} };
         }catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }
@@ -145,19 +140,8 @@ class TelegramService {
             const { user } = await this.getCurrentUser(telegram_id);
             if (!user) return { status: false, message: 'unable to get current user' };
 
-            const wallet = user.wallets[wallet_number]
-            const balances = await this.tradeRepository.getListOfTokensInWallet({ wallet});
-
-            if (balances.length === 0) {
-                const _wallet = await this.walletRepository.getWallet(wallet);
-                return {status: true, balances: [{
-                    coin_name: 'Eth',
-                    contract_address: '',
-                    balance: _wallet.balance
-                }] as IOtherWallet[]}
-            }
-
-            return { status: true, balances };
+            const wallet = await this.walletRepository.getWallet(user.wallets[wallet_number]);
+            return {status: true, tokens: wallet.others};
         }catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }
@@ -167,11 +151,44 @@ class TelegramService {
         const user = await this.userModel.findOne({ telegram_id });
         if (!user) {
             const wallets = [await this.walletRepository.createWallet()]
-            const user = await this.userModel.create({ telegram_id, wallets });
+            const user = await this.userModel.create({ telegram_id, wallets, referal: {
+                referalCode: this.encryptionRepository.generateRandomStringCode(6),
+                totalReferrals: 0,
+                totalEarnings: 0,
+                claimableEarnings: 0,
+                totalGoatHeld: 0,
+            }});
             if (!user) return { message: 'unable to create your account' };
             return { user };
         }
+        if (!user?.referal?.referalCode) {
+            user.referal = {
+                referalCode: this.encryptionRepository.generateRandomStringCode(6),
+                totalReferrals: 0,
+                totalEarnings: 0,
+                claimableEarnings: 0,
+                totalGoatHeld: 0,
+            };
+            await user.save();
+        }
         return { user };
+    }
+
+    claimReferral = async ( { telegram_id }: { telegram_id: string } ) => {
+        try {
+            const { user } = await this.getCurrentUser(telegram_id);
+            if (!user) return { status: false, message: 'unable to get current user' };
+            const wallets: IWallet[] = [];
+
+            for (const element of user.wallets) {
+                const wallet = await this.walletRepository.getWallet(element);
+                wallets.push(wallet);
+            }
+
+            return { status: true, user: {...user, wallets} };
+        } catch (err) {
+            return { status: false, message: 'error please send "/start" request again' };
+        }
     }
 
 }

@@ -1,17 +1,23 @@
 import Web3 from "web3";
 import CryptoAccount from 'send-crypto'
-import { IWallet } from "../database/models/user";
-import TradeRepository from "./trade";
-const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f';
+import { IOtherWallet, IWallet } from "../database/models/user";
+import TradeRepository from "./__trade";
+export const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f';
+export const ANKR_PROVIDER_URL = 'https://rpc.ankr.com/multichain/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f';
+
+import { AnkrProvider } from '@ankr.com/ankr.js';
   
 class WalletRepository {
     private provider: Web3;
+    private ankrProvider: AnkrProvider;
     private tradeRepository: TradeRepository;
 
     constructor () {
         this.provider = new Web3(new Web3.providers.HttpProvider(YOUR_ANKR_PROVIDER_URL));
+        this.ankrProvider = new AnkrProvider(ANKR_PROVIDER_URL);
         this.tradeRepository = new TradeRepository();
     }
+
     createWallet:() => Promise<IWallet| undefined> = async () => {
         try {
             const account = this.provider.eth.accounts.create();
@@ -19,7 +25,8 @@ class WalletRepository {
             return {
                 address: account.address,
                 private_key: account.privateKey,
-                balance: 0,
+                balance: "0",
+                balance_in_dollar:"0",
                 others: []
             }
         } catch (err) {
@@ -30,34 +37,65 @@ class WalletRepository {
     importWallet = async (privateKey: string): Promise<IWallet | undefined> => {
         try {
             const account = this.provider.eth.accounts.privateKeyToAccount(privateKey);
+            const balance = await this.ankrProvider.getAccountBalance({walletAddress: account.address});
 
             return {
                 address: account.address,
                 private_key: account.privateKey,
-                balance: parseFloat((await this.provider.eth.getBalance(account.address)).toString()),
+                balance: proximate(balance.assets.find((value) => value.tokenSymbol === "eth")?.balance ?? '0'),
+                balance_in_dollar: proximate(balance.assets.find((value) => value.tokenSymbol === "eth")?.balanceUsd ?? '0'),
                 others: []
             }
         } catch (err) {
             return undefined;
         }
     }
+      
+
+    getOtherTokens = async (wallet: IWallet): Promise<IOtherWallet[]> => {
+        try {
+            const account = this.provider.eth.accounts.privateKeyToAccount(wallet.private_key);
+            const tokens = await this.ankrProvider.getAccountBalance({walletAddress: account.address});
+
+            return tokens.assets.map((value) => ({
+                    logo: value.thumbnail,
+                    coin_name: value.tokenName,
+                    coin_symbol: value.tokenSymbol,
+                    decimal: value.tokenDecimals,
+                    contract_address: value.contractAddress,
+                    balance: proximate(value.balance),
+                    balance_in_dollar: proximate(value.balanceUsd)
+                })) as IOtherWallet[]
+        } catch (err) {
+            return [];
+        }
+    }
 
     getWallet = async (wallet: IWallet): Promise<IWallet> => {
         try {
             const account = this.provider.eth.accounts.privateKeyToAccount(wallet.private_key);
+            const balance = await this.ankrProvider.getAccountBalance({walletAddress: account.address});
 
             return {
                 address: account.address,
                 private_key: account.privateKey,
-                balance: parseFloat((await this.provider.eth.getBalance(account.address)).toString()),
-                others: wallet.others.map((wallet) => wallet)
+                balance: proximate(balance.assets.find((value) => value.tokenSymbol === "ETH")?.balance ?? '0'),
+                balance_in_dollar: proximate(balance.assets.find((value) => value.tokenSymbol === "ETH")?.balanceUsd ?? '0'),
+                others: balance.assets.map((value) => ({
+                    logo: value.thumbnail,
+                    coin_name: value.tokenName,
+                    contract_address: value.contractAddress,
+                    decimal: value.tokenDecimals,
+                    balance: value.balance,
+                    balance_in_dollar: value.balanceUsd
+                })) as IOtherWallet[]
             }
         } catch (err) {
             return wallet;
         }
     }
 
-    transferToken = async ({wallet, contract_address, reciever_address, amount}:{
+    transferToken = async ({wallet, contract_address, reciever_address, amount} : {
         wallet: IWallet,
         contract_address: string,
         reciever_address: string,
@@ -104,3 +142,7 @@ class WalletRepository {
 }
 
 export default WalletRepository;
+
+const proximate = (value: string) => {
+    return parseFloat(value).toPrecision(5);
+};

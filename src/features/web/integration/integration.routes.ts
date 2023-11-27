@@ -16,7 +16,7 @@ const integrationUserRoutes = async ({router}: {router: RequestHandler}) => {
     const integrationController = new IntegrationController({ integrationService});
     
     router.get('/getgasprices', integrationController.getGasPrices);
-    router.get('/getlistoftoken', integrationController.getListOfTokensInWallet);
+    router.get('/getlistoftoken/:token', integrationController.getListOfTokensInWallet);
 
     router.get('/get-token-by-contract/:token', integrationController.getCoinByContractAddress);
 

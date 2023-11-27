@@ -17,10 +17,27 @@ export const WETH_TOKEN = new Token(
     'USD//C'
   )
 
+export const WETH_TOKEN_TEST = new Token(
+    ChainId.GOERLI,
+    '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  )
+  
+  export const USDC_TOKEN_TEST = new Token(
+    ChainId.GOERLI,
+    '0x0d6B12630Db150559822bb5297227C107332A8bf',
+    6,
+    'USDC',
+    'USD//C'
+  )
+
 // Sets if the example should run locally or on chain
 export enum Environment {
   LOCAL,
   MAINNET,
+  TESTNET,
   WALLET_EXTENSION,
 }
 
@@ -29,7 +46,7 @@ export interface ExampleConfig {
   env: Environment
   rpc: {
     local: string
-    mainnet: string
+    // mainnet: string
   }
   wallet: {
     address: string
@@ -46,10 +63,10 @@ export interface ExampleConfig {
 // Example Configuration
 
 export const CurrentConfig: ExampleConfig = {
-  env: Environment.LOCAL,
+  env: Environment.TESTNET,
   rpc: {
     local: 'http://localhost:8545',
-    mainnet: '',
+    // mainnet: '',
   },
   wallet: {
     address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',

@@ -2,9 +2,14 @@ import { Schema, model, PaginateModel } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 
 export interface IOtherWallet {
+    logo: string;
     coin_name: string;
+    coin_symbol: string;
+    decimal: number;
     contract_address: string;
-    balance: number;
+    balance_in_dollar: string;
+    balance: string;
+    constant_price?: string;
 }
 
 export interface IWallet {
@@ -12,7 +17,8 @@ export interface IWallet {
     address: string;
     seed_phrase?: string;
     public_key?: string;
-    balance: number;
+    balance_in_dollar: string;
+    balance: string;
     others: IOtherWallet[]
 }
 
@@ -21,12 +27,13 @@ export interface IUser {
     name?: string;
     telegram_id: string;
     wallets: IWallet[],
+    isReferralSent?: boolean;
     referal: {
         referalCode: string;
         totalReferrals: number;
         totalEarnings: number;
-        totalGOATHeld: number;
-        HeldFor: Date;
+        totalGoatHeld: number;
+        claimableEarnings: number;
     };
     passcode?: string;
     previous_command: string;
@@ -39,9 +46,6 @@ const OtherWalletSchema = new Schema<IOtherWallet>({
     },
     contract_address: {
         type: String,
-    },
-    balance: {
-        type: Number,
     },
 })
 
@@ -57,9 +61,6 @@ const WalletSchema = new Schema<IWallet>({
     },
     public_key: {
         type: String,
-    },
-    balance: {
-        type: Number,
     },
     others: {
         type: [OtherWalletSchema],
@@ -79,8 +80,8 @@ const UserSchema = new Schema<IUser>({
         referalCode: String,
         totalReferrals: Number,
         totalEarnings: Number,
-        totalGOATHeld: Number,
-        HeldFor: Date,
+        claimableEarnings: Number,
+        totalGoatHeld: Number,
     },
     passcode: {
         type: String,

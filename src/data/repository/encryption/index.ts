@@ -84,6 +84,18 @@ class EncryptionRepository {
     public generateVerificationCode = (numb: number) => {
         return Math.floor(Math.random() * ((10^numb)-1)).toString();
     }
+
+    public generateRandomStringCode = (length: number) => {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let randomString = '';
+      
+        for (let i = 0; i < length; i++) {
+          const randomIndex = Math.floor(Math.random() * characters.length);
+          randomString += characters[randomIndex];
+        }
+      
+        return randomString;
+    }
 }
 
 export default EncryptionRepository;

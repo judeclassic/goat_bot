@@ -29,12 +29,12 @@ class IntegrationController {
             }
             sendResponse(200, { data: response.response.contract, status: true });
         });
-        this.getListOfTokensInWallet = ({ query }, sendResponse) => __awaiter(this, void 0, void 0, function* () {
-            const { user_id, wallet_address } = query;
-            const response = yield this._integrationService.getListOfTokensInWallet({ user_id, wallet_address });
+        this.getListOfTokensInWallet = ({ params }, sendResponse) => __awaiter(this, void 0, void 0, function* () {
+            const { token } = params;
+            const response = yield this._integrationService.getListOfTokensInWallet({ token });
             if (!response.data)
                 return sendResponse(401, { error: response.errors, status: false });
-            sendResponse(200, { data: response, status: true });
+            sendResponse(200, { data: response.data, status: true });
         });
         this.buyCoin = ({ body }, sendResponse) => __awaiter(this, void 0, void 0, function* () {
             var _a;
@@ -48,11 +48,7 @@ class IntegrationController {
                 });
             }
             sendResponse(200, {
-                data: {
-                    amount: response.response.amount,
-                    ether: response.response.ether,
-                    trade: response.response.trade,
-                },
+                data: { message: response.response.message },
                 status: true
             });
         });

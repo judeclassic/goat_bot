@@ -8,6 +8,7 @@ import RequestHandler from './data/repository/server/router';
 import integrationUserRoutes from './features/web/integration/integration.routes';
 import { initLogger } from './data/repository/logger.ts';
 import { continueMarketCheck } from "./data/repository/wallet/limitSellBuy";
+import otherUserRoutes from './features/web/other/other.routes';
 
 
 dotEnv.config();
@@ -17,16 +18,17 @@ dBConnection.connect();
 export default server((app, _server) => {
     cors();
     useTelegramBot();
-    continueMarketCheck();
+    // continueMarketCheck();
 
     const authenticationRepo = new AuthorizationRepo();
     //const router = new RequestHandler({ router: app,  authenticationRepo, host: '/api' });
     const router = new RequestHandler({ router: app,  authenticationRepo, host: '/api' });
 
     router.extend('/integrations', integrationUserRoutes);
+    router.extend('/other', otherUserRoutes);
     // if (process.env.NODE_ENV === 'development') 
     initLogger.useExpressMonganMiddleWare(app);
-    // if (process.env.NODE_ENV === 'development') 
+    // if (process.env.NODE_ENV === 'development')
     initLogger.checkRoutes(router);
 });
 

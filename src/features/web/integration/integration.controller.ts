@@ -38,15 +38,15 @@ class IntegrationController {
     };
 
     getListOfTokensInWallet = async (
-        { query }: { query: { user_id: string; wallet_address: string } },
+        { params }: { params: { token: string; } },
         sendResponse: (code: number, response: IResponse<any>)=>void
     )  => {
-        const { user_id, wallet_address } = query;
+        const { token } = params;
 
-        const response = await this._integrationService.getListOfTokensInWallet({ user_id, wallet_address });
+        const response = await this._integrationService.getListOfTokensInWallet({ token });
         if (!response.data) return sendResponse(401, { error: response.errors, status: false });
 
-        sendResponse(200, { data: response, status: true });
+        sendResponse(200, { data: response.data, status: true });
     };
 
     buyCoin = async (
@@ -64,11 +64,7 @@ class IntegrationController {
         }
 
         sendResponse(200, {
-            data: {
-                amount: response.response.amount,
-                ether: response.response.ether,
-                trade: response.response.trade,
-            },
+            data: { message: response.response.message },
             status: true
         });
     };

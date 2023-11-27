@@ -26,7 +26,7 @@ const integrationUserRoutes = ({ router }) => __awaiter(void 0, void 0, void 0, 
     const integrationService = new integration_service_1.default({ userModel: user_1.UserModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel: limit_1.LimitMarketModel });
     const integrationController = new integration_controller_1.default({ integrationService });
     router.get('/getgasprices', integrationController.getGasPrices);
-    router.get('/getlistoftoken', integrationController.getListOfTokensInWallet);
+    router.get('/getlistoftoken/:token', integrationController.getListOfTokensInWallet);
     router.get('/get-token-by-contract/:token', integrationController.getCoinByContractAddress);
     router.postWithBody('/marketbuy', integrationController.buyCoin);
     router.postWithBody('/marketsell', integrationController.sellCoin);

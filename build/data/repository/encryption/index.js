@@ -71,6 +71,15 @@ class EncryptionRepository {
         this.generateVerificationCode = (numb) => {
             return Math.floor(Math.random() * ((10 ^ numb) - 1)).toString();
         };
+        this.generateRandomStringCode = (length) => {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let randomString = '';
+            for (let i = 0; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                randomString += characters[randomIndex];
+            }
+            return randomString;
+        };
         this.key = 'key';
         this.jwt = jsonwebtoken_1.default;
         this.uuid = uuid_1.v4;

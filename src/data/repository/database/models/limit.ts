@@ -1,19 +1,21 @@
 import { Schema, model} from "mongoose";
 import { Document, Types, ObjectId } from "mongoose";
+import { ISwapTokenInfo } from "../../../types/repository/trade";
 
 export interface ILimit extends Document {
     _id: ObjectId;
     userId: string;
     marketType: string;
+    tokenInfo: ISwapTokenInfo;
     amount: number;
+    price: number;
     walletAddress: string;
-    contractAddress: string;
     slippage: number;
     createdAt: Date;
     updatedAt: Date;
 }
 
-const LimitSchema = new Schema(
+const LimitSchema = new Schema<ILimit>(
     {
       userId: {
         type: String,
@@ -28,13 +30,19 @@ const LimitSchema = new Schema(
         type: Number,
         required: true,
       },
+      price: {
+        type: Number,
+        required: true,
+      },
       walletAddress: {
         type: String,
         required: true,
       },
-      contractAddress: {
-        type: String,
-        required: true,
+      tokenInfo: {
+        contractAddress: String,
+        tokenName: String,
+        tokenSymbol: String,
+        decimal: Number
       },
       slippage: {
         type: Number,
@@ -47,7 +55,7 @@ const LimitSchema = new Schema(
       updatedAt: {
         type: Date,
         default: Date.now,
-      }, 
+      },
     },
     {
       timestamps: true,
