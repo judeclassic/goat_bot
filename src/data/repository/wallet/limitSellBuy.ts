@@ -5,20 +5,14 @@ import TradeRepository from './trade';
 export const LimitBuySell = async ({ tradeRepository } : { tradeRepository: TradeRepository}) => {
     const limitbuySells = await LimitMarketModel.find();
 
+    // const currentToken = await tradeRepository.getCoinByContractAddress({ contract_address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" });
+
+    // console.log('token price', currentToken.contract?.constant_price)
+
     for (const element of limitbuySells) {
         const limitbuySell = element;
 
         console.log(limitbuySell);
-
-        const currentToken = await tradeRepository.getCoinByContractAddress({ contract_address: limitbuySell.tokenInfo.contractAddress });
-        if (!currentToken.contract?.constant_price) {
-            console.log("Unable to use token");
-            continue;
-        }
-
-        if (parseFloat(currentToken.contract.constant_price) === limitbuySell.price) {
-            continue;
-        }
         
         const user = await UserModel.findOne({telegram_id: limitbuySell.userId});
         if (!user) continue;
@@ -27,6 +21,25 @@ export const LimitBuySell = async ({ tradeRepository } : { tradeRepository: Trad
         if (!wallet) continue;
 
         if (limitbuySell.marketType == 'buy') {
+
+            const etherToken = await tradeRepository.getCoinByContractAddress({ contract_address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" });
+
+            if (!etherToken.contract?.constant_price) {
+                continue;
+            }
+
+            const currentToken = await tradeRepository.getCoinByContractAddress({ contract_address: limitbuySell.tokenInfo.contractAddress });
+
+            if (!currentToken.contract?.constant_price) {
+                console.log("Unable to use token");
+                continue;
+            }
+
+            const tokenInEth = (parseFloat(currentToken.contract.constant_price) / parseFloat(etherToken.contract?.constant_price)).toFixed(18)
+
+            if (parseFloat(tokenInEth) > limitbuySell.price) {
+                continue;
+            }
             const response = await tradeRepository.swapEthToToken({
                 wallet,
                 amount: limitbuySell.amount,
@@ -40,6 +53,24 @@ export const LimitBuySell = async ({ tradeRepository } : { tradeRepository: Trad
         }
 
         if (limitbuySell.marketType == 'sell') {
+            const etherToken = await tradeRepository.getCoinByContractAddress({ contract_address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" });
+
+            if (!etherToken.contract?.constant_price) {
+                continue;
+            }
+
+            const currentToken = await tradeRepository.getCoinByContractAddress({ contract_address: limitbuySell.tokenInfo.contractAddress });
+
+            if (!currentToken.contract?.constant_price) {
+                console.log("Unable to use token");
+                continue;
+            }
+
+            const tokenInEth = (parseFloat(currentToken.contract.constant_price) / parseFloat(etherToken.contract?.constant_price)).toFixed(18)
+
+            if (parseFloat(tokenInEth) < limitbuySell.price) {
+                continue;
+            }
             const response = await tradeRepository.swapTokenToEth({
                 wallet,
                 amount: limitbuySell.amount,
@@ -57,10 +88,11 @@ export const LimitBuySell = async ({ tradeRepository } : { tradeRepository: Trad
 
 export const continueMarketCheck = async () => {
     try {
-    const tradeRepository = new TradeRepository()
+    
         setInterval(() => {
+            const tradeRepository = new TradeRepository()
             LimitBuySell({ tradeRepository })
-        }, 1000 * 5);
+        }, 1000 * 2);
     } catch (err) {
         console.log(err);
     }
