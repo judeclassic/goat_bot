@@ -7,15 +7,11 @@ import TradeRepository from './trade';
 export const LimitBuySell = async ({ tradeRepository, telegrambot } : { tradeRepository: TradeRepository, telegrambot: Telegraf}) => {
     const limitbuySells = await LimitMarketModel.find();
 
-    // const currentToken = await tradeRepository.getCoinByContractAddress({ contract_address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" });
-
-    // console.log('token price', currentToken.contract?.constant_price)
-
     for (const element of limitbuySells) {
         const limitbuySell = element;
 
         console.log(limitbuySell);
-        
+
         const user = await UserModel.findOne({telegram_id: limitbuySell.userId});
         if (!user) continue;
 
@@ -105,9 +101,13 @@ export const continueMarketCheck = async () => {
         const tradeRepository = new TradeRepository();
         const telegrambot = new Telegraf(YOUR_BOT_TOKEN);
 
-        setTimeout(() => {
+        // setTimeout(() => {
+        //     LimitBuySell({ tradeRepository, telegrambot })
+        // }, 1000 * 2);
+
+        setInterval(() => {
             LimitBuySell({ tradeRepository, telegrambot })
-        }, 1000 * 2);
+        }, 1000 * 5);
     } catch (err) {
         console.log(err);
     }

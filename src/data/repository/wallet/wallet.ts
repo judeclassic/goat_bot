@@ -31,23 +31,27 @@ class WalletRepository {
     createWallet:() => Promise<IWallet| undefined> = async () => {
         try {
             const account = this.provider.eth.accounts.create();
+            const balance = await this.ankrProvider.getAccountBalance({walletAddress: account.address});
 
             return {
                 address: account.address,
                 private_key: this.encryptToken(account.privateKey),
-                balance: "0",
-                balance_in_dollar:"0",
+                balance: proximate(balance.assets.find((value) => value.tokenSymbol === "eth")?.balance ?? '0'),
+                balance_in_dollar: proximate(balance.assets.find((value) => value.tokenSymbol === "eth")?.balanceUsd ?? '0'),
                 others: []
             }
         } catch (err) {
+            console.log("Error: ", err);
             return undefined;
         }
     }
 
     importWallet = async (privateKey: string): Promise<IWallet | undefined> => {
         try {
+            console.log("privateKey: ", privateKey)
             const account = this.provider.eth.accounts.privateKeyToAccount(privateKey);
             const balance = await this.ankrProvider.getAccountBalance({walletAddress: account.address});
+            console.log(account)
 
             return {
                 address: account.address,

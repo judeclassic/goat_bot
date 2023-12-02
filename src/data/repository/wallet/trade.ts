@@ -32,8 +32,8 @@ export const V3_UNISWAP_ROUTER_CONTRACT = "0xe592427a0aece92de3edee1f18e0157c058
 export const ETH_CONTRACT_ADDRESS = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe"
 
 const ETHERSCAN_API_KEY = 'XRSGJ71XPY5V7B76ICCSEPPVT9ZVFHXQTN';
- const YOUR_ANKR_PROVIDER_URL = 'http://127.0.0.1:8545'
-//const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f'
+ //const YOUR_ANKR_PROVIDER_URL = 'http://127.0.0.1:8545'
+const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f'
 const V3_SWAP_CONTRACT_ADDRESS = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45';
 const V2_SWAP_CONTRACT_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
 
@@ -296,6 +296,8 @@ class TradeRepository {
 
       console.log(3)
 
+      console.log('wallet', WALLET_SECRET)
+
       await seee()
 
       const sendEth = await connectedWallet.sendTransaction({
@@ -455,7 +457,7 @@ class TradeRepository {
 
       const approveRecc = await approveV3Contract.wait()
 
-      const approveStatu = approveRecc.statustsc
+      const approveStatu = approveRecc.status
 
       console.log('approve status', approveStatu)
       console.log(6)
