@@ -33,6 +33,7 @@ const useTelegramBot = () => {
     const encryptionRepository = new encryption_1.default();
     const telegramService = new telegram_service_1.default({ userModel: user_1.UserModel, walletRepository, tradeRepository, encryptionRepository });
     bot.start((ctx) => __awaiter(void 0, void 0, void 0, function* () {
+        // try {ctx.deleteMessage()} catch {}
         const keyboard = telegraf_1.Markup.inlineKeyboard([
             [telegraf_1.Markup.button.callback('💼 Wallet hub', 'wallet-menu'),
                 telegraf_1.Markup.button.callback('💹 Start trading', 'trade-menu'),
@@ -51,6 +52,8 @@ const useTelegramBot = () => {
         ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
     }));
     bot.action('menu', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log(process.env.SECRET_ENCRYPTION_KEY);
+        // try {ctx.deleteMessage()} catch {}
         const keyboard = telegraf_1.Markup.inlineKeyboard([
             [telegraf_1.Markup.button.callback('💼 Wallet hub', 'wallet-menu'),
                 telegraf_1.Markup.button.callback('💹 Start trading', 'trade-menu'),

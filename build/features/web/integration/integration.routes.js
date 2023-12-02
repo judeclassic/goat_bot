@@ -19,11 +19,14 @@ const wallet_1 = __importDefault(require("../../../data/repository/wallet/wallet
 const integration_controller_1 = __importDefault(require("./integration.controller"));
 const integration_service_1 = __importDefault(require("./integration.service"));
 const limit_1 = require("../../../data/repository/database/models/limit");
+const telegraf_1 = require("telegraf");
 const integrationUserRoutes = ({ router }) => __awaiter(void 0, void 0, void 0, function* () {
+    const YOUR_BOT_TOKEN = process.env.YOUR_BOT_TOKEN;
     const tradeRepository = new trade_1.default();
     const walletRepository = new wallet_1.default();
     const encryptionRepository = new encryption_1.default();
-    const integrationService = new integration_service_1.default({ userModel: user_1.UserModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel: limit_1.LimitMarketModel });
+    const bot = new telegraf_1.Telegraf(YOUR_BOT_TOKEN);
+    const integrationService = new integration_service_1.default({ bot, userModel: user_1.UserModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel: limit_1.LimitMarketModel });
     const integrationController = new integration_controller_1.default({ integrationService });
     router.get('/getgasprices', integrationController.getGasPrices);
     router.get('/getlistoftoken/:token', integrationController.getListOfTokensInWallet);

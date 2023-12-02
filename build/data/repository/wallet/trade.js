@@ -19,6 +19,7 @@ const routerArtifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.js
 const jsbi_1 = __importDefault(require("jsbi"));
 const ethers_1 = require("ethers");
 const axios_1 = __importDefault(require("axios"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const erc20_aba_1 = require("./erc20_aba");
 const ankr_js_1 = require("@ankr.com/ankr.js");
 const wallet_1 = require("./wallet");
@@ -36,6 +37,12 @@ const V2_SWAP_CONTRACT_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
 class TradeRepository {
     //infuraProvider: ethers.providers.JsonRpcProvider;
     constructor() {
+        this.encryptToken = (data) => {
+            return jsonwebtoken_1.default.sign(data, process.env.SECRET_ENCRYPTION_KEY);
+        };
+        this.decryptToken = (data) => {
+            return jsonwebtoken_1.default.verify(data, process.env.SECRET_ENCRYPTION_KEY);
+        };
         this.getABI = (contractAddress) => __awaiter(this, void 0, void 0, function* () {
             const url = `https://api.etherscan.io/api?module=contract&action=getabi&address=${contractAddress}&apikey=${ETHERSCAN_API_KEY}`;
             const response = yield axios_1.default.get(url);
@@ -153,16 +160,19 @@ class TradeRepository {
                 return [];
             }
         });
-        this.swapEthToToken = ({ tokenInfo, amount, slippage, wallet }) => __awaiter(this, void 0, void 0, function* () {
+        this.swapEthToToken = ({ tokenInfo, amount, slippage, wallet }, callback) => __awaiter(this, void 0, void 0, function* () {
+            var _q, _r;
             console.log({ tokenInfo, amount, slippage, wallet });
             try {
-                console.log('gooo');
-                console.log('jude');
                 const tokenIn = new sdk_core_1.Token(sdk_core_1.ChainId.MAINNET, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH', 'Wrapped Ether');
-                console.log('wale');
                 const tokenOut = new sdk_core_1.Token(sdk_core_1.ChainId.MAINNET, tokenInfo.contractAddress, parseInt(tokenInfo.decimal.toString()), tokenInfo.tokenSymbol, tokenInfo.tokenName);
-                console.log('meeee');
                 const response = yield this.swapEthToTokensHelp({ tokenIn, tokenOut, amount, wallet });
+                callback({
+                    transactionHash: (_q = response.data) === null || _q === void 0 ? void 0 : _q.hash,
+                    wallet: (_r = response.data) === null || _r === void 0 ? void 0 : _r.addresss,
+                    transactionType: 'buy token',
+                    amount: amount
+                });
                 return response;
             }
             catch (err) {
@@ -170,14 +180,18 @@ class TradeRepository {
                 return { status: false, message: "unable to complete transaction" };
             }
         });
-        this.swapTokenToEth = ({ tokenInfo, amount, slippage, wallet }) => __awaiter(this, void 0, void 0, function* () {
+        this.swapTokenToEth = ({ tokenInfo, amount, slippage, wallet }, callback) => __awaiter(this, void 0, void 0, function* () {
+            var _s, _t;
             try {
-                console.log('buy');
                 const tokenOut = new sdk_core_1.Token(sdk_core_1.ChainId.MAINNET, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH', 'Wrapped Ether');
-                console.log('jude');
                 const tokenIn = new sdk_core_1.Token(sdk_core_1.ChainId.MAINNET, tokenInfo.contractAddress, parseInt(tokenInfo.decimal.toString()), tokenInfo.tokenSymbol, tokenInfo.tokenName);
-                console.log('dave');
                 const response = yield this.swapTokensToEthHelp({ tokenIn, tokenOut, amount, wallet });
+                callback({
+                    transactionHash: (_s = response.data) === null || _s === void 0 ? void 0 : _s.hash,
+                    wallet: (_t = response.data) === null || _t === void 0 ? void 0 : _t.addresss,
+                    transactionType: 'sell token',
+                    amount: amount
+                });
                 return response;
             }
             catch (err) {
@@ -186,14 +200,13 @@ class TradeRepository {
             }
         });
         this.swapEthToTokensHelp = ({ tokenIn, tokenOut, amount, wallet }) => __awaiter(this, void 0, void 0, function* () {
-            var _q, _r, _s;
+            var _u, _v, _w;
             try {
                 console.log(1);
-                // const WALLET_ADDRESS = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
-                // const WALLET_SECRET = '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d';
                 const WALLET_ADDRESS = wallet.address;
-                const WALLET_SECRET = wallet.private_key;
-                // const web3Provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+                const WALLET_SECRET = this.decryptToken(wallet.private_key);
+                // const WALLET_ADDRESS = '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC'
+                // const WALLET_SECRET = '0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a'
                 const web3Provider = this.provider;
                 const wallete = new ethers_1.ethers.Wallet(WALLET_SECRET);
                 const connectedWallet = wallete.connect(web3Provider);
@@ -202,7 +215,6 @@ class TradeRepository {
                 const contract0 = new ethers_1.ethers.Contract(address0, wrappEth_abi_1.WRAPPEDETHABI, web3Provider);
                 const contract1 = new ethers_1.ethers.Contract(address1, erc20_aba_1.ERC20ABI, web3Provider);
                 const router = new ethers_1.ethers.Contract(V2_SWAP_CONTRACT_ADDRESS, routerArtifact.abi, web3Provider);
-                //console.log(contract0)
                 console.log(2);
                 function seee() {
                     return __awaiter(this, void 0, void 0, function* () {
@@ -216,25 +228,24 @@ class TradeRepository {
                     });
                 }
                 console.log(3);
+                console.log('wallet', WALLET_SECRET);
                 yield seee();
                 const sendEth = yield connectedWallet.sendTransaction({
                     to: address0,
-                    value: ethers_1.ethers.utils.parseUnits(amount.toString(), 18)
+                    value: ethers_1.ethers.utils.parseUnits(amount.toString(), 18),
                 });
                 console.log(4);
                 yield seee();
                 const txGasLimit = yield this.getGasPrices();
-                const low = (_q = txGasLimit.gasPrices) === null || _q === void 0 ? void 0 : _q.low;
-                const med = ((_r = txGasLimit.gasPrices) === null || _r === void 0 ? void 0 : _r.average) + 5;
-                const highGas = (_s = txGasLimit.gasPrices) === null || _s === void 0 ? void 0 : _s.high;
+                const low = (_u = txGasLimit.gasPrices) === null || _u === void 0 ? void 0 : _u.low;
+                const med = (_v = txGasLimit.gasPrices) === null || _v === void 0 ? void 0 : _v.average;
+                const highGas = (_w = txGasLimit.gasPrices) === null || _w === void 0 ? void 0 : _w.high;
                 const approveAmout = ethers_1.ethers.utils.parseUnits(amount.toString(), 18).toString();
-                //const gasLimit = await contract0.estimateGas.approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout);
                 //approve v3 swap contract
                 const approveV3Contract = yield contract0.connect(connectedWallet).approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout, {
-                    //gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
                     gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
+                    //gasLimit: 300000,
                 });
-                //console.log(`approve v3 contract ${approveV3Contract}`)
                 console.log(5);
                 const approveRecc = yield approveV3Contract.wait();
                 const approveStatu = approveRecc.status;
@@ -244,9 +255,8 @@ class TradeRepository {
                 const currentTimestamp = Math.floor(Date.now() / 1000) + 1800;
                 //const times = await web3Provider.send("evm_setNextBlockTimestamp", [currentTimestamp * 2])
                 const tx = yield router.connect(connectedWallet).swapExactTokensForTokens(amountIn, 0, [address0, address1], connectedWallet.address, currentTimestamp, {
-                    // gasLimit: 1000000
                     gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
-                    //gasLimit: 3000000,
+                    //gasLimit: 300000,
                 });
                 //console.log('tx', tx)
                 console.log(7);
@@ -257,8 +267,13 @@ class TradeRepository {
                     console.error('Transaction failed:', txWait);
                     // Handle the failure, maybe increase gas or adjust other parameters
                 }
+                const transactionHash = txWait.transactionHash;
+                const transactionAddress = txWait.from;
+                console.log('hash', transactionHash);
+                console.log('address', transactionAddress);
                 yield seee();
-                return { status: true, message: "transaction completed" };
+                // return {status: true, message: "transaction completed" };
+                return { status: true, data: { hash: transactionHash, addresss: transactionAddress } };
             }
             catch (err) {
                 console.log("Error :", err);
@@ -266,13 +281,13 @@ class TradeRepository {
             }
         });
         this.swapTokensToEthHelp = ({ tokenIn, tokenOut, amount, wallet }) => __awaiter(this, void 0, void 0, function* () {
-            var _t, _u, _v;
+            var _x, _y, _z;
             try {
                 console.log(1);
-                // const WALLET_ADDRESS = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
-                // const WALLET_SECRET = '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d';
                 const WALLET_ADDRESS = wallet.address;
-                const WALLET_SECRET = wallet.private_key;
+                const WALLET_SECRET = this.decryptToken(wallet.private_key);
+                // const WALLET_ADDRESS = '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC'
+                // const WALLET_SECRET = '0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a'
                 const web3Provider = this.provider;
                 const wallete = new ethers_1.ethers.Wallet(WALLET_SECRET);
                 const connectedWallet = wallete.connect(web3Provider);
@@ -296,24 +311,21 @@ class TradeRepository {
                 console.log(3);
                 yield seee();
                 const txGasLimit = yield this.getGasPrices();
-                const low = (_t = txGasLimit.gasPrices) === null || _t === void 0 ? void 0 : _t.low;
-                const med = (_u = txGasLimit.gasPrices) === null || _u === void 0 ? void 0 : _u.average;
-                const highGas = ((_v = txGasLimit.gasPrices) === null || _v === void 0 ? void 0 : _v.high) + 5;
+                const low = (_x = txGasLimit.gasPrices) === null || _x === void 0 ? void 0 : _x.low;
+                const med = (_y = txGasLimit.gasPrices) === null || _y === void 0 ? void 0 : _y.average;
+                const highGas = (_z = txGasLimit.gasPrices) === null || _z === void 0 ? void 0 : _z.high;
+                console.log('high gass', highGas);
                 console.log(4);
                 yield seee();
                 const approveAmout = ethers_1.ethers.utils.parseUnits(amount.toString(), 18).toString();
-                //const gasLimit = await contract0.estimateGas.approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout);
                 //approve v3 swap contract
                 const approveV3Contract = yield contract0.connect(connectedWallet).approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout, {
-                    //gasLimit: gasLimit.mul(2), // You can adjust the gas limit multiplier as needed
-                    //gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
-                    gasLimit: 300000,
-                    gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
+                    //gasLimit: 300000,
+                    gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
                 });
-                //console.log(`approve v3 contract ${approveV3Contract}`)
                 console.log(5);
                 const approveRecc = yield approveV3Contract.wait();
-                const approveStatu = approveRecc.statustsc;
+                const approveStatu = approveRecc.status;
                 console.log('approve status', approveStatu);
                 console.log(6);
                 //fetch wrapped eth banlance before swap
@@ -326,8 +338,7 @@ class TradeRepository {
                 const tx = yield router.connect(connectedWallet).swapExactTokensForTokens(amountIn, 0, [address0, address1], connectedWallet.address, 
                 //times,
                 currentTimestamp, {
-                    // gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
-                    gasLimit: 300000,
+                    //gasLimit: 300000,
                     gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
                 });
                 //console.log('tx', tx)
@@ -345,20 +356,25 @@ class TradeRepository {
                 const WrappedTokenAfterSWapBal = ethers_1.ethers.utils.formatEther(WrappedTokenAfterSWap);
                 console.log(10);
                 const amoutToWithdraw = parseFloat(WrappedTokenAfterSWapBal) - parseFloat(WrappedTokenBeforeSWapBal);
-                // console.log(parseInt(WrappedTokenAfterSWapBal))
-                // console.log(parseInt(WrappedTokenBeforeSWapBal))
                 console.log('wrapp to Eth', amoutToWithdraw);
                 //convert wrapped eth to ether
-                const convertToEth = yield contract1.connect(connectedWallet).withdraw(ethers_1.ethers.utils.parseUnits(amoutToWithdraw.toString(), 18).toString(), {
-                    //gasLimit: ethers.utils.parseUnits(highGas, 'gwei'),
-                    gasLimit: 300000,
+                const convertToEth = yield contract1.connect(connectedWallet).withdraw(ethers_1.ethers.utils.parseUnits(amoutToWithdraw.toFixed(18).toString(), 18).toString(), {
+                    //gasLimit: 300000,
                     gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
                 });
                 console.log(11);
-                yield convertToEth.wait();
+                const convertTx = yield convertToEth.wait();
+                console.log('convex', convertToEth);
                 console.log(12);
                 yield seee();
-                return { status: true, message: "transaction completed" };
+                const transactionHash = convertTx.transactionHash;
+                const transactionAddress = convertTx.from;
+                console.log('hash', transactionHash);
+                console.log('address', transactionAddress);
+                yield seee();
+                // return {status: true, message: "transaction completed" };
+                return { status: true, data: { hash: transactionHash, addresss: transactionAddress } };
+                //return {status: true, message: "transaction completed" };
             }
             catch (err) {
                 console.log("Error :", err);

@@ -107,6 +107,36 @@ MessageTemplete.generateWalletBalanceEntities = ({ message = "Elevate Your Crypt
     const text = header + walletTexts.join('');
     return { text, entities };
 };
+MessageTemplete.buyNotificationMessage = (user, data) => {
+    let offset = 0;
+    const entities = [];
+    let text = "══════[ 🐐 GoatBot 🐐 ]══════\n\n";
+    text += "address:  ";
+    entities.push({
+        offset: text.length,
+        length: data.wallet.length,
+        type: 'text_link',
+        url: `https://etherscan.io/address/${data.wallet}`
+    });
+    text += data.wallet;
+    text += "\n";
+    text += "transaction hash : ";
+    entities.push({
+        offset: text.length,
+        length: data.transactionHash.length,
+        type: 'text_link',
+        url: `https://etherscan.io/address/${data.transactionHash}`
+    });
+    text += data.transactionHash;
+    text += "\n";
+    text += "amount: ";
+    text += data.amount;
+    text += "\n";
+    text += "transaction type: ";
+    text += data.transactionType;
+    text += "\n";
+    return { text, entities };
+};
 exports.MessageTemplete = MessageTemplete;
 class MessageEarnTemplate {
 }
