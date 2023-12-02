@@ -21,6 +21,7 @@ export const useTelegramBot = () => {
     const telegramService = new TelegramService({ userModel: UserModel, walletRepository, tradeRepository, encryptionRepository });
     
     bot.start(async (ctx) => {
+        // try {ctx.deleteMessage()} catch {}
         const keyboard = Markup.inlineKeyboard([
             [   Markup.button.callback('💼 Wallet hub', 'wallet-menu'),
                 Markup.button.callback('💹 Start trading', 'trade-menu'),
@@ -41,6 +42,7 @@ export const useTelegramBot = () => {
     });
 
     bot.action('menu', async (ctx) => {
+        // try {ctx.deleteMessage()} catch {}
         const keyboard = Markup.inlineKeyboard([
             [   Markup.button.callback('💼 Wallet hub', 'wallet-menu'),
                 Markup.button.callback('💹 Start trading', 'trade-menu'),
@@ -51,6 +53,7 @@ export const useTelegramBot = () => {
         ]);
         
         if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+        ctx.deleteMessage()
 
         const telegram_id = ctx.chat.id.toString();
         const response = await telegramService.userOpensChat({ telegram_id });

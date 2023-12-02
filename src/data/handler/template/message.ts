@@ -1,4 +1,5 @@
 import { IOtherWallet, IUser, IWallet } from "../../repository/database/models/user";
+import ICallback from "../../types/callback/callback";
 const etherscanBaseUrl = "https://etherscan.io/address/";
 
 export class MessageTemplete {
@@ -143,6 +144,18 @@ export class MessageTemplete {
     
         return { text, entities };
     };
+
+    static buyNotificationMessage = (user: IUser, data: ICallback) => {
+        let offset = 0;
+        const entities: any = [];
+        
+        const text = 
+            `══════[ 🐐 GoatBot oooooo 🐐 ]══════\n\n
+            address:  ${data.wallet} transaction hash : ${data.transactionHash}, amount: ${data.amount} transaction type: ${data.transactionType}`;
+
+    
+        return { text, entities };
+    }
 }
 export class MessageEarnTemplate {
     static generateReferalMessage = ({ user }:{user: IUser}) => {

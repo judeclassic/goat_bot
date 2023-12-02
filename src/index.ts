@@ -18,17 +18,15 @@ dBConnection.connect();
 export default server((app, _server) => {
     cors();
     useTelegramBot();
-    // continueMarketCheck();
+    continueMarketCheck();
 
     const authenticationRepo = new AuthorizationRepo();
-    //const router = new RequestHandler({ router: app,  authenticationRepo, host: '/api' });
     const router = new RequestHandler({ router: app,  authenticationRepo, host: '/api' });
 
     router.extend('/integrations', integrationUserRoutes);
     router.extend('/other', otherUserRoutes);
-    // if (process.env.NODE_ENV === 'development') 
+
     initLogger.useExpressMonganMiddleWare(app);
-    // if (process.env.NODE_ENV === 'development')
     initLogger.checkRoutes(router);
 });
 

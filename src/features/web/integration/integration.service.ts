@@ -5,6 +5,8 @@ import WalletRepository from "../../../data/repository/wallet/wallet";
 import IError from "../../../data/types/error/error";
 import { LimitMarketModel } from "../../../data/repository/database/models/limit";
 import { ISwapTokenInfo } from "../../../data/types/repository/trade";
+import { Telegraf } from "telegraf";
+import { MessageTemplete } from "../../../data/handler/template/message";
 
 class IntegrationService {
   private _userModel: typeof UserModel;
@@ -12,14 +14,17 @@ class IntegrationService {
   private _walletRepository: WalletRepository;
   private _encryptionRepository: EncryptionRepository;
   private _limitMarketModel: typeof LimitMarketModel;
+  private telegrambot: Telegraf;
 
-  constructor ({ userModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel} : {
+  constructor ({ bot, userModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel} : {
+    bot: Telegraf;
     userModel: typeof UserModel;
     tradeRepository: TradeRepository;
     encryptionRepository: EncryptionRepository;
     walletRepository: WalletRepository;
     limitMarketModel: typeof LimitMarketModel;
   }){
+    this.telegrambot = bot;
     this._userModel = userModel;
     this._tradeRepository = tradeRepository;
     this._encryptionRepository = encryptionRepository;
@@ -47,6 +52,7 @@ class IntegrationService {
     if (!wallet) return { errors: [{ message: 'unable to get this wallet information' }]};
 
     const tokensResponse = await this._walletRepository.getOtherTokens(wallet);
+    console.log(tokensResponse);
 
     if ( !tokensResponse ) {
       return { errors: [{ message: 'unable to get list of token' }]};
@@ -82,7 +88,9 @@ class IntegrationService {
     console.log(user.wallets)
     if (!wallet) return { errors: [{ message: 'unable to get wallet information' }]};
 
-    const response = await this._tradeRepository.swapEthToToken({ tokenInfo, amount, slippage, wallet, gas_fee });
+    const response = await this._tradeRepository.swapEthToToken({ tokenInfo, amount, slippage, wallet, gas_fee }, (data) => {
+      this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data));
+    });
     console.log()
     if ( !response ) {
       return { errors: [{ message: 'unable to place trade' }]};
@@ -108,7 +116,9 @@ class IntegrationService {
     console.log(user.wallets)
     if (!wallet) return { errors: [{ message: 'unable to get wallet information' }]};
 
-    const response = await this._tradeRepository.swapTokenToEth({ tokenInfo, amount, slippage, wallet, gas_fee });
+    const response = await this._tradeRepository.swapTokenToEth({ tokenInfo, amount, slippage, wallet, gas_fee }, (data) => {
+      this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data));
+    });
 
     if ( !response ) {
       return { errors: [{ message: 'unable to place trade' }]};
@@ -222,10 +232,14 @@ class IntegrationService {
       if (!wallet) return { errors: [{ message: 'wallet not found'}] };
 
       if ( contract_address === "eth") {
-        const transaction = await this._walletRepository.transferEth({ wallet, amount, reciever_address });
+        const transaction = await this._walletRepository.transferEth({ wallet, amount, reciever_address }, (data) => {
+          this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data));
+        });
         if (!transaction.data) return { errors: [{ message: transaction.error ?? 'wallet not found'}] };
       } else {
-        const transaction = await this._walletRepository.transferToken({ wallet, amount, contract_address, reciever_address });
+        const transaction = await this._walletRepository.transferToken({ wallet, amount, contract_address, reciever_address }, (data) => {
+          this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data));
+        });
         if (!transaction.data) return { errors: [{ message: transaction.error ?? 'wallet not found'}] };
       }
 
@@ -247,7 +261,9 @@ class IntegrationService {
       const wallet = user.wallets.find((value) => value.address === decoded?.wallet_address);
       if (!wallet) return { errors: [{ message: 'wallet not found'}] };
 
-      const transaction = await this._walletRepository.transferEth({ wallet, amount, reciever_address });
+      const transaction = await this._walletRepository.transferEth({ wallet, amount, reciever_address }, (data) => {
+        this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data));
+      });
       if (!transaction.data) return { errors: [{ message: transaction.error ?? 'wallet not found'}] };
 
       return { data: transaction }
@@ -266,8 +282,8 @@ class IntegrationService {
 
       if (!wallet) return { errors: [{ message: 'wallet not found'}] };
 
-      const balances = await this._tradeRepository.getListOfTokensInWallet({ wallet });
-      return { data: balances as IOtherWallet[] };
+      const balances = await this._walletRepository.getOtherTokens(wallet);
+      return { data: balances };
   };
 
 }

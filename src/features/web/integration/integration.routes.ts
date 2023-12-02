@@ -6,13 +6,17 @@ import WalletRepository from "../../../data/repository/wallet/wallet";
 import IntegrationController from "./integration.controller";
 import IntegrationService from "./integration.service";
 import { LimitMarketModel as limitMarketModel } from "../../../data/repository/database/models/limit";
+import { Telegraf } from "telegraf";
 
 const integrationUserRoutes = async ({router}: {router: RequestHandler}) => {
+    const YOUR_BOT_TOKEN = process.env.YOUR_BOT_TOKEN!;
+
     const tradeRepository = new TradeRepository();
     const walletRepository = new WalletRepository();
     const encryptionRepository = new EncryptionRepository();
+    const bot = new Telegraf(YOUR_BOT_TOKEN)
 
-    const integrationService = new IntegrationService({ userModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel });
+    const integrationService = new IntegrationService({ bot, userModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel });
     const integrationController = new IntegrationController({ integrationService});
     
     router.get('/getgasprices', integrationController.getGasPrices);
