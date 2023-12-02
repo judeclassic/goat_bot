@@ -10,7 +10,6 @@ import { initLogger } from './data/repository/logger.ts';
 import { continueMarketCheck } from "./data/repository/wallet/limitSellBuy";
 import otherUserRoutes from './features/web/other/other.routes';
 
-
 dotEnv.config();
 const dBConnection = new DBConnection();
 dBConnection.connect();
