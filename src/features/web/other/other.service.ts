@@ -31,16 +31,19 @@ class OtherService {
     const user = await this._userModel.findOne({ telegram_id: decoded?.telegram_id });
     if (!user) return { errors: [{ message: 'user not found'}] };
 
-    if (user.isReferralSent) {
+    if (user.referredUserCode) {
       return { errors: [{ message: 'referral has been sent to user' }]};
     }
+
+    user.referredUserCode = referral_code;
+    await user.save();
 
     const userResponse = this._userModel.find({ "referal.referalCode": referral_code}, {
       "referal.totalReferrals": { $inc: 1 },
       "referal.totalEarnings": { $inc: 1 },
       "referal.claimableEarnings": { $inc: 1 },
     })
-    if ( !userResponse ) {
+    if ( !user ) {
       return { errors: [{ message: 'unable to place trade' }]};
     }
 
