@@ -3,21 +3,30 @@ import CryptoAccount from 'send-crypto'
 import { IOtherWallet, IWallet } from "../database/models/user";
 import jwt from 'jsonwebtoken';
 import TradeRepository from "./__trade";
-export const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f';
+//export const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f';
 export const ANKR_PROVIDER_URL = 'https://rpc.ankr.com/multichain/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f';
 
 import { AnkrProvider } from '@ankr.com/ankr.js';
 import ICallback from "../../types/callback/callback";
+
+import { ethers, BigNumber, utils } from 'ethers'
+import { ERC20ABI } from "./erc20_aba";
+//const YOUR_ANKR_PROVIDER_URL = 'http://127.0.0.1:8545'
+const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f'
+import axios from 'axios';
+const ETHERSCAN_API_KEY = 'XRSGJ71XPY5V7B76ICCSEPPVT9ZVFHXQTN';
   
 class WalletRepository {
     private provider: Web3;
     private ankrProvider: AnkrProvider;
     private tradeRepository: TradeRepository;
+    providerTwo: ethers.providers.JsonRpcProvider;
 
     constructor () {
         this.provider = new Web3(new Web3.providers.HttpProvider(YOUR_ANKR_PROVIDER_URL));
         this.ankrProvider = new AnkrProvider(ANKR_PROVIDER_URL);
         this.tradeRepository = new TradeRepository();
+        this.providerTwo = new ethers.providers.JsonRpcProvider
     }
 
     public encryptToken = (data: any) => {
@@ -117,22 +126,55 @@ class WalletRepository {
     }, callback: (transaction: ICallback) => void) : Promise<{ data?: string; error?: string }> => {
         try {
             const privateKey = this.decryptToken(wallet.private_key);
-            const account = new CryptoAccount(privateKey);
+            // const account = new CryptoAccount(privateKey);
 
-            const txHash = await account.send(reciever_address, amount, {
-                type: "ERC20",
-                address: contract_address,
-            })
-            .on("transactionHash", console.log)
-            .on("confirmation", console.log);
+            // const txHash = await account.send(reciever_address, amount, {
+            //     type: "ERC20",
+            //     address: contract_address,
+            // })
+            // .on("transactionHash", console.log)
+            // .on("confirmation", console.log);
+
+            // callback({
+            //     transactionHash: txHash,
+            //     wallet: wallet.address,
+            //     transactionType: 'transfer',
+            //     amount: amount
+            // });
+
+            const web3Provider = this.providerTwo;
+  
+            const wallete = new ethers.Wallet(privateKey);
+
+            const connectedWallet = wallete.connect(web3Provider);
+
+            const erc20Contract = new ethers.Contract(contract_address, ERC20ABI, web3Provider);
+
+            const amountSent = ethers.utils.parseUnits(amount.toString(), 18)
+
+            const txGasLimit = await this.getGasPrices()
+            const low = txGasLimit.gasPrices?.low
+            const med = txGasLimit.gasPrices?.average
+            const highGas= txGasLimit.gasPrices?.high
+
+            const transferToken = await erc20Contract.connect(connectedWallet).transfer(
+                reciever_address,
+                amountSent, {
+                  gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
+                  //gasLimit: 300000,
+                }
+            );
 
             callback({
-                transactionHash: txHash,
+                transactionHash: transferToken.hash,
                 wallet: wallet.address,
-                transactionType: 'transfer',
+                transactionType: 'transfer ERC20',
                 amount: amount
             });
-            return { data: txHash };
+
+            await transferToken.wait()
+
+            return { data: transferToken.hash };
         } catch (err) {
             return { error: 'Error unable process transaction' };
         }
@@ -145,19 +187,38 @@ class WalletRepository {
     }, callback: (transaction: ICallback) => void) : Promise<{ data?: string; error?: string }> => {
         try {
             const privateKey = this.decryptToken(wallet.private_key);
-            const account = new CryptoAccount(privateKey);
+            // const account = new CryptoAccount(privateKey);
 
-            const txHash = await account.send(reciever_address, amount, "ETH")
-                .on("transactionHash", console.log)
-                .on("confirmation", console.log);
+            // const txHash = await account.send(reciever_address, amount, "ETH")
+            //     .on("transactionHash", console.log)
+            //     .on("confirmation", console.log);
                 
+            // callback({
+            //     transactionHash: txHash,
+            //     wallet: wallet.address,
+            //     transactionType: 'transfer',
+            //     amount: amount
+            // });
+
+            const web3Provider = this.providerTwo;
+  
+            const wallete = new ethers.Wallet(privateKey);
+
+            const connectedWallet = wallete.connect(web3Provider);
+
+            const sendEth = await connectedWallet.sendTransaction({
+                to: reciever_address,
+                value: ethers.utils.parseEther(amount.toString())
+            })
+
             callback({
-                transactionHash: txHash,
+                transactionHash: sendEth.hash,
                 wallet: wallet.address,
-                transactionType: 'transfer',
+                transactionType: 'transfer Eth',
                 amount: amount
             });
-            return { data: txHash };
+
+            return { data: sendEth.hash };
         } catch (err) {
             return { error: 'Error unable process transaction'};
         }
@@ -167,6 +228,29 @@ class WalletRepository {
         const abiResponse = await this.tradeRepository.getABI(contract_address);
         if (!abiResponse.abi) return { error: abiResponse.error };
     }
+
+    
+    getGasPrices = async () => {
+        try {
+          const response = await axios.get(`https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=${ETHERSCAN_API_KEY}`);
+          if (response.data.status === "1") {
+              return {
+                  success: true,
+                  gasPrices: {
+                      low: response.data.result.SafeGasPrice,
+                      average: response.data.result.ProposeGasPrice,
+                      high: response.data.result.FastGasPrice
+                  }
+              };
+          } else {
+              return { success: false, message: response.data.result };
+          }
+        } catch (error) {
+          console.error('Error fetching gas prices:', error);
+          return { success: false, message: 'Error fetching gas prices' };
+        }
+  
+      }
 }
 
 export default WalletRepository;
