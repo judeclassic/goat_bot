@@ -13,15 +13,15 @@ class OtherController {
     constructor({ otherService }) {
         this.addReferralCode = ({ body }, sendResponse) => __awaiter(this, void 0, void 0, function* () {
             const response = yield this._otherService.addReferralCode(body);
-            if (!response.userResponse)
+            if (!response.message)
                 return sendResponse(401, { error: response.errors, status: false });
-            if (!(response === null || response === void 0 ? void 0 : response.userResponse)) {
+            if (!(response === null || response === void 0 ? void 0 : response.message)) {
                 return sendResponse(401, {
                     error: [{ message: 'unable to make transaction' }],
                     status: false
                 });
             }
-            sendResponse(200, { data: response, status: true });
+            sendResponse(200, { data: response.message, status: true });
         });
         this._otherService = otherService;
     }

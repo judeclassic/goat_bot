@@ -53,8 +53,41 @@ class TradeRepository {
                 throw new Error('Failed to fetch ABI');
             }
         });
+        this.getOtherTokens = (wallet) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const tokens = yield this.ankrProvider.getAccountBalance({ walletAddress: wallet.address, onlyWhitelisted: false });
+                const ethAssets = [];
+                if (!tokens.assets.find((asset) => (!asset.contractAddress))) {
+                    const ethAsset = yield this.ankrProvider.getTokenPrice({ blockchain: "eth", contractAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" });
+                    ethAssets.push({
+                        logo: "/assets/eth_logo.png",
+                        balance: "0.00",
+                        coin_name: 'Ether',
+                        balance_in_dollar: '0.00',
+                        coin_symbol: 'Eth',
+                        decimal: 18,
+                        constant_price: ethAsset.usdPrice,
+                        contract_address: 'eth'
+                    });
+                }
+                return [...ethAssets, ...tokens.assets.map((value) => ({
+                        logo: value.thumbnail,
+                        coin_name: value.tokenName,
+                        coin_symbol: value.tokenSymbol,
+                        constant_price: value.tokenPrice,
+                        decimal: value.tokenDecimals,
+                        contract_address: value.contractAddress,
+                        balance: proximate(value.balance),
+                        balance_in_dollar: proximate(value.balanceUsd)
+                    }))];
+            }
+            catch (err) {
+                console.log(err);
+                return [];
+            }
+        });
         this.getCoinByContractAddress = ({ contract_address }) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+            var _a, _b, _c, _d, _e, _f, _g, _h;
             try {
                 const response = yield axios_1.default.get(`https://api.etherscan.io/api?module=account&action=tokentx&contractaddress=${contract_address}&page=1&offset=1&sort=desc&apikey=${ETHERSCAN_API_KEY}`);
                 const tokenPrice = yield this.ankrProvider.getTokenPrice({ blockchain: "eth", contractAddress: contract_address });
@@ -66,7 +99,7 @@ class TradeRepository {
                             coin_symbol: (_d = (_c = response === null || response === void 0 ? void 0 : response.data) === null || _c === void 0 ? void 0 : _c.result) === null || _d === void 0 ? void 0 : _d[0].tokenSymbol,
                             decimal: (_f = (_e = response === null || response === void 0 ? void 0 : response.data) === null || _e === void 0 ? void 0 : _e.result) === null || _f === void 0 ? void 0 : _f[0].tokenDecimal,
                             contract_address: (_h = (_g = response === null || response === void 0 ? void 0 : response.data) === null || _g === void 0 ? void 0 : _g.result) === null || _h === void 0 ? void 0 : _h[0].contractAddress,
-                            balance: (_k = (_j = response === null || response === void 0 ? void 0 : response.data) === null || _j === void 0 ? void 0 : _j.result) === null || _k === void 0 ? void 0 : _k[0].value,
+                            balance: "0",
                             constant_price: tokenPrice.usdPrice
                         }
                     };
@@ -129,7 +162,7 @@ class TradeRepository {
             }
         });
         this.getListOfTokensInWallet = ({ wallet }) => __awaiter(this, void 0, void 0, function* () {
-            var _l, _m, _o, _p;
+            var _j, _k, _l, _m;
             try {
                 const balances = new Map();
                 const url = `https://api.etherscan.io/api?module=account&action=tokentx&address=${wallet.address}&apikey=${ETHERSCAN_API_KEY}`;
@@ -141,8 +174,8 @@ class TradeRepository {
                         if (response.data.result[i].contractAddress) {
                             balances.set(response.data.result[i].contractAddress, {
                                 coin_name: response.data.result[i].tokenSymbol,
-                                coin_symbol: (_m = (_l = response === null || response === void 0 ? void 0 : response.data) === null || _l === void 0 ? void 0 : _l.result) === null || _m === void 0 ? void 0 : _m[0].tokenSymbol,
-                                decimal: (_p = (_o = response === null || response === void 0 ? void 0 : response.data) === null || _o === void 0 ? void 0 : _o.result) === null || _p === void 0 ? void 0 : _p[0].tokenDecimal,
+                                coin_symbol: (_k = (_j = response === null || response === void 0 ? void 0 : response.data) === null || _j === void 0 ? void 0 : _j.result) === null || _k === void 0 ? void 0 : _k[0].tokenSymbol,
+                                decimal: (_m = (_l = response === null || response === void 0 ? void 0 : response.data) === null || _l === void 0 ? void 0 : _l.result) === null || _m === void 0 ? void 0 : _m[0].tokenDecimal,
                                 contract_address: response.data.result[i].contractAddress,
                                 balance: response.data.result[i].value,
                             });
@@ -161,15 +194,15 @@ class TradeRepository {
             }
         });
         this.swapEthToToken = ({ tokenInfo, amount, slippage, wallet }, callback) => __awaiter(this, void 0, void 0, function* () {
-            var _q, _r;
+            var _o, _p;
             console.log({ tokenInfo, amount, slippage, wallet });
             try {
                 const tokenIn = new sdk_core_1.Token(sdk_core_1.ChainId.MAINNET, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH', 'Wrapped Ether');
                 const tokenOut = new sdk_core_1.Token(sdk_core_1.ChainId.MAINNET, tokenInfo.contractAddress, parseInt(tokenInfo.decimal.toString()), tokenInfo.tokenSymbol, tokenInfo.tokenName);
                 const response = yield this.swapEthToTokensHelp({ tokenIn, tokenOut, amount, wallet });
                 callback({
-                    transactionHash: (_q = response.data) === null || _q === void 0 ? void 0 : _q.hash,
-                    wallet: (_r = response.data) === null || _r === void 0 ? void 0 : _r.addresss,
+                    transactionHash: (_o = response.data) === null || _o === void 0 ? void 0 : _o.hash,
+                    wallet: (_p = response.data) === null || _p === void 0 ? void 0 : _p.addresss,
                     transactionType: 'buy token',
                     amount: amount
                 });
@@ -181,14 +214,14 @@ class TradeRepository {
             }
         });
         this.swapTokenToEth = ({ tokenInfo, amount, slippage, wallet }, callback) => __awaiter(this, void 0, void 0, function* () {
-            var _s, _t;
+            var _q, _r;
             try {
                 const tokenOut = new sdk_core_1.Token(sdk_core_1.ChainId.MAINNET, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH', 'Wrapped Ether');
                 const tokenIn = new sdk_core_1.Token(sdk_core_1.ChainId.MAINNET, tokenInfo.contractAddress, parseInt(tokenInfo.decimal.toString()), tokenInfo.tokenSymbol, tokenInfo.tokenName);
                 const response = yield this.swapTokensToEthHelp({ tokenIn, tokenOut, amount, wallet });
                 callback({
-                    transactionHash: (_s = response.data) === null || _s === void 0 ? void 0 : _s.hash,
-                    wallet: (_t = response.data) === null || _t === void 0 ? void 0 : _t.addresss,
+                    transactionHash: (_q = response.data) === null || _q === void 0 ? void 0 : _q.hash,
+                    wallet: (_r = response.data) === null || _r === void 0 ? void 0 : _r.addresss,
                     transactionType: 'sell token',
                     amount: amount
                 });
@@ -200,7 +233,7 @@ class TradeRepository {
             }
         });
         this.swapEthToTokensHelp = ({ tokenIn, tokenOut, amount, wallet }) => __awaiter(this, void 0, void 0, function* () {
-            var _u, _v, _w;
+            var _s, _t, _u;
             try {
                 console.log(1);
                 const WALLET_ADDRESS = wallet.address;
@@ -237,9 +270,9 @@ class TradeRepository {
                 console.log(4);
                 yield seee();
                 const txGasLimit = yield this.getGasPrices();
-                const low = (_u = txGasLimit.gasPrices) === null || _u === void 0 ? void 0 : _u.low;
-                const med = (_v = txGasLimit.gasPrices) === null || _v === void 0 ? void 0 : _v.average;
-                const highGas = (_w = txGasLimit.gasPrices) === null || _w === void 0 ? void 0 : _w.high;
+                const low = (_s = txGasLimit.gasPrices) === null || _s === void 0 ? void 0 : _s.low;
+                const med = (_t = txGasLimit.gasPrices) === null || _t === void 0 ? void 0 : _t.average;
+                const highGas = (_u = txGasLimit.gasPrices) === null || _u === void 0 ? void 0 : _u.high;
                 const approveAmout = ethers_1.ethers.utils.parseUnits(amount.toString(), 18).toString();
                 //approve v3 swap contract
                 const approveV3Contract = yield contract0.connect(connectedWallet).approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout, {
@@ -281,7 +314,7 @@ class TradeRepository {
             }
         });
         this.swapTokensToEthHelp = ({ tokenIn, tokenOut, amount, wallet }) => __awaiter(this, void 0, void 0, function* () {
-            var _x, _y, _z;
+            var _v, _w, _x;
             try {
                 console.log(1);
                 const WALLET_ADDRESS = wallet.address;
@@ -311,9 +344,9 @@ class TradeRepository {
                 console.log(3);
                 yield seee();
                 const txGasLimit = yield this.getGasPrices();
-                const low = (_x = txGasLimit.gasPrices) === null || _x === void 0 ? void 0 : _x.low;
-                const med = (_y = txGasLimit.gasPrices) === null || _y === void 0 ? void 0 : _y.average;
-                const highGas = (_z = txGasLimit.gasPrices) === null || _z === void 0 ? void 0 : _z.high;
+                const low = (_v = txGasLimit.gasPrices) === null || _v === void 0 ? void 0 : _v.low;
+                const med = (_w = txGasLimit.gasPrices) === null || _w === void 0 ? void 0 : _w.average;
+                const highGas = (_x = txGasLimit.gasPrices) === null || _x === void 0 ? void 0 : _x.high;
                 console.log('high gass', highGas);
                 console.log(4);
                 yield seee();
@@ -369,8 +402,6 @@ class TradeRepository {
                 yield seee();
                 const transactionHash = convertTx.transactionHash;
                 const transactionAddress = convertTx.from;
-                console.log('hash', transactionHash);
-                console.log('address', transactionAddress);
                 yield seee();
                 // return {status: true, message: "transaction completed" };
                 return { status: true, data: { hash: transactionHash, addresss: transactionAddress } };
@@ -401,4 +432,6 @@ class TradeRepository {
     }
 }
 exports.default = TradeRepository;
-console.log("Date: ", Date.parse((new Date()).toISOString()) + (1000 * 60 * 30));
+const proximate = (value) => {
+    return parseFloat(value).toPrecision(5);
+};

@@ -84,6 +84,7 @@ class IntegrationController {
             sendResponse(200, { data: response, status: true });
         });
         this.transferEth = ({ body }, sendResponse) => __awaiter(this, void 0, void 0, function* () {
+            console.log('body', body);
             const response = yield this._integrationService.transferEth(body);
             if (!response.data)
                 return sendResponse(401, { error: response.errors, status: false });

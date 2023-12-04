@@ -21,7 +21,7 @@ class TelegramService {
                     const wallet = yield this.walletRepository.getWallet(element);
                     wallets.push(wallet);
                 }
-                return { status: true, user: Object.assign(Object.assign({}, user), { wallets }) };
+                return { status: true, user: Object.assign(Object.assign({}, user._doc), { wallets }) };
             }
             catch (err) {
                 return { status: false, message: 'error please send "/start" request again' };
@@ -39,13 +39,13 @@ class TelegramService {
                     const wallet = yield this.walletRepository.getWallet(element);
                     wallets.push(wallet);
                 }
-                user.wallets = wallets;
                 const wallet = yield this.walletRepository.createWallet();
                 if (!wallet)
                     return { status: false, message: 'error please send "/start" request again' };
-                user.wallets.push(wallet);
+                wallets.push(wallet);
+                user.wallets = wallets;
                 yield user.save();
-                return { status: true, user: Object.assign(Object.assign({}, user), { wallets }) };
+                return { status: true, user: Object.assign(Object.assign({}, user._doc), { wallets }) };
             }
             catch (err) {
                 return { status: false, message: 'error please send "/start" request again' };
@@ -87,13 +87,13 @@ class TelegramService {
                     const wallet = yield this.walletRepository.getWallet(element);
                     wallets.push(wallet);
                 }
-                user.wallets = wallets;
                 const wallet = yield this.walletRepository.importWallet(private_key);
                 if (!wallet)
                     return { status: false, message: 'invalid private key' };
-                user.wallets.push(wallet);
-                yield user.save();
-                return { status: true, user: Object.assign(Object.assign({}, user), { wallets }) };
+                wallets.push(wallet);
+                user.wallets = wallets;
+                const updatedUser = yield user.save();
+                return { status: true, user: Object.assign(Object.assign({}, updatedUser), { wallets }) };
             }
             catch (err) {
                 return { status: false, message: 'error please send "/start" request again' };
@@ -109,11 +109,12 @@ class TelegramService {
                     if (user.wallets.indexOf(element) === wallet_number)
                         continue;
                     const wallet = yield this.walletRepository.getWallet(element);
+                    console.log(element);
                     wallets.push(wallet);
                 }
                 user.wallets = wallets;
-                yield user.save();
-                return { status: true, user: Object.assign(Object.assign({}, user), { wallets }) };
+                const updatedUser = yield user.save();
+                return { status: true, user: Object.assign(Object.assign({}, updatedUser), { wallets }) };
             }
             catch (err) {
                 return { status: false, message: 'error please send "/start" request again' };
@@ -169,7 +170,7 @@ class TelegramService {
                     const wallet = yield this.walletRepository.getWallet(element);
                     wallets.push(wallet);
                 }
-                return { status: true, user: Object.assign(Object.assign({}, user), { wallets }) };
+                return { status: true, user: Object.assign(Object.assign({}, user._doc), { wallets }) };
             }
             catch (err) {
                 return { status: false, message: 'error please send "/start" request again' };

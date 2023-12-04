@@ -10,8 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const encryption_1 = require("../../../data/repository/encryption");
+const telegraf_1 = require("telegraf");
+const message_1 = require("../../../data/handler/template/message");
 class OtherService {
-    constructor({ userModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel }) {
+    constructor({ bot, userModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel }) {
         this.addReferralCode = ({ token, referral_code, }) => __awaiter(this, void 0, void 0, function* () {
             const decoded = this._encryptionRepository.decryptToken(token, encryption_1.TokenType.accessToken);
             if (!(decoded === null || decoded === void 0 ? void 0 : decoded.telegram_id))
@@ -19,19 +21,42 @@ class OtherService {
             const user = yield this._userModel.findOne({ telegram_id: decoded === null || decoded === void 0 ? void 0 : decoded.telegram_id });
             if (!user)
                 return { errors: [{ message: 'user not found' }] };
-            if (user.isReferralSent) {
-                return { errors: [{ message: 'referral has been sent to user' }] };
+            if (user.referal.referalCode === referral_code) {
+                return { errors: [{ message: 'you can not refer yourself' }] };
             }
-            const userResponse = this._userModel.find({ "referal.referalCode": referral_code }, {
-                "referal.totalReferrals": { $inc: 1 },
-                "referal.totalEarnings": { $inc: 1 },
-                "referal.claimableEarnings": { $inc: 1 },
-            });
+            if (user.referredUserCode) {
+                return { errors: [{ message: 'you have already referred this user' }] };
+            }
+            user.referredUserCode = referral_code;
+            user.referal.totalEarnings += 1;
+            user.referal.claimableEarnings += 1;
+            const updatedUser = yield user.save();
+            if (!updatedUser) {
+                return { errors: [{ message: 'Unable to update user referal information' }] };
+            }
+            const userResponse = yield this._userModel.findOne({ "referal.referalCode": referral_code });
             if (!userResponse) {
-                return { errors: [{ message: 'unable to place trade' }] };
+                return { errors: [{ message: 'no user with this referal token' }] };
             }
-            return { userResponse };
+            userResponse.referal.totalReferrals += 1;
+            userResponse.referal.totalEarnings += 1;
+            userResponse.referal.claimableEarnings += 1;
+            const updatedUserResponse = yield userResponse.save();
+            if (!updatedUserResponse) {
+                return { errors: [{ message: 'no user with this referal token' }] };
+            }
+            try {
+                const modifiedKeyboard = telegraf_1.Markup.inlineKeyboard([
+                    telegraf_1.Markup.button.callback('🔙 Referal menu', 'refer-friends-and-earn'),
+                    telegraf_1.Markup.button.callback('🔙 Back to menu', 'wallet-menu'),
+                ]);
+                this.bot.telegram.sendMessage(userResponse.telegram_id, message_1.MessageTemplete.defaultMessage("Success! You've earned 1 $GOAT by referring a friend or adding a referral code. Your friend gets 1 $GOAT too. Keep building your $GOAT balance!"), modifiedKeyboard);
+                this.bot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.defaultMessage("You have entered the referral code successfully"), modifiedKeyboard);
+            }
+            catch (_a) { }
+            return { message: "updated successfully", };
         });
+        this.bot = bot;
         this._userModel = userModel;
         this._encryptionRepository = encryptionRepository;
     }

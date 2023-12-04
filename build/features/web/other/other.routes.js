@@ -19,11 +19,14 @@ const wallet_1 = __importDefault(require("../../../data/repository/wallet/wallet
 const limit_1 = require("../../../data/repository/database/models/limit");
 const other_controller_1 = __importDefault(require("./other.controller"));
 const other_service_1 = __importDefault(require("./other.service"));
+const telegraf_1 = require("telegraf");
 const otherUserRoutes = ({ router }) => __awaiter(void 0, void 0, void 0, function* () {
+    const YOUR_BOT_TOKEN = process.env.YOUR_BOT_TOKEN;
+    const bot = new telegraf_1.Telegraf(YOUR_BOT_TOKEN);
     const tradeRepository = new trade_1.default();
     const walletRepository = new wallet_1.default();
     const encryptionRepository = new encryption_1.default();
-    const otherService = new other_service_1.default({ userModel: user_1.UserModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel: limit_1.LimitMarketModel });
+    const otherService = new other_service_1.default({ bot, userModel: user_1.UserModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel: limit_1.LimitMarketModel });
     const otherController = new other_controller_1.default({ otherService });
     router.postWithBody('/referral_code', otherController.addReferralCode);
 });

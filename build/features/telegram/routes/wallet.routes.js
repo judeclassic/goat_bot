@@ -155,6 +155,7 @@ const useWalletBotRoutes = ({ bot, walletRepository, tradeRepository, encryption
     }));
     [1, 2, 3].forEach((data, wallet_number) => {
         bot.action(`delete-wallet-${wallet_number + 1}`, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+            var _a, _b;
             try {
                 const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
                     [telegraf_1.Markup.button.callback('try again', `delete-wallet-${wallet_number + 1}`)],
@@ -163,17 +164,42 @@ const useWalletBotRoutes = ({ bot, walletRepository, tradeRepository, encryption
                 if (!ctx.chat)
                     return ctx.reply('unable to delete', initialKeyboard);
                 const telegram_id = ctx.chat.id.toString();
+                const response = yield telegramService.userOpensChat({ telegram_id });
+                if (!response.user)
+                    return ctx.reply(response.message, initialKeyboard);
+                const keyboard = telegraf_1.Markup.inlineKeyboard([
+                    [telegraf_1.Markup.button.callback(`Confirm Delete`, `delete-wallet-confirm-${wallet_number}`)],
+                    [telegraf_1.Markup.button.callback('🔙 Back', 'wallet-menu')],
+                ]);
+                ctx.reply(message_1.MessageTemplete.defaultMessage(`Click on "Confirm Wallet ${wallet_number}" if you really want to remove this wallet ${(_b = (_a = response.user) === null || _a === void 0 ? void 0 : _a.wallets[wallet_number]) === null || _b === void 0 ? void 0 : _b.address}`), keyboard);
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }));
+    });
+    [1, 2, 3].forEach((data, wallet_number) => {
+        bot.action(`delete-wallet-confirm-${wallet_number + 1}`, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+            try {
+                const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
+                    [telegraf_1.Markup.button.callback('try again', `delete-wallet-${wallet_number + 1}`)],
+                    [telegraf_1.Markup.button.callback('🔙 Back', 'wallet-menu')],
+                ]);
+                if (!ctx.chat)
+                    return ctx.reply('unable to confirm delete', initialKeyboard);
+                const telegram_id = ctx.chat.id.toString();
                 const response = yield telegramService.userDeleteWallet({ telegram_id, wallet_number });
                 if (!response.user)
                     return ctx.reply(response.message, initialKeyboard);
                 const keyboard = telegraf_1.Markup.inlineKeyboard([[
                         ...response.user.wallets.map((_wallet, index) => {
-                            return telegraf_1.Markup.button.callback(`Wallet ${index + 1}`, `delete-wallet-${index + 1}`);
+                            return telegraf_1.Markup.button.callback(`Wallet ${index + 1}`, `wallet-menu`);
                         })
                     ],
                     [telegraf_1.Markup.button.callback('🔙 Back', 'wallet-menu')],
                 ]);
-                ctx.reply(message_1.MessageTemplete.defaultMessage(`Click on "confirm" if you really want to remove this wallet ${response.user.wallets[wallet_number].address}`), keyboard);
+                const { text, entities } = message_1.MessageTemplete.generateWalletEntities("Select the wallet to remove", response.user.wallets);
+                ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
             }
             catch (err) {
                 console.log(err);
@@ -249,7 +275,7 @@ const useWalletBotRoutes = ({ bot, walletRepository, tradeRepository, encryption
                     ...response.user.wallets.map((wallet, index) => {
                         var _a;
                         const linkResponse = telegramService.generateUserIDToken({ telegram_id, wallet_address: wallet.address });
-                        const urlHost = getUrlForDomainWallet({ token: (_a = linkResponse.token) !== null && _a !== void 0 ? _a : "", type: 'transfer_token' });
+                        const urlHost = getUrlForDomainWallet2({ token: (_a = linkResponse.token) !== null && _a !== void 0 ? _a : "", type: 'transfer_token', wallet: wallet.address });
                         console.log(urlHost);
                         return telegraf_1.Markup.button.webApp(` Wallet ${index + 1}`, urlHost);
                     })
@@ -264,7 +290,7 @@ const useWalletBotRoutes = ({ bot, walletRepository, tradeRepository, encryption
     }));
 };
 exports.useWalletBotRoutes = useWalletBotRoutes;
-const getUrlForDomainTrade = ({ token, wallet, type }) => {
+const getUrlForDomainWallet2 = ({ token, wallet, type }) => {
     const url = `${INTEGRATION_WEB_HOST}/integrations/${type}?token=${token}&wallet_address=${wallet}`;
     return url;
 };

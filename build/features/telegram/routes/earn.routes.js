@@ -48,18 +48,19 @@ const useEarnBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionRe
             if (!tokenResponse.token)
                 return ctx.reply(tokenResponse.message, intialKeyboard);
             const urlHost = getUrlForDomainEarn({ token: tokenResponse.token, type: 'add_refer_code' });
+            console.log(urlHost);
             const keyboard = telegraf_1.Markup.inlineKeyboard([
-                [telegraf_1.Markup.button.callback('💼 Claim reward', "add_refer_code")],
+                [telegraf_1.Markup.button.callback('💼 Claim reward', "cliam_user_reward")],
                 [telegraf_1.Markup.button.webApp('📈 Enter ref code', urlHost)],
                 [telegraf_1.Markup.button.callback('🔙 Back', 'earn-menu')],
             ]);
-            ctx.reply(message_1.MessageEarnTemplate.generateReferalMessage(response), keyboard);
+            ctx.reply(message_1.MessageEarnTemplate.generateReferalMessage(response.user), keyboard);
         }
         catch (err) {
             console.log(err);
         }
     }));
-    bot.action('add_refer_code', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    bot.action('cliam_user_reward', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const intialKeyboard = telegraf_1.Markup.inlineKeyboard([
                 [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
@@ -74,12 +75,13 @@ const useEarnBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionRe
             if (!tokenResponse.token)
                 return ctx.reply(tokenResponse.message, intialKeyboard);
             const urlHost = getUrlForDomainEarn({ token: tokenResponse.token, type: 'add_refer_code' });
+            console.log(urlHost);
             const keyboard = telegraf_1.Markup.inlineKeyboard([
-                [telegraf_1.Markup.button.webApp('💼 Claim reward', urlHost)],
+                [telegraf_1.Markup.button.callback('💼 Claim reward', 'claim_referral_reward')],
                 [telegraf_1.Markup.button.webApp('📈 Enter ref code', urlHost)],
                 [telegraf_1.Markup.button.callback('🔙 Back', 'earn-menu')],
             ]);
-            ctx.reply(message_1.MessageEarnTemplate.generateReferalMessage(response), keyboard);
+            ctx.reply(message_1.MessageTemplete.defaultMessage("Claim rewards is coming soon"), keyboard);
         }
         catch (err) {
             console.log(err);

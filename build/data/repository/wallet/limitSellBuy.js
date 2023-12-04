@@ -19,7 +19,7 @@ const limit_1 = require("../database/models/limit");
 const user_1 = require("../database/models/user");
 const trade_1 = __importDefault(require("./trade"));
 const LimitBuySell = ({ tradeRepository, telegrambot }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b;
     const limitbuySells = yield limit_1.LimitMarketModel.find();
     for (const element of limitbuySells) {
         const limitbuySell = element;
@@ -31,18 +31,13 @@ const LimitBuySell = ({ tradeRepository, telegrambot }) => __awaiter(void 0, voi
         if (!wallet)
             continue;
         if (limitbuySell.marketType == 'buy') {
-            console.log(1);
             const currentToken = yield tradeRepository.getCoinByContractAddress({ contract_address: limitbuySell.tokenInfo.contractAddress });
-            console.log('current price', (_a = currentToken.contract) === null || _a === void 0 ? void 0 : _a.constant_price);
-            if (!((_b = currentToken.contract) === null || _b === void 0 ? void 0 : _b.constant_price)) {
-                console.log("Unable to use token");
+            if (!((_a = currentToken.contract) === null || _a === void 0 ? void 0 : _a.constant_price)) {
                 continue;
             }
-            console.log(2);
             if (parseFloat(currentToken.contract.constant_price) > limitbuySell.price) {
                 continue;
             }
-            console.log(3);
             const response = yield tradeRepository.swapEthToToken({
                 wallet,
                 amount: limitbuySell.amount,
@@ -50,28 +45,22 @@ const LimitBuySell = ({ tradeRepository, telegrambot }) => __awaiter(void 0, voi
                 tokenInfo: limitbuySell.tokenInfo,
                 gas_fee: 1000000
             }, (data) => {
-                telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data));
+                telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data), telegraf_1.Markup.inlineKeyboard([
+                    [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
+                ]));
             });
-            console.log(4);
-            console.log('response', response);
             if (response.status) {
                 yield limit_1.LimitMarketModel.findByIdAndRemove(limitbuySell._id);
             }
-            console.log(5);
         }
         if (limitbuySell.marketType == 'sell') {
-            console.log(1);
             const currentToken = yield tradeRepository.getCoinByContractAddress({ contract_address: limitbuySell.tokenInfo.contractAddress });
-            console.log(2);
-            if (!((_c = currentToken.contract) === null || _c === void 0 ? void 0 : _c.constant_price)) {
-                console.log("Unable to use token");
+            if (!((_b = currentToken.contract) === null || _b === void 0 ? void 0 : _b.constant_price)) {
                 continue;
             }
-            console.log(3);
             if (parseFloat(currentToken.contract.constant_price) < limitbuySell.price) {
                 continue;
             }
-            console.log(4);
             const response = yield tradeRepository.swapTokenToEth({
                 wallet,
                 amount: limitbuySell.amount,
@@ -79,28 +68,26 @@ const LimitBuySell = ({ tradeRepository, telegrambot }) => __awaiter(void 0, voi
                 tokenInfo: limitbuySell.tokenInfo,
                 gas_fee: 1000000
             }, (data) => {
-                telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data));
+                telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data), telegraf_1.Markup.inlineKeyboard([
+                    [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
+                ]));
             });
-            console.log(5);
             if (response.status) {
                 yield limit_1.LimitMarketModel.findByIdAndRemove(limitbuySell._id);
             }
-            console.log(6);
         }
     }
 });
 exports.LimitBuySell = LimitBuySell;
 const continueMarketCheck = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log("Initialized Limit buy and sell");
         const YOUR_BOT_TOKEN = process.env.YOUR_BOT_TOKEN;
         const tradeRepository = new trade_1.default();
         const telegrambot = new telegraf_1.Telegraf(YOUR_BOT_TOKEN);
-        // setTimeout(() => {
-        //     LimitBuySell({ tradeRepository, telegrambot })
-        // }, 1000 * 2);
         setInterval(() => {
             (0, exports.LimitBuySell)({ tradeRepository, telegrambot });
-        }, 1000 * 5);
+        }, 1000 * 60 * 5);
     }
     catch (err) {
         console.log(err);

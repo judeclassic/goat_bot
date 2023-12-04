@@ -25,6 +25,6 @@ exports.default = (0, server_1.default)((app, _server) => {
     const router = new router_1.default({ router: app, authenticationRepo, host: '/api' });
     router.extend('/integrations', integration_routes_1.default);
     router.extend('/other', other_routes_1.default);
-    logger_ts_1.initLogger.useExpressMonganMiddleWare(app);
+    // initLogger.useExpressMonganMiddleWare(app);
     logger_ts_1.initLogger.checkRoutes(router);
 });

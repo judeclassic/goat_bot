@@ -37,28 +37,48 @@ const useBotsBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionRe
         }
     }));
     bot.action(`activate-sniper-bot`, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
-            [telegraf_1.Markup.button.callback('🔙 Back', 'bots-menu')],
-        ]);
-        ctx.reply(message_1.MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+        try {
+            const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
+                [telegraf_1.Markup.button.callback('🔙 Back', 'bots-menu')],
+            ]);
+            ctx.reply(message_1.MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+        }
+        catch (err) {
+            console.log(err);
+        }
     }));
     bot.action(`activate-frontrunner-bot`, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
-            [telegraf_1.Markup.button.callback('🔙 Back', 'bots-menu')],
-        ]);
-        ctx.reply(message_1.MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+        try {
+            const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
+                [telegraf_1.Markup.button.callback('🔙 Back', 'bots-menu')],
+            ]);
+            ctx.reply(message_1.MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+        }
+        catch (err) {
+            console.log(err);
+        }
     }));
     bot.action(`activate-mirror-bot`, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
-            [telegraf_1.Markup.button.callback('🔙 Back', 'bots-menu')],
-        ]);
-        ctx.reply(message_1.MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+        try {
+            const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
+                [telegraf_1.Markup.button.callback('🔙 Back', 'bots-menu')],
+            ]);
+            ctx.reply(message_1.MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+        }
+        catch (err) {
+            console.log(err);
+        }
     }));
     bot.action(`check-bot-performance`, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
-            [telegraf_1.Markup.button.callback('🔙 Back', 'bots-menu')],
-        ]);
-        ctx.reply(message_1.MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+        try {
+            const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
+                [telegraf_1.Markup.button.callback('🔙 Back', 'bots-menu')],
+            ]);
+            ctx.reply(message_1.MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+        }
+        catch (err) {
+            console.log(err);
+        }
     }));
 };
 exports.useBotsBotRoutes = useBotsBotRoutes;

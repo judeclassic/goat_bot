@@ -40,6 +40,7 @@ const UserSchema = new mongoose_1.Schema({
         type: String,
     },
     wallets: [WalletSchema],
+    referredUserCode: String,
     referal: {
         referalCode: String,
         totalReferrals: Number,

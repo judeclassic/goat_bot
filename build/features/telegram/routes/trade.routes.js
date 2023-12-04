@@ -119,7 +119,7 @@ const useTradeBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionR
                     })
                 ],
                 [telegraf_1.Markup.button.callback('🔙 Back', 'trade-menu')],]);
-            const { text, entities } = message_1.MessageTemplete.generateWalletEntities("🟠 Limit Sell Order 🔒: Secure your profits or limit losses! Decide on a selling price, and GoatBot will execute the trade when your set price is hit. Sleep easy, knowing you're in control.", response.user.wallets);
+            const { text, entities } = message_1.MessageTemplete.generateWalletEntities("🟡 Limit buy order 🔒: Secure your profits or limit losses! Decide on a selling price, and GoatBot will execute the trade when your set price is hit. Sleep easy, knowing you're in control.", response.user.wallets);
             ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
         }
         catch (err) {
@@ -127,7 +127,6 @@ const useTradeBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionR
         }
     }));
     bot.action('sell-limit-order-menu', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        var _b;
         try {
             const initialKeyboard = telegraf_1.Markup.inlineKeyboard([
                 [telegraf_1.Markup.button.callback('🔙 Back', 'trade-menu')],
@@ -138,9 +137,6 @@ const useTradeBotRoutes = ({ bot, walletRepository, tradeRepository, encryptionR
             const response = yield telegramService.userOpensChat({ telegram_id });
             if (!response.user)
                 return ctx.reply(response.message, initialKeyboard);
-            const tokenResponse = yield telegramService.generateUserIDToken({ telegram_id });
-            if (!tokenResponse.token)
-                return ctx.reply((_b = tokenResponse.message) !== null && _b !== void 0 ? _b : '', initialKeyboard);
             const keyboard = telegraf_1.Markup.inlineKeyboard([[
                     ...response.user.wallets.map((wallet, index) => {
                         var _a, _b;
