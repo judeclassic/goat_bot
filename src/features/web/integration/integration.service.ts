@@ -5,7 +5,7 @@ import WalletRepository from "../../../data/repository/wallet/wallet";
 import IError from "../../../data/types/error/error";
 import { LimitMarketModel } from "../../../data/repository/database/models/limit";
 import { ISwapTokenInfo } from "../../../data/types/repository/trade";
-import { Telegraf } from "telegraf";
+import { Markup, Telegraf } from "telegraf";
 import { MessageTemplete } from "../../../data/handler/template/message";
 
 class IntegrationService {
@@ -51,7 +51,7 @@ class IntegrationService {
     const wallet = user.wallets.find(_wallet => _wallet.address === decoded.wallet_address)
     if (!wallet) return { errors: [{ message: 'unable to get this wallet information' }]};
 
-    const tokensResponse = await this._walletRepository.getOtherTokens(wallet);
+    const tokensResponse = await this._tradeRepository.getOtherTokens(wallet);
     console.log(tokensResponse);
 
     if ( !tokensResponse ) {
@@ -238,7 +238,13 @@ class IntegrationService {
         if (!transaction.data) return { errors: [{ message: transaction.error ?? 'wallet not found'}] };
       } else {
         const transaction = await this._walletRepository.transferToken({ wallet, amount, contract_address, reciever_address }, (data) => {
-          this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data));
+          this.telegrambot.telegram.sendMessage(
+            user.telegram_id,
+            MessageTemplete.buyNotificationMessage(user, data),
+            Markup.inlineKeyboard([
+              [ Markup.button.callback('🔙 Back', 'menu') ],
+            ])
+          );
         });
         if (!transaction.data) return { errors: [{ message: transaction.error ?? 'wallet not found'}] };
       }
@@ -262,7 +268,13 @@ class IntegrationService {
       if (!wallet) return { errors: [{ message: 'wallet not found'}] };
 
       const transaction = await this._walletRepository.transferEth({ wallet, amount, reciever_address }, (data) => {
-        this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data));
+        this.telegrambot.telegram.sendMessage(
+          user.telegram_id,
+          MessageTemplete.buyNotificationMessage(user, data),
+          Markup.inlineKeyboard([
+            [ Markup.button.callback('🔙 Back', 'menu') ],
+          ])
+        );
       });
       if (!transaction.data) return { errors: [{ message: transaction.error ?? 'wallet not found'}] };
 
@@ -282,7 +294,7 @@ class IntegrationService {
 
       if (!wallet) return { errors: [{ message: 'wallet not found'}] };
 
-      const balances = await this._walletRepository.getOtherTokens(wallet);
+      const balances = await this._tradeRepository.getOtherTokens(wallet);
       return { data: balances };
   };
 

@@ -39,34 +39,50 @@ export const useBotsBotRoutes = ({bot, walletRepository, tradeRepository, encryp
     });
 
     bot.action( `activate-sniper-bot`, async (ctx) => {
-        const initialKeyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('🔙 Back', 'bots-menu')],
-        ]);
+        try {
+            const initialKeyboard = Markup.inlineKeyboard([
+                [Markup.button.callback('🔙 Back', 'bots-menu')],
+            ]);
 
-        ctx.reply(MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+            ctx.reply(MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+        } catch (err) {
+            console.log(err)
+        }
     });
 
     bot.action( `activate-frontrunner-bot`, async (ctx) => {
-        const initialKeyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('🔙 Back', 'bots-menu')],
-        ]);
+        try {
+            const initialKeyboard = Markup.inlineKeyboard([
+                [Markup.button.callback('🔙 Back', 'bots-menu')],
+            ]);
 
-        ctx.reply(MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+            ctx.reply(MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+        } catch (err) {
+            console.log(err)
+        }
     });
 
     bot.action( `activate-mirror-bot`, async (ctx) => {
-        const initialKeyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('🔙 Back', 'bots-menu')],
-        ]);
+        try {
+            const initialKeyboard = Markup.inlineKeyboard([
+                [Markup.button.callback('🔙 Back', 'bots-menu')],
+            ]);
 
-        ctx.reply(MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+            ctx.reply(MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+        } catch (err) {
+            console.log(err)
+        }
     });
 
     bot.action( `check-bot-performance`, async (ctx) => {
-        const initialKeyboard = Markup.inlineKeyboard([
-            [Markup.button.callback('🔙 Back', 'bots-menu')],
-        ]);
+        try {
+            const initialKeyboard = Markup.inlineKeyboard([
+                [Markup.button.callback('🔙 Back', 'bots-menu')],
+            ]);
 
-        ctx.reply(MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+            ctx.reply(MessageTemplete.defaultMessage(`This feature is coming soon`), initialKeyboard);
+        } catch (err) {
+            console.log(err)
+        }
     });
 }

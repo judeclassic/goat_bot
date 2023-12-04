@@ -6,13 +6,18 @@ import WalletRepository from "../../../data/repository/wallet/wallet";
 import { LimitMarketModel as limitMarketModel } from "../../../data/repository/database/models/limit";
 import OtherController from "./other.controller";
 import OtherService from "./other.service";
+import { Telegraf } from "telegraf";
 
 const otherUserRoutes = async ({router}: {router: RequestHandler}) => {
+
+    const YOUR_BOT_TOKEN = process.env.YOUR_BOT_TOKEN!;
+
+    const bot = new Telegraf(YOUR_BOT_TOKEN)
     const tradeRepository = new TradeRepository();
     const walletRepository = new WalletRepository();
     const encryptionRepository = new EncryptionRepository();
 
-    const otherService = new OtherService({ userModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel });
+    const otherService = new OtherService({ bot, userModel, tradeRepository, encryptionRepository, walletRepository, limitMarketModel });
     const otherController = new OtherController({ otherService});
     
     router.postWithBody('/referral_code', otherController.addReferralCode);

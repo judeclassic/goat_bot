@@ -120,6 +120,7 @@ class IntegrationController {
         { body }: { body: any },
         sendResponse: (code: number, response: IResponse<any>)=>void
     )  => {
+        console.log('body', body)
         const response = await this._integrationService.transferEth(body);
         if (!response.data) return sendResponse(401, { error: response.errors, status: false });
 

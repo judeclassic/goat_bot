@@ -15,18 +15,18 @@ import { ERC20ABI } from "./erc20_aba";
 const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f'
 import axios from 'axios';
 const ETHERSCAN_API_KEY = 'XRSGJ71XPY5V7B76ICCSEPPVT9ZVFHXQTN';
-  
+   
 class WalletRepository {
     private provider: Web3;
     private ankrProvider: AnkrProvider;
     private tradeRepository: TradeRepository;
-    providerTwo: ethers.providers.JsonRpcProvider;
+    etherProvider: ethers.providers.JsonRpcProvider;
 
     constructor () {
         this.provider = new Web3(new Web3.providers.HttpProvider(YOUR_ANKR_PROVIDER_URL));
         this.ankrProvider = new AnkrProvider(ANKR_PROVIDER_URL);
         this.tradeRepository = new TradeRepository();
-        this.providerTwo = new ethers.providers.JsonRpcProvider
+        this.etherProvider = new ethers.providers.JsonRpcProvider(YOUR_ANKR_PROVIDER_URL);
     }
 
     public encryptToken = (data: any) => {
@@ -57,10 +57,8 @@ class WalletRepository {
 
     importWallet = async (privateKey: string): Promise<IWallet | undefined> => {
         try {
-            console.log("privateKey: ", privateKey)
             const account = this.provider.eth.accounts.privateKeyToAccount(privateKey);
             const balance = await this.ankrProvider.getAccountBalance({walletAddress: account.address});
-            console.log(account)
 
             return {
                 address: account.address,
@@ -100,7 +98,7 @@ class WalletRepository {
 
             return {
                 address: wallet.address,
-                private_key: this.decryptToken(wallet.private_key),
+                private_key: wallet.private_key,
                 balance: proximate(balance.assets.find((value) => value.tokenSymbol === "ETH")?.balance ?? '0'),
                 balance_in_dollar: proximate(balance.assets.find((value) => value.tokenSymbol === "ETH")?.balanceUsd ?? '0'),
                 others: balance.assets.map((value) => ({
@@ -125,45 +123,34 @@ class WalletRepository {
         amount: number
     }, callback: (transaction: ICallback) => void) : Promise<{ data?: string; error?: string }> => {
         try {
+            console.log(1)
             const privateKey = this.decryptToken(wallet.private_key);
-            // const account = new CryptoAccount(privateKey);
-
-            // const txHash = await account.send(reciever_address, amount, {
-            //     type: "ERC20",
-            //     address: contract_address,
-            // })
-            // .on("transactionHash", console.log)
-            // .on("confirmation", console.log);
-
-            // callback({
-            //     transactionHash: txHash,
-            //     wallet: wallet.address,
-            //     transactionType: 'transfer',
-            //     amount: amount
-            // });
-
-            const web3Provider = this.providerTwo;
   
             const wallete = new ethers.Wallet(privateKey);
+            console.log(2)
+            const connectedWallet = wallete.connect(this.etherProvider);
 
-            const connectedWallet = wallete.connect(web3Provider);
-
-            const erc20Contract = new ethers.Contract(contract_address, ERC20ABI, web3Provider);
+            const erc20Contract = new ethers.Contract(contract_address, ERC20ABI, this.etherProvider);
 
             const amountSent = ethers.utils.parseUnits(amount.toString(), 18)
+
+            console.log(3)
 
             const txGasLimit = await this.getGasPrices()
             const low = txGasLimit.gasPrices?.low
             const med = txGasLimit.gasPrices?.average
             const highGas= txGasLimit.gasPrices?.high
 
+            console.log(5)
+
             const transferToken = await erc20Contract.connect(connectedWallet).transfer(
-                reciever_address,
+                reciever_address.trim(),
                 amountSent, {
                   gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
                   //gasLimit: 300000,
                 }
             );
+            console.log(6)
 
             callback({
                 transactionHash: transferToken.hash,
@@ -174,8 +161,11 @@ class WalletRepository {
 
             await transferToken.wait()
 
+            console.log(6)
+
             return { data: transferToken.hash };
         } catch (err) {
+            console.log('error', err)
             return { error: 'Error unable process transaction' };
         }
     }
@@ -186,30 +176,32 @@ class WalletRepository {
         amount: number
     }, callback: (transaction: ICallback) => void) : Promise<{ data?: string; error?: string }> => {
         try {
+            console.log(1);
             const privateKey = this.decryptToken(wallet.private_key);
-            // const account = new CryptoAccount(privateKey);
-
-            // const txHash = await account.send(reciever_address, amount, "ETH")
-            //     .on("transactionHash", console.log)
-            //     .on("confirmation", console.log);
-                
-            // callback({
-            //     transactionHash: txHash,
-            //     wallet: wallet.address,
-            //     transactionType: 'transfer',
-            //     amount: amount
-            // });
-
-            const web3Provider = this.providerTwo;
   
             const wallete = new ethers.Wallet(privateKey);
 
-            const connectedWallet = wallete.connect(web3Provider);
+            const connectedWallet = wallete.connect(this.etherProvider);
+
+            console.log(2);
+            console.log('reciever', reciever_address)
+
+            
+            // const nonce = await this.etherProvider.getTransactionCount(wallet.address);
+
+            const txGasLimit = await this.getGasPrices()
+            const low = txGasLimit.gasPrices?.low
+            const med = txGasLimit.gasPrices?.average
+            const highGas= txGasLimit.gasPrices?.high
 
             const sendEth = await connectedWallet.sendTransaction({
-                to: reciever_address,
-                value: ethers.utils.parseEther(amount.toString())
+                to: reciever_address.trim(),
+                value: ethers.utils.parseEther(amount.toString()), 
+                gasPrice: ethers.utils.parseUnits(highGas, 'gwei'),
             })
+            
+
+            console.log(3);
 
             callback({
                 transactionHash: sendEth.hash,
@@ -218,8 +210,11 @@ class WalletRepository {
                 amount: amount
             });
 
-            return { data: sendEth.hash };
+            console.log(4);
+
+            return { data: sendEth.hash}
         } catch (err) {
+            console.log('Error', err)
             return { error: 'Error unable process transaction'};
         }
     }

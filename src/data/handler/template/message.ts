@@ -1,8 +1,11 @@
-import { IOtherWallet, IUser, IWallet } from "../../repository/database/models/user";
+import { IOtherWallet, IUser } from "../../repository/database/models/user";
 import ICallback from "../../types/callback/callback";
-const etherscanBaseUrl = "https://etherscan.io/address/";
+import jwt from 'jsonwebtoken';
 
 export class MessageTemplete {
+    static decryptToken = (data: any): string => {
+        return jwt.verify(data, process.env.SECRET_ENCRYPTION_KEY!) as string;
+    }
 
     static welcome = () => (
         "══════[ 🐐 GoatBot 🐐 ]══════\n"+
@@ -86,12 +89,12 @@ export class MessageTemplete {
     
             // Add entity for wallet address (bold and text_link)
             entities.push({ offset: offset+" address: ".length, length: wallet.address.length, type: 'code' });
-            offset += `address: ${wallet.address}\`\n`.length;
+            offset += `Address: ${wallet.address}\`\n`.length;
 
-            entities.push({ offset: offset+" private key: ".length, length: wallet.private_key.length, type: 'code' });
-            offset += `private key: ${wallet.private_key}\`\n`.length;
+            entities.push({ offset: offset+" private key: ".length, length: this.decryptToken(wallet.private_key).length, type: 'code' });
+            offset += `Private key: ${this.decryptToken(wallet.private_key)}\`\n\n`.length;
     
-            return `▰ Wallet_w${index + 1} ▰\n${balanceText}\n address: ${wallet.address}\n private key: ${wallet.private_key}\n`;
+            return `▰ Wallet_w${index + 1} ▰\n${balanceText}\n address: ${wallet.address}\n private key: ${this.decryptToken(wallet.private_key)}\n\n`;
         });
     
         const text = header + walletTexts.join('');
@@ -111,8 +114,6 @@ export class MessageTemplete {
             `${message} \n\n`+
             "══🔳 Your Wallets 🔳══\n\n"
         offset += header.length;
-
-        console.log(balances);
     
         const walletTexts = balances.map((balance, index) => {
             // Add entity for "Wallet_wX"
@@ -178,11 +179,11 @@ export class MessageTemplete {
         text += data.transactionType
         text += "\n";
     
-        return { text, entities };
+        return { text, entities,  disable_web_page_preview: true };
     }
 }
 export class MessageEarnTemplate {
-    static generateReferalMessage = ({ user }:{user: IUser}) => {
+    static generateReferalMessage = (user: IUser) => {
         const entities: any = [];
     
         let text = 
@@ -192,18 +193,18 @@ export class MessageEarnTemplate {
             "for 30 days per referred user. Start referring and accumulating $GOAT today! \n\n"+
             "Dive into goatbot referral program🤝 . Refer, earn, hold $GOAT & claim your earnings. \n\n"+
             "══🔳 Your Referral Info 🔳══\n\n"+
-            "Referral Code: "+(user?.referal?.referalCode ?? "code")+"<\n\n";
+            "Referral Code: "+(user?.referal?.referalCode ?? "code")+"\n\n";
 
         entities.push({
-            offset: text.length - ((user?.referal?.referalCode ?? "code")?.length + 3),
+            offset: text.length - ((user?.referal?.referalCode ?? "code")?.length + 2),
             length: (user?.referal?.referalCode ?? "code").length,
             type: 'code',
         });
         
         text += 
-            "Total Referrals: "+(user?.referal?.totalEarnings ?? 0)+" <\n\n"+
-            "Total Earnings: "+(user?.referal?.totalEarnings ?? 0)+" $Goat <\n\n"+
-            "Claimable Earnings: "+(user?.referal?.claimableEarnings ?? 0)+" $Goat <\n\n";
+            "Total Referrals: "+(user?.referal?.totalEarnings ?? 0)+" \n\n"+
+            "Total Earnings: "+(user?.referal?.totalEarnings ?? 0)+" $Goat \n\n"+
+            "Claimable Earnings: "+(user?.referal?.claimableEarnings ?? 0)+" $Goat \n\n";
     
         return { text, entities };
     }

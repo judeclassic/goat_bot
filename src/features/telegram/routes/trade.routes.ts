@@ -127,7 +127,7 @@ export const useTradeBotRoutes = ({bot, walletRepository, tradeRepository, encry
                 [Markup.button.callback('🔙 Back', 'trade-menu')],
             ]);
 
-            const { text, entities } = MessageTemplete.generateWalletEntities("🟠 Limit Sell Order 🔒: Secure your profits or limit losses! Decide on a selling price, and GoatBot will execute the trade when your set price is hit. Sleep easy, knowing you're in control.", response.user.wallets);
+            const { text, entities } = MessageTemplete.generateWalletEntities("🟡 Limit buy order 🔒: Secure your profits or limit losses! Decide on a selling price, and GoatBot will execute the trade when your set price is hit. Sleep easy, knowing you're in control.", response.user.wallets);
             ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
         } catch (err) {
             console.log(err)
@@ -145,9 +145,6 @@ export const useTradeBotRoutes = ({bot, walletRepository, tradeRepository, encry
             const telegram_id = ctx.chat.id.toString();
             const response = await telegramService.userOpensChat({ telegram_id });
             if (!response.user) return ctx.reply(response.message, initialKeyboard);
-
-            const tokenResponse = await telegramService.generateUserIDToken({ telegram_id });
-            if (!tokenResponse.token) return ctx.reply(tokenResponse.message??'', initialKeyboard);
 
             const keyboard = Markup.inlineKeyboard([[
                 ...response.user.wallets.map((wallet, index) => {

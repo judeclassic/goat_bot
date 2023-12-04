@@ -1,5 +1,5 @@
 import { SessionMessage, SessionType } from '../../data/handler/type';
-import { IOtherWallet, IWallet, UserModel } from '../../data/repository/database/models/user';
+import { IOtherWallet, IUser, IWallet, UserModel } from '../../data/repository/database/models/user';
 import EncryptionRepository from '../../data/repository/encryption';
 import TradeRepository from '../../data/repository/wallet/__trade';
 import WalletRepository from '../../data/repository/wallet/wallet';
@@ -34,7 +34,7 @@ class TelegramService {
                 wallets.push(wallet);
             }
 
-            return { status: true, user: {...user, wallets} };
+            return { status: true, user: {...((user as any)._doc as IUser), wallets} };
         } catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }
@@ -53,13 +53,14 @@ class TelegramService {
                 wallets.push(wallet);
             }
 
-            user.wallets = wallets;
             const wallet = await this.walletRepository.createWallet();
             if (!wallet) return { status: false, message: 'error please send "/start" request again' };
-            user.wallets.push(wallet);
+
+            wallets.push(wallet);
+            user.wallets = wallets;
             await user.save()
 
-            return { status: true, user: {...user, wallets} };
+            return { status: true, user: {...((user as any)._doc as IUser), wallets} };
         }catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }
@@ -103,13 +104,15 @@ class TelegramService {
                 const wallet = await this.walletRepository.getWallet(element);
                 wallets.push(wallet);
             }
-            user.wallets = wallets;
+
             const wallet = await this.walletRepository.importWallet(private_key);
             if (!wallet) return { status: false, message: 'invalid private key' };
-            user.wallets.push(wallet)
-            await user.save()
+            wallets.push(wallet);
+            
+            user.wallets = wallets;
+            const updatedUser = await user.save();
 
-            return { status: true, user: {...user, wallets} };
+            return { status: true, user: {...updatedUser, wallets} };
         } catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }
@@ -124,12 +127,13 @@ class TelegramService {
             for (const element of user.wallets) {
                 if (user.wallets.indexOf(element) === wallet_number) continue;
                 const wallet = await this.walletRepository.getWallet(element);
+                console.log(element);
                 wallets.push(wallet);
             }
             user.wallets = wallets;
-            await user.save()
+            const updatedUser = await user.save();
 
-            return { status: true, user: {...user, wallets} };
+            return { status: true, user: {...updatedUser, wallets} };
         }catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }
@@ -185,7 +189,7 @@ class TelegramService {
                 wallets.push(wallet);
             }
 
-            return { status: true, user: {...user, wallets} };
+            return { status: true, user: {...((user as any)._doc as IUser), wallets} };
         } catch (err) {
             return { status: false, message: 'error please send "/start" request again' };
         }

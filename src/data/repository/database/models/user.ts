@@ -76,6 +76,7 @@ const UserSchema = new Schema<IUser>({
         type: String,
     },
     wallets: [WalletSchema],
+    referredUserCode: String,
     referal: {
         referalCode: String,
         totalReferrals: Number,

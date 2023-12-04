@@ -25,7 +25,7 @@ export default server((app, _server) => {
     router.extend('/integrations', integrationUserRoutes);
     router.extend('/other', otherUserRoutes);
 
-    initLogger.useExpressMonganMiddleWare(app);
+    // initLogger.useExpressMonganMiddleWare(app);
     initLogger.checkRoutes(router);
 });
 

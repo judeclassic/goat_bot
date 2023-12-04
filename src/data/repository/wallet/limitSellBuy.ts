@@ -1,4 +1,4 @@
-import { Telegraf } from "telegraf";
+import { Markup, Telegraf } from "telegraf";
 import { MessageTemplete } from "../../handler/template/message";
 import { LimitMarketModel } from "../database/models/limit";
 import { UserModel } from "../database/models/user";
@@ -19,24 +19,15 @@ export const LimitBuySell = async ({ tradeRepository, telegrambot } : { tradeRep
         if (!wallet) continue;
 
         if (limitbuySell.marketType == 'buy') {
-
-            console.log(1)
-
             const currentToken = await tradeRepository.getCoinByContractAddress({ contract_address: limitbuySell.tokenInfo.contractAddress });
-            console.log('current price', currentToken.contract?.constant_price)
 
             if (!currentToken.contract?.constant_price) {
-                console.log("Unable to use token");
                 continue;
             }
-
-            console.log(2)
 
             if (parseFloat(currentToken.contract.constant_price) > limitbuySell.price) {
                 continue;
             }
-
-            console.log(3)
             const response = await tradeRepository.swapEthToToken({
                 wallet,
                 amount: limitbuySell.amount,
@@ -44,36 +35,30 @@ export const LimitBuySell = async ({ tradeRepository, telegrambot } : { tradeRep
                 tokenInfo: limitbuySell.tokenInfo,
                 gas_fee: 1000000
             }, (data) => {
-                telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data));
+                telegrambot.telegram.sendMessage(
+                    user.telegram_id,
+                    MessageTemplete.buyNotificationMessage(user, data),
+                    Markup.inlineKeyboard([
+                        [ Markup.button.callback('🔙 Back', 'menu') ],
+                    ])
+                );
               });
-
-            console.log(4)
-
-            console.log('response', response)
             if (response.status) {
                 await LimitMarketModel.findByIdAndRemove(limitbuySell._id);
             }
-
-            console.log(5)
         }
 
         if (limitbuySell.marketType == 'sell') {
-           console.log(1)
             const currentToken = await tradeRepository.getCoinByContractAddress({ contract_address: limitbuySell.tokenInfo.contractAddress });
 
-            console.log(2)
             if (!currentToken.contract?.constant_price) {
-                console.log("Unable to use token");
                 continue;
             }
-
-            console.log(3)
 
             if (parseFloat(currentToken.contract.constant_price) < limitbuySell.price) {
                 continue;
             }
 
-            console.log(4)
             const response = await tradeRepository.swapTokenToEth({
                 wallet,
                 amount: limitbuySell.amount,
@@ -81,14 +66,17 @@ export const LimitBuySell = async ({ tradeRepository, telegrambot } : { tradeRep
                 tokenInfo: limitbuySell.tokenInfo,
                 gas_fee: 1000000
             }, (data) => {
-                telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data));
+                telegrambot.telegram.sendMessage(
+                    user.telegram_id,
+                    MessageTemplete.buyNotificationMessage(user, data),
+                    Markup.inlineKeyboard([
+                        [ Markup.button.callback('🔙 Back', 'menu') ],
+                    ])
+                );
               })
-            console.log(5)
             if (response.status) {
                 await LimitMarketModel.findByIdAndRemove(limitbuySell._id);
             }
-
-            console.log(6)
         }
     }
 
@@ -96,18 +84,15 @@ export const LimitBuySell = async ({ tradeRepository, telegrambot } : { tradeRep
 
 export const continueMarketCheck = async () => {
     try {
+        console.log("Initialized Limit buy and sell");
         const YOUR_BOT_TOKEN = process.env.YOUR_BOT_TOKEN!;
 
         const tradeRepository = new TradeRepository();
         const telegrambot = new Telegraf(YOUR_BOT_TOKEN);
 
-        // setTimeout(() => {
-        //     LimitBuySell({ tradeRepository, telegrambot })
-        // }, 1000 * 2);
-
         setInterval(() => {
-            LimitBuySell({ tradeRepository, telegrambot })
-        }, 1000 * 5);
+            LimitBuySell({ tradeRepository, telegrambot });
+        }, 1000 * 60 * 5);
     } catch (err) {
         console.log(err);
     }

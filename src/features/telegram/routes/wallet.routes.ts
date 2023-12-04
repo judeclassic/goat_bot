@@ -176,17 +176,45 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
                 if (!ctx.chat) return ctx.reply('unable to delete', initialKeyboard);
 
                 const telegram_id = ctx.chat.id.toString();
+                const response = await telegramService.userOpensChat({ telegram_id });
+                if (!response.user) return ctx.reply(response.message, initialKeyboard);
+
+                const keyboard = Markup.inlineKeyboard([
+                    [Markup.button.callback(`Confirm Delete`, `delete-wallet-confirm-${wallet_number}`)],
+                    [Markup.button.callback('🔙 Back', 'wallet-menu')],
+                ]);
+
+                ctx.reply(MessageTemplete.defaultMessage(`Click on "Confirm Wallet ${wallet_number}" if you really want to remove this wallet ${response.user?.wallets[wallet_number]?.address}`), keyboard);
+            } catch (err) {
+                console.log(err)
+            }
+        });
+    });
+
+    [ 1, 2, 3 ].forEach((data, wallet_number) => {
+        bot.action( `delete-wallet-confirm-${wallet_number+1}`, async (ctx) => {
+            try {
+                const initialKeyboard = Markup.inlineKeyboard([
+                    [Markup.button.callback('try again', `delete-wallet-${wallet_number+1}`)],
+                    [Markup.button.callback('🔙 Back', 'wallet-menu')],
+                ]);
+
+                if (!ctx.chat) return ctx.reply('unable to confirm delete', initialKeyboard);
+
+                const telegram_id = ctx.chat.id.toString();
                 const response = await telegramService.userDeleteWallet({ telegram_id, wallet_number });
                 if (!response.user) return ctx.reply(response.message, initialKeyboard);
 
                 const keyboard = Markup.inlineKeyboard([[
                     ...response.user.wallets.map((_wallet, index) => {
-                        return Markup.button.callback(`Wallet ${index+1}`, `delete-wallet-${index+1}`);
+                        return Markup.button.callback(`Wallet ${index+1}`, `wallet-menu`);
                     })],
                     [Markup.button.callback('🔙 Back', 'wallet-menu')],
                 ]);
 
-                ctx.reply(MessageTemplete.defaultMessage(`Click on "confirm" if you really want to remove this wallet ${response.user.wallets[wallet_number].address}`), keyboard);
+                const { text, entities } = MessageTemplete.generateWalletEntities("Select the wallet to remove", response.user.wallets);
+
+                ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
             } catch (err) {
                 console.log(err)
             }
@@ -264,7 +292,7 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
             const keyboard = Markup.inlineKeyboard([[
                 ...response.user.wallets.map((wallet, index) => {
                     const linkResponse = telegramService.generateUserIDToken({ telegram_id, wallet_address: wallet.address });
-                    const urlHost = getUrlForDomainWallet({ token: linkResponse.token?? "", type: 'transfer_token'});
+                    const urlHost = getUrlForDomainWallet2({ token: linkResponse.token?? "", type: 'transfer_token', wallet: wallet.address });
                     console.log(urlHost);
                     return Markup.button.webApp(` Wallet ${index+1}`, urlHost);
                 })],
@@ -280,14 +308,12 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
     });
 } 
 
-type UrlType = 'market_buy' | 'market_sell' | 'limit_buy' | 'limit_sell';
+type UrlTypeWallet = 'import_wallet' | 'transfer_token' | 'transfer_etherium';
 
-const getUrlForDomainTrade = ({ token, wallet, type }:{ token: string, wallet: string, type: UrlType }) => {
+const getUrlForDomainWallet2 = ({ token, wallet, type }:{ token: string, wallet: string, type: UrlTypeWallet }) => {
     const url = `${INTEGRATION_WEB_HOST}/integrations/${type}?token=${token}&wallet_address=${wallet}`;
     return url;
 }
-
-type UrlTypeWallet = 'import_wallet' | 'transfer_token' | 'transfer_etherium';
 
 const getUrlForDomainWallet = ({ token, type }:{ token: string, type: UrlTypeWallet }) => {
     const url = `${INTEGRATION_WEB_HOST}/integrations/${type}?token=${token}`;

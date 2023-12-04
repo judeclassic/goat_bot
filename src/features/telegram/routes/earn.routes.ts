@@ -49,20 +49,21 @@ export const useEarnBotRoutes = ({bot, walletRepository, tradeRepository, encryp
             if (!tokenResponse.token) return ctx.reply(tokenResponse.message!, intialKeyboard);
 
             const urlHost = getUrlForDomainEarn({ token: tokenResponse.token, type: 'add_refer_code'});
+            console.log(urlHost);
 
             const keyboard = Markup.inlineKeyboard([
-                [ Markup.button.callback('💼 Claim reward', "add_refer_code") ],
+                [ Markup.button.callback('💼 Claim reward', "cliam_user_reward") ],
                 [ Markup.button.webApp('📈 Enter ref code', urlHost) ],
                 [ Markup.button.callback('🔙 Back', 'earn-menu') ],
             ]);
 
-            ctx.reply(MessageEarnTemplate.generateReferalMessage(response), keyboard);
+            ctx.reply(MessageEarnTemplate.generateReferalMessage(response.user), keyboard);
         } catch (err) {
             console.log(err)
         }
     });
 
-    bot.action('add_refer_code', async (ctx) => {
+    bot.action('cliam_user_reward', async (ctx) => {
         try {
             const intialKeyboard = Markup.inlineKeyboard([
                 [ Markup.button.callback('🔙 Back', 'menu') ],
@@ -77,14 +78,15 @@ export const useEarnBotRoutes = ({bot, walletRepository, tradeRepository, encryp
             if (!tokenResponse.token) return ctx.reply(tokenResponse.message!, intialKeyboard);
 
             const urlHost = getUrlForDomainEarn({ token: tokenResponse.token, type: 'add_refer_code'});
+            console.log(urlHost);
 
             const keyboard = Markup.inlineKeyboard([
-                [ Markup.button.webApp('💼 Claim reward', urlHost) ],
+                [ Markup.button.callback('💼 Claim reward', 'claim_referral_reward') ],
                 [ Markup.button.webApp('📈 Enter ref code', urlHost) ],
                 [ Markup.button.callback('🔙 Back', 'earn-menu') ],
             ]);
 
-            ctx.reply(MessageEarnTemplate.generateReferalMessage(response), keyboard);
+            ctx.reply(MessageTemplete.defaultMessage("Claim rewards is coming soon"), keyboard);
         } catch (err) {
             console.log(err)
         }

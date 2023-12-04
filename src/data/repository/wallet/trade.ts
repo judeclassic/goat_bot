@@ -32,7 +32,7 @@ export const V3_UNISWAP_ROUTER_CONTRACT = "0xe592427a0aece92de3edee1f18e0157c058
 export const ETH_CONTRACT_ADDRESS = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe"
 
 const ETHERSCAN_API_KEY = 'XRSGJ71XPY5V7B76ICCSEPPVT9ZVFHXQTN';
- //const YOUR_ANKR_PROVIDER_URL = 'http://127.0.0.1:8545'
+//const YOUR_ANKR_PROVIDER_URL = 'http://127.0.0.1:8545'
 const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f'
 const V3_SWAP_CONTRACT_ADDRESS = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45';
 const V2_SWAP_CONTRACT_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
@@ -70,6 +70,40 @@ class TradeRepository {
       }
     }
 
+    getOtherTokens = async (wallet: IWallet): Promise<IOtherWallet[]> => {
+      try {
+          const tokens = await this.ankrProvider.getAccountBalance({walletAddress: wallet.address, onlyWhitelisted: false});
+          const ethAssets = [] as IOtherWallet[];
+          
+          if (!tokens.assets.find((asset) => (!asset.contractAddress))) {
+            const ethAsset = await this.ankrProvider.getTokenPrice({ blockchain: "eth", contractAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" });
+            ethAssets.push({
+                logo: "/assets/eth_logo.png",
+                balance: "0.00",
+                coin_name: 'Ether',
+                balance_in_dollar: '0.00',
+                coin_symbol: 'Eth',
+                decimal: 18,
+                constant_price: ethAsset.usdPrice,
+                contract_address: 'eth'
+            })
+          }
+          return [...ethAssets, ...tokens.assets.map((value) => ({
+            logo: value.thumbnail,
+            coin_name: value.tokenName,
+            coin_symbol: value.tokenSymbol,
+            constant_price: value.tokenPrice,
+            decimal: value.tokenDecimals,
+            contract_address: value.contractAddress,
+            balance: proximate(value.balance),
+            balance_in_dollar: proximate(value.balanceUsd)
+        }))] as IOtherWallet[]
+      } catch (err) {
+        console.log(err)
+          return [];
+      }
+  }
+
     getCoinByContractAddress = async ({ contract_address }:{ contract_address: string }) => {
       try {
         const response = await axios.get(`https://api.etherscan.io/api?module=account&action=tokentx&contractaddress=${contract_address}&page=1&offset=1&sort=desc&apikey=${ETHERSCAN_API_KEY}`);
@@ -82,7 +116,7 @@ class TradeRepository {
                     coin_symbol: response?.data?.result?.[0].tokenSymbol,
                     decimal: response?.data?.result?.[0].tokenDecimal,
                     contract_address: response?.data?.result?.[0].contractAddress,
-                    balance: response?.data?.result?.[0].value,
+                    balance: "0",
                     constant_price: tokenPrice.usdPrice
                 } as IOtherWallet
             };
@@ -532,9 +566,6 @@ class TradeRepository {
       const transactionHash = convertTx.transactionHash;
       const transactionAddress = convertTx.from
 
-      console.log('hash', transactionHash)
-      console.log('address', transactionAddress)
-
       await seee()  
       
       // return {status: true, message: "transaction completed" };
@@ -570,4 +601,6 @@ class TradeRepository {
 
 export default TradeRepository;
 
-console.log("Date: ", Date.parse((new Date()).toISOString()) + ( 1000 * 60 * 30))
+const proximate = (value: string) => {
+  return parseFloat(value).toPrecision(5);
+};
