@@ -25,13 +25,13 @@ export class MessageTemplete {
         "_______________________________________________\n"
     )
 
-    static generateWalletEntities = (message: string, wallets: IUser['wallets']) => {
+    static generateWalletEntities = (message: string, wallets: IUser['wallets'], isTitled = true) => {
         let offset = 0;
         const entities: any = [];
     
         const header = 
             "══════[ 🐐 GoatBot 🐐 ]══════\n\n"+
-            "🐐 GoatBot | Website\n"+
+            (isTitled ? "🐐 GoatBot | Website\n" : "")+
             `${message} \n\n` +
             "══🔳 Your Wallets 🔳══\n\n"
         offset += header.length;

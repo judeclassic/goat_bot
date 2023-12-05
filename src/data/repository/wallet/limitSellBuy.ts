@@ -6,6 +6,7 @@ import TradeRepository from './trade';
 
 export const LimitBuySell = async ({ tradeRepository, telegrambot } : { tradeRepository: TradeRepository, telegrambot: Telegraf}) => {
     const limitbuySells = await LimitMarketModel.find();
+    console.log('run: ', limitbuySells);
 
     for (const element of limitbuySells) {
         const limitbuySell = element;
@@ -92,7 +93,7 @@ export const continueMarketCheck = async () => {
 
         setInterval(() => {
             LimitBuySell({ tradeRepository, telegrambot });
-        }, 1000 * 60 * 5);
+        }, 1000 * 10);
     } catch (err) {
         console.log(err);
     }

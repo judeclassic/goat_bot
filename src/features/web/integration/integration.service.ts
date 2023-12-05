@@ -89,7 +89,9 @@ class IntegrationService {
     if (!wallet) return { errors: [{ message: 'unable to get wallet information' }]};
 
     const response = await this._tradeRepository.swapEthToToken({ tokenInfo, amount, slippage, wallet, gas_fee }, (data) => {
-      this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data));
+      this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data), Markup.inlineKeyboard([
+        [ Markup.button.callback('🔙 Back', 'menu') ],
+      ]));
     });
     console.log()
     if ( !response ) {
@@ -117,13 +119,66 @@ class IntegrationService {
     if (!wallet) return { errors: [{ message: 'unable to get wallet information' }]};
 
     const response = await this._tradeRepository.swapTokenToEth({ tokenInfo, amount, slippage, wallet, gas_fee }, (data) => {
-      this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data));
+      this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data), Markup.inlineKeyboard([
+        [ Markup.button.callback('🔙 Back', 'menu') ],
+      ]));
     });
 
     if ( !response ) {
       return { errors: [{ message: 'unable to place trade' }]};
     }
 
+    return { response };
+  };
+
+  public marketSwapCoin = async ({ token, tokenInfoIn, tokenInfoOut, amount, slippage, gas_fee, }:{
+    token: string,
+    tokenInfoIn: ISwapTokenInfo,
+    tokenInfoOut: ISwapTokenInfo,
+    slippage: number;
+    amount: number
+    gas_fee: number
+  }) => {
+    const decoded: any = this._encryptionRepository.decryptToken(token, TokenType.accessToken);
+    if (!decoded?.telegram_id) return { errors: [{ message: 'Invalid request'}] };
+    const user = await this._userModel.findOne({ telegram_id: decoded?.telegram_id });
+    if (!user) return { errors: [{ message: 'user not found'}] };
+
+    const wallet = user.wallets.find((wallet) => wallet.address === decoded.wallet_address);
+    console.log('token In',tokenInfoIn)
+    console.log('token Out',tokenInfoOut)
+    if (!wallet) return { errors: [{ message: 'unable to get wallet information' }]};
+
+    if (tokenInfoIn.contractAddress === tokenInfoOut.contractAddress) {
+      return { errors: [{ message: 'cannot swap between two similar token' }]};
+    }
+
+    let response;
+
+    if (tokenInfoIn.contractAddress === 'eth') {
+      response = await this._tradeRepository.swapEthToToken({ tokenInfo: tokenInfoOut, amount, slippage, wallet, gas_fee }, (data) => {
+        this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data), Markup.inlineKeyboard([
+          [ Markup.button.callback('🔙 Back', 'menu') ],
+        ]));
+      });
+    } else
+    if (tokenInfoOut.contractAddress === 'eth') {
+      response = await this._tradeRepository.swapTokenToEth({ tokenInfo: tokenInfoIn, amount, slippage, wallet, gas_fee }, (data) => {
+        this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data), Markup.inlineKeyboard([
+          [ Markup.button.callback('🔙 Back', 'menu') ],
+        ]));
+      });
+    } else {
+      response = await this._tradeRepository.swapGen({ tokenInfoIn, tokenInfoOut, amount, slippage, wallet, gas_fee }, (data) => {
+        this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data), Markup.inlineKeyboard([
+          [ Markup.button.callback('🔙 Back', 'menu') ],
+        ]));
+      });
+    }
+
+    if ( !response ) {
+      return { errors: [{ message: 'unable to place trade' }]};
+    }
     return { response };
   };
 

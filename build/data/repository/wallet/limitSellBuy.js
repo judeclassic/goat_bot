@@ -21,6 +21,7 @@ const trade_1 = __importDefault(require("./trade"));
 const LimitBuySell = ({ tradeRepository, telegrambot }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const limitbuySells = yield limit_1.LimitMarketModel.find();
+    console.log('run: ', limitbuySells);
     for (const element of limitbuySells) {
         const limitbuySell = element;
         console.log(limitbuySell);
@@ -87,7 +88,7 @@ const continueMarketCheck = () => __awaiter(void 0, void 0, void 0, function* ()
         const telegrambot = new telegraf_1.Telegraf(YOUR_BOT_TOKEN);
         setInterval(() => {
             (0, exports.LimitBuySell)({ tradeRepository, telegrambot });
-        }, 1000 * 60 * 5);
+        }, 1000 * 10);
     }
     catch (err) {
         console.log(err);

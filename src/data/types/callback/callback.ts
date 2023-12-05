@@ -1,7 +1,7 @@
 interface ICallback {
     transactionHash: string;
     wallet: string;
-    transactionType: string;
+    transactionType: string | any;
     amount: number;
   }
   

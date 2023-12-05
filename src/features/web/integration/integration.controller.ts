@@ -147,6 +147,23 @@ class IntegrationController {
 
         sendResponse(200, { data: response.data, status: true });
     };
+
+    marketSwapCoin = async (
+        { body }: { body: any },
+        sendResponse: (code: number, response: IResponse<any>)=>void
+    )  => {
+        const response = await this._integrationService.marketSwapCoin(body);
+        if (!response.response) return sendResponse(401, { error: response.errors, status: false });
+
+        if (!response?.response?.status) {
+            return sendResponse(401, {
+                error: [{ message: response?.response?.message as string ?? 'unable to make transaction' }],
+                status: false
+            });
+        }
+
+        sendResponse(200, { data: response, status: true });
+    };
 }
 
 export default IntegrationController;

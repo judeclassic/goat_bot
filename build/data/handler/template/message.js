@@ -23,11 +23,11 @@ MessageTemplete.welcome = () => ("══════[ 🐐 GoatBot 🐐 ]══�
 MessageTemplete.defaultMessage = (message) => ("══════[ 🐐 GoatBot 🐐 ]══════\n" +
     ` ${message}\n` +
     "_______________________________________________\n");
-MessageTemplete.generateWalletEntities = (message, wallets) => {
+MessageTemplete.generateWalletEntities = (message, wallets, isTitled = true) => {
     let offset = 0;
     const entities = [];
     const header = "══════[ 🐐 GoatBot 🐐 ]══════\n\n" +
-        "🐐 GoatBot | Website\n" +
+        (isTitled ? "🐐 GoatBot | Website\n" : "") +
         `${message} \n\n` +
         "══🔳 Your Wallets 🔳══\n\n";
     offset += header.length;

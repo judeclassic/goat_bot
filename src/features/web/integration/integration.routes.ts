@@ -35,6 +35,8 @@ const integrationUserRoutes = async ({router}: {router: RequestHandler}) => {
 
     router.postWithBody('/send_tokens', integrationController.transferToken);
     router.postWithBody('/send_eth', integrationController.transferEth);
+
+    router.postWithBody('/market_swap', integrationController.marketSwapCoin);
     
 }
 

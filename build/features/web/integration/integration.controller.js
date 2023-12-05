@@ -103,6 +103,19 @@ class IntegrationController {
                 return sendResponse(401, { error: response.errors, status: false });
             sendResponse(200, { data: response.data, status: true });
         });
+        this.marketSwapCoin = ({ body }, sendResponse) => __awaiter(this, void 0, void 0, function* () {
+            var _e, _f, _g;
+            const response = yield this._integrationService.marketSwapCoin(body);
+            if (!response.response)
+                return sendResponse(401, { error: response.errors, status: false });
+            if (!((_e = response === null || response === void 0 ? void 0 : response.response) === null || _e === void 0 ? void 0 : _e.status)) {
+                return sendResponse(401, {
+                    error: [{ message: (_g = (_f = response === null || response === void 0 ? void 0 : response.response) === null || _f === void 0 ? void 0 : _f.message) !== null && _g !== void 0 ? _g : 'unable to make transaction' }],
+                    status: false
+                });
+            }
+            sendResponse(200, { data: response, status: true });
+        });
         this._integrationService = integrationService;
     }
 }

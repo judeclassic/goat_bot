@@ -58,7 +58,9 @@ class IntegrationService {
             if (!wallet)
                 return { errors: [{ message: 'unable to get wallet information' }] };
             const response = yield this._tradeRepository.swapEthToToken({ tokenInfo, amount, slippage, wallet, gas_fee }, (data) => {
-                this.telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data));
+                this.telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data), telegraf_1.Markup.inlineKeyboard([
+                    [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
+                ]));
             });
             console.log();
             if (!response) {
@@ -79,8 +81,52 @@ class IntegrationService {
             if (!wallet)
                 return { errors: [{ message: 'unable to get wallet information' }] };
             const response = yield this._tradeRepository.swapTokenToEth({ tokenInfo, amount, slippage, wallet, gas_fee }, (data) => {
-                this.telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data));
+                this.telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data), telegraf_1.Markup.inlineKeyboard([
+                    [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
+                ]));
             });
+            if (!response) {
+                return { errors: [{ message: 'unable to place trade' }] };
+            }
+            return { response };
+        });
+        this.marketSwapCoin = ({ token, tokenInfoIn, tokenInfoOut, amount, slippage, gas_fee, }) => __awaiter(this, void 0, void 0, function* () {
+            const decoded = this._encryptionRepository.decryptToken(token, encryption_1.TokenType.accessToken);
+            if (!(decoded === null || decoded === void 0 ? void 0 : decoded.telegram_id))
+                return { errors: [{ message: 'Invalid request' }] };
+            const user = yield this._userModel.findOne({ telegram_id: decoded === null || decoded === void 0 ? void 0 : decoded.telegram_id });
+            if (!user)
+                return { errors: [{ message: 'user not found' }] };
+            const wallet = user.wallets.find((wallet) => wallet.address === decoded.wallet_address);
+            console.log('token In', tokenInfoIn);
+            console.log('token Out', tokenInfoOut);
+            if (!wallet)
+                return { errors: [{ message: 'unable to get wallet information' }] };
+            if (tokenInfoIn.contractAddress === tokenInfoOut.contractAddress) {
+                return { errors: [{ message: 'cannot swap between two similar token' }] };
+            }
+            let response;
+            if (tokenInfoIn.contractAddress === 'eth') {
+                response = yield this._tradeRepository.swapEthToToken({ tokenInfo: tokenInfoOut, amount, slippage, wallet, gas_fee }, (data) => {
+                    this.telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data), telegraf_1.Markup.inlineKeyboard([
+                        [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
+                    ]));
+                });
+            }
+            else if (tokenInfoOut.contractAddress === 'eth') {
+                response = yield this._tradeRepository.swapTokenToEth({ tokenInfo: tokenInfoIn, amount, slippage, wallet, gas_fee }, (data) => {
+                    this.telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data), telegraf_1.Markup.inlineKeyboard([
+                        [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
+                    ]));
+                });
+            }
+            else {
+                response = yield this._tradeRepository.swapGen({ tokenInfoIn, tokenInfoOut, amount, slippage, wallet, gas_fee }, (data) => {
+                    this.telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data), telegraf_1.Markup.inlineKeyboard([
+                        [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
+                    ]));
+                });
+            }
             if (!response) {
                 return { errors: [{ message: 'unable to place trade' }] };
             }

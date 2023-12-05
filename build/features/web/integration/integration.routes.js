@@ -39,5 +39,6 @@ const integrationUserRoutes = ({ router }) => __awaiter(void 0, void 0, void 0, 
     router.get('/get_balance/:token', integrationController.getBalance);
     router.postWithBody('/send_tokens', integrationController.transferToken);
     router.postWithBody('/send_eth', integrationController.transferEth);
+    router.postWithBody('/market_swap', integrationController.marketSwapCoin);
 });
 exports.default = integrationUserRoutes;
