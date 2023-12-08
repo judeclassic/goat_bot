@@ -93,7 +93,7 @@ export const continueMarketCheck = async () => {
 
         setInterval(() => {
             LimitBuySell({ tradeRepository, telegrambot });
-        }, 1000 * 10);
+        }, 1000 * 60 * 5);
     } catch (err) {
         console.log(err);
     }
