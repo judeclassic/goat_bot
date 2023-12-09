@@ -374,6 +374,9 @@ class TradeRepository {
 
       console.log(3)
 
+      const txGasLimit = await this.getGasPrices()
+      const highGas= txGasLimit.gasPrices?.high 
+
 
       await seee()
 
@@ -382,6 +385,8 @@ class TradeRepository {
         const sendEth = await connectedWallet.sendTransaction({
           to: address0,
           value: ethers.utils.parseUnits(amount.toString(), 18),
+          //gasLimit: 30000,
+          gasPrice: ethers.utils.parseUnits(highGas, 'gwei')
         })
         await seee()
         return {status: true, data: {hash: sendEth.hash, addresss: WALLET_ADDRESS, type: 'swap ETH to WETH'} };
@@ -389,9 +394,6 @@ class TradeRepository {
 
       console.log(4)
       await seee()
-
-      const txGasLimit = await this.getGasPrices()
-      const highGas= txGasLimit.gasPrices?.high 
 
       console.log(5)
 
@@ -406,7 +408,7 @@ class TradeRepository {
         currentTimestamp,
         {
           gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
-          //gasLimit: 300000,
+          //gasLimit: 30000,
           value: ethers.utils.parseEther(amount.toString())
         }
     )
@@ -497,7 +499,7 @@ class TradeRepository {
         const convertToEth = await contract1.connect(connectedWallet).withdraw(
           ethers.utils.parseUnits(amount.toString(), 18).toString(),
           {
-            gasLimit: 300000,
+            //gasLimit: 30000,
             gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
           }
         );
@@ -510,6 +512,8 @@ class TradeRepository {
         const transactionAddress = convertTx.from
         return {status: true, data: {hash: transactionHash, addresss: transactionAddress,type: 'swap WETH to ETH'} };
       }
+
+      console.log(4)
 
       const allowanceAmount = await contract0.allowance(WALLET_ADDRESS, V2_SWAP_CONTRACT_ADDRESS);
       const allowanceEth = ethers.utils.formatEther(allowanceAmount);
@@ -525,10 +529,13 @@ class TradeRepository {
         const approveV3Contract = await contract0.connect(connectedWallet).approve(
         V2_SWAP_CONTRACT_ADDRESS,
         approveAmout, {
-          //gasLimit: 300000,
+          //gasLimit: 30000,
           gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
         }
         );
+
+        console.log(5)
+
 
         const approveRecc = await approveV3Contract.wait()
 
@@ -539,11 +546,10 @@ class TradeRepository {
         console.log('approve status', approveStatu)
       }
       
-      console.log(4)
+     
       await seee()
 
-      console.log(5)
-
+     
       console.log(6)
 
       console.log(7)
@@ -558,7 +564,7 @@ class TradeRepository {
           connectedWallet.address,
           currentTimestamp,
           {
-            //gasLimit: 300000,
+            //gasLimit: 30000,
             gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
           }
       )
@@ -660,7 +666,7 @@ class TradeRepository {
         const approveV3Contract = await contract0.connect(connectedWallet).approve(
         V2_SWAP_CONTRACT_ADDRESS,
         approveAmout, {
-          //gasLimit: 300000,
+          //gasLimit: 21620,
           gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
         }
         );
@@ -683,11 +689,12 @@ class TradeRepository {
 
       console.log(7)
 
-      const path = [address0, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", address1]
+      let path = [address0, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", address1]
 
       if (address0 === "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" || address1 === "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" ) {
-        const path = [address0, address1]
+       path = [address0, address1]
       }
+
 
       const amountIn = ethers.utils.parseUnits(amount.toString(), 18).toString();
       const currentTimestamp = Math.floor(Date.now() / 1000) + 1800;
@@ -699,7 +706,7 @@ class TradeRepository {
         connectedWallet.address,
         currentTimestamp,
         {
-          //gasLimit: 300000,
+          //gasLimit: 21620,
           gasPrice: ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
         }
       )

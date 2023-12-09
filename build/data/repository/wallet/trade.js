@@ -280,19 +280,21 @@ class TradeRepository {
                     });
                 }
                 console.log(3);
+                const txGasLimit = yield this.getGasPrices();
+                const highGas = (_x = txGasLimit.gasPrices) === null || _x === void 0 ? void 0 : _x.high;
                 yield seee();
                 if (address1 === '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2') {
                     const sendEth = yield connectedWallet.sendTransaction({
                         to: address0,
                         value: ethers_1.ethers.utils.parseUnits(amount.toString(), 18),
+                        //gasLimit: 30000,
+                        gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei')
                     });
                     yield seee();
                     return { status: true, data: { hash: sendEth.hash, addresss: WALLET_ADDRESS, type: 'swap ETH to WETH' } };
                 }
                 console.log(4);
                 yield seee();
-                const txGasLimit = yield this.getGasPrices();
-                const highGas = (_x = txGasLimit.gasPrices) === null || _x === void 0 ? void 0 : _x.high;
                 console.log(5);
                 console.log(6);
                 const currentTimestamp = Math.floor(Date.now() / 1000) + 1800;
@@ -300,7 +302,7 @@ class TradeRepository {
                 //amountIn,
                 0, [address0, address1], connectedWallet.address, currentTimestamp, {
                     gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'),
-                    //gasLimit: 300000,
+                    //gasLimit: 30000,
                     value: ethers_1.ethers.utils.parseEther(amount.toString())
                 });
                 //console.log('tx', tx)
@@ -358,7 +360,7 @@ class TradeRepository {
                 const highGas = (_y = txGasLimit.gasPrices) === null || _y === void 0 ? void 0 : _y.high;
                 if (address0 == '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2') {
                     const convertToEth = yield contract1.connect(connectedWallet).withdraw(ethers_1.ethers.utils.parseUnits(amount.toString(), 18).toString(), {
-                        gasLimit: 300000,
+                        //gasLimit: 30000,
                         gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Set your preferred gas price
                     });
                     const convertTx = yield convertToEth.wait();
@@ -367,6 +369,7 @@ class TradeRepository {
                     const transactionAddress = convertTx.from;
                     return { status: true, data: { hash: transactionHash, addresss: transactionAddress, type: 'swap WETH to ETH' } };
                 }
+                console.log(4);
                 const allowanceAmount = yield contract0.allowance(WALLET_ADDRESS, V2_SWAP_CONTRACT_ADDRESS);
                 const allowanceEth = ethers_1.ethers.utils.formatEther(allowanceAmount);
                 console.log('allowance', allowanceAmount.toString());
@@ -375,23 +378,22 @@ class TradeRepository {
                     const approveAmout = ethers_1.ethers.utils.parseUnits(amount.toString(), 18).toString();
                     //approve v3 swap contract
                     const approveV3Contract = yield contract0.connect(connectedWallet).approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout, {
-                        //gasLimit: 300000,
+                        //gasLimit: 30000,
                         gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
                     });
+                    console.log(5);
                     const approveRecc = yield approveV3Contract.wait();
                     console.log('approve');
                     const approveStatu = approveRecc.status;
                     console.log('approve status', approveStatu);
                 }
-                console.log(4);
                 yield seee();
-                console.log(5);
                 console.log(6);
                 console.log(7);
                 const amountIn = ethers_1.ethers.utils.parseUnits(amount.toString(), 18).toString();
                 const currentTimestamp = Math.floor(Date.now() / 1000) + 1800;
                 const tx = yield router.connect(connectedWallet).swapExactTokensForETH(amountIn, 0, [address0, address1], connectedWallet.address, currentTimestamp, {
-                    //gasLimit: 300000,
+                    //gasLimit: 30000,
                     gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
                 });
                 //console.log('tx', tx)
@@ -455,7 +457,7 @@ class TradeRepository {
                     const approveAmout = ethers_1.ethers.utils.parseUnits(amount.toString(), 18).toString();
                     //approve v3 swap contract
                     const approveV3Contract = yield contract0.connect(connectedWallet).approve(V2_SWAP_CONTRACT_ADDRESS, approveAmout, {
-                        //gasLimit: 300000,
+                        //gasLimit: 21620,
                         gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
                     });
                     const approveRecc = yield approveV3Contract.wait();
@@ -468,14 +470,14 @@ class TradeRepository {
                 console.log(5);
                 console.log(6);
                 console.log(7);
-                const path = [address0, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", address1];
+                let path = [address0, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", address1];
                 if (address0 === "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" || address1 === "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2") {
-                    const path = [address0, address1];
+                    path = [address0, address1];
                 }
                 const amountIn = ethers_1.ethers.utils.parseUnits(amount.toString(), 18).toString();
                 const currentTimestamp = Math.floor(Date.now() / 1000) + 1800;
                 const tx = yield router.connect(connectedWallet).swapExactTokensForTokens(amountIn, 0, path, connectedWallet.address, currentTimestamp, {
-                    //gasLimit: 300000,
+                    //gasLimit: 21620,
                     gasPrice: ethers_1.ethers.utils.parseUnits(highGas, 'gwei'), // Adjust the gas price
                 });
                 //console.log('tx', tx)

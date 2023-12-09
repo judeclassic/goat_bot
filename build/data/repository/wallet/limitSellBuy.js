@@ -88,7 +88,7 @@ const continueMarketCheck = () => __awaiter(void 0, void 0, void 0, function* ()
         const telegrambot = new telegraf_1.Telegraf(YOUR_BOT_TOKEN);
         setInterval(() => {
             (0, exports.LimitBuySell)({ tradeRepository, telegrambot });
-        }, 1000 * 10);
+        }, 1000 * 60 * 5);
     }
     catch (err) {
         console.log(err);
