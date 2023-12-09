@@ -261,12 +261,12 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
                 const response = await telegramService.getGeneralBalance({ telegram_id, wallet_number });
                 if (!response.tokens) return ctx.reply(response.message!, initialKeyboard);
 
-                const keyboard = Markup.inlineKeyboard([[
-                    ...response.tokens.map((balance, index) => {
-                        return Markup.button.callback(`Wallet ${index+1}`, `wallet-balance-${index+1}`);
-                    })],
+                const keyboard = Markup.inlineKeyboard(
+                    // ...response.tokens.map((balance, index) => {
+                    //     return Markup.button.callback(`Wallet ${index+1}`, `wallet-balance-${index+1}`);
+                    // })],
                     [Markup.button.callback('🔙 Back', 'wallet-menu')],
-                ]);
+                );
 
                 const { text, entities } = MessageTemplete.generateWalletBalanceEntities({balances: response.tokens })
                 ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });

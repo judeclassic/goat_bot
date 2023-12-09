@@ -134,7 +134,7 @@ export class MessageTemplete {
             entities.push({ offset: offset, length: (`${balance.contract_address ?? "eth"}\n`).length, type: 'code' });
             offset += `${balance.contract_address ?? "eth"}\n`.length;
     
-            return `▰ ${balance.coin_name} ▰\n${balanceText}${balance.contract_address ?? "eth"}\n\n`;
+            return `▰ ${balance.coin_name} ▰\n ${balanceText}${balance.contract_address ?? "eth"}\n\n`;
         });
 
         if (walletTexts.length < 1) {
