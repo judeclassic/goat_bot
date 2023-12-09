@@ -101,7 +101,7 @@ MessageTemplete.generateWalletBalanceEntities = ({ message = "Elevate Your Crypt
         });
         offset += `▰ ${balance.coin_name} ▰\n\n`.length;
         // Add entity for balance and transactions
-        const balanceText = `Bal: ${balance.balance} ${balance.coin_name} (${balance.balance_in_dollar}) \- \n`;
+        const balanceText = `Bal: ${balance.balance} ${balance.coin_name} (${balance.balance_in_dollar}) \n \-`;
         offset += balanceText.length;
         // Add entity for wallet address (bold and text_link)
         entities.push({ offset: offset, length: (`${(_c = balance.contract_address) !== null && _c !== void 0 ? _c : "eth"}\n`).length, type: 'code' });

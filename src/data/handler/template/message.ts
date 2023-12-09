@@ -127,7 +127,7 @@ export class MessageTemplete {
             offset += `▰ ${balance.coin_name} ▰\n\n`.length;
     
             // Add entity for balance and transactions
-            const balanceText = `Bal: ${balance.balance} ${balance.coin_name} (${balance.balance_in_dollar}) \- \n`;
+            const balanceText = `Bal: ${balance.balance} ${balance.coin_name} (${balance.balance_in_dollar}) \n \-`;
             offset += balanceText.length;
     
             // Add entity for wallet address (bold and text_link)
