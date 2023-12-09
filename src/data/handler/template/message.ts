@@ -117,14 +117,14 @@ export class MessageTemplete {
     
         const walletTexts = balances.map((balance, index) => {
             // Add entity for "Wallet_wX"
-            entities.push({ offset: offset + 2, length: `Wallet_w${index + 1}`.length, type: 'bold' });
+            entities.push({ offset: offset + 2, length: `${balance.coin_name}`.length, type: 'bold' });
             entities.push({
                 offset: offset + 2,
-                length: `Wallet_w${index + 1}`.length,
+                length: `${balance.coin_name}`.length,
                 type: 'text_link',
                 url: `https://etherscan.io/address/${balance.contract_address ?? "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}`
             });
-            offset += `▰ Wallet_w${index + 1} ▰\n\n`.length;
+            offset += `▰ ${balance.coin_name} ▰\n\n`.length;
     
             // Add entity for balance and transactions
             const balanceText = `Bal: ${balance.balance} ${balance.coin_name} (${balance.balance_in_dollar}) \- \n`;
@@ -134,7 +134,7 @@ export class MessageTemplete {
             entities.push({ offset: offset, length: (`${balance.contract_address ?? "eth"}\n`).length, type: 'code' });
             offset += `${balance.contract_address ?? "eth"}\n`.length;
     
-            return `▰ Wallet_w${index + 1} ▰\n${balanceText}${balance.contract_address ?? "eth"}\n\n`;
+            return `▰ ${balance.coin_name} ▰\n${balanceText}${balance.contract_address ?? "eth"}\n\n`;
         });
 
         if (walletTexts.length < 1) {

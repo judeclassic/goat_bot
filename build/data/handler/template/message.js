@@ -92,21 +92,21 @@ MessageTemplete.generateWalletBalanceEntities = ({ message = "Elevate Your Crypt
     const walletTexts = balances.map((balance, index) => {
         var _b, _c, _d, _e;
         // Add entity for "Wallet_wX"
-        entities.push({ offset: offset + 2, length: `Wallet_w${index + 1}`.length, type: 'bold' });
+        entities.push({ offset: offset + 2, length: `${balance.coin_name}`.length, type: 'bold' });
         entities.push({
             offset: offset + 2,
-            length: `Wallet_w${index + 1}`.length,
+            length: `${balance.coin_name}`.length,
             type: 'text_link',
             url: `https://etherscan.io/address/${(_b = balance.contract_address) !== null && _b !== void 0 ? _b : "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}`
         });
-        offset += `▰ Wallet_w${index + 1} ▰\n\n`.length;
+        offset += `▰ ${balance.coin_name} ▰\n\n`.length;
         // Add entity for balance and transactions
         const balanceText = `Bal: ${balance.balance} ${balance.coin_name} (${balance.balance_in_dollar}) \- \n`;
         offset += balanceText.length;
         // Add entity for wallet address (bold and text_link)
-        entities.push({ offset: offset, length: ((_c = balance.contract_address) !== null && _c !== void 0 ? _c : "eth").length, type: 'code' });
-        offset += `${(_d = balance.contract_address) !== null && _d !== void 0 ? _d : "eth"}\`\n`.length;
-        return `▰ Wallet_w${index + 1} ▰\n${balanceText}${(_e = balance.contract_address) !== null && _e !== void 0 ? _e : "eth"}\n\n`;
+        entities.push({ offset: offset, length: (`${(_c = balance.contract_address) !== null && _c !== void 0 ? _c : "eth"}\n`).length, type: 'code' });
+        offset += `${(_d = balance.contract_address) !== null && _d !== void 0 ? _d : "eth"}\n`.length;
+        return `▰ ${balance.coin_name} ▰\n${balanceText}${(_e = balance.contract_address) !== null && _e !== void 0 ? _e : "eth"}\n\n`;
     });
     if (walletTexts.length < 1) {
         walletTexts.push("You have no token in your wallet");
