@@ -155,14 +155,17 @@ class IntegrationService {
 
     let response;
 
-    if (tokenInfoIn.contractAddress === 'eth') {
+
+    console.log("wallet test: ", wallet)
+
+    if (!tokenInfoIn.contractAddress || tokenInfoIn.contractAddress === 'eth') {
       response = await this._tradeRepository.swapEthToToken({ tokenInfo: tokenInfoOut, amount, slippage, wallet, gas_fee }, (data) => {
         this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data), Markup.inlineKeyboard([
           [ Markup.button.callback('🔙 Back', 'menu') ],
         ]));
       });
     } else
-    if (tokenInfoOut.contractAddress === 'eth') {
+    if (!tokenInfoOut.contractAddress || tokenInfoOut.contractAddress === 'eth') {
       response = await this._tradeRepository.swapTokenToEth({ tokenInfo: tokenInfoIn, amount, slippage, wallet, gas_fee }, (data) => {
         this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data), Markup.inlineKeyboard([
           [ Markup.button.callback('🔙 Back', 'menu') ],

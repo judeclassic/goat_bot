@@ -106,14 +106,15 @@ class IntegrationService {
                 return { errors: [{ message: 'cannot swap between two similar token' }] };
             }
             let response;
-            if (tokenInfoIn.contractAddress === 'eth') {
+            console.log("wallet test: ", wallet);
+            if (!tokenInfoIn.contractAddress || tokenInfoIn.contractAddress === 'eth') {
                 response = yield this._tradeRepository.swapEthToToken({ tokenInfo: tokenInfoOut, amount, slippage, wallet, gas_fee }, (data) => {
                     this.telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data), telegraf_1.Markup.inlineKeyboard([
                         [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
                     ]));
                 });
             }
-            else if (tokenInfoOut.contractAddress === 'eth') {
+            else if (!tokenInfoOut.contractAddress || tokenInfoOut.contractAddress === 'eth') {
                 response = yield this._tradeRepository.swapTokenToEth({ tokenInfo: tokenInfoIn, amount, slippage, wallet, gas_fee }, (data) => {
                     this.telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data), telegraf_1.Markup.inlineKeyboard([
                         [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
