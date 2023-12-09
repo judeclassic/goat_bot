@@ -131,8 +131,8 @@ export class MessageTemplete {
             offset += balanceText.length;
     
             // Add entity for wallet address (bold and text_link)
-            entities.push({ offset: offset, length: (balance.contract_address ?? "eth").length, type: 'code' });
-            offset += `${balance.contract_address ?? "eth"}\`\n`.length;
+            entities.push({ offset: offset, length: (`${balance.contract_address ?? "eth"}\n`).length, type: 'code' });
+            offset += `${balance.contract_address ?? "eth"}\n`.length;
     
             return `▰ Wallet_w${index + 1} ▰\n${balanceText}${balance.contract_address ?? "eth"}\n\n`;
         });
