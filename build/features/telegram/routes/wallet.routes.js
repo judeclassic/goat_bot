@@ -244,13 +244,11 @@ const useWalletBotRoutes = ({ bot, walletRepository, tradeRepository, encryption
                 const response = yield telegramService.getGeneralBalance({ telegram_id, wallet_number });
                 if (!response.tokens)
                     return ctx.reply(response.message, initialKeyboard);
-                const keyboard = telegraf_1.Markup.inlineKeyboard([[
-                        ...response.tokens.map((balance, index) => {
-                            return telegraf_1.Markup.button.callback(`Wallet ${index + 1}`, `wallet-balance-${index + 1}`);
-                        })
-                    ],
-                    [telegraf_1.Markup.button.callback('🔙 Back', 'wallet-menu')],
-                ]);
+                const keyboard = telegraf_1.Markup.inlineKeyboard(
+                // ...response.tokens.map((balance, index) => {
+                //     return Markup.button.callback(`Wallet ${index+1}`, `wallet-balance-${index+1}`);
+                // })],
+                [telegraf_1.Markup.button.callback('🔙 Back', 'wallet-menu')]);
                 const { text, entities } = message_1.MessageTemplete.generateWalletBalanceEntities({ balances: response.tokens });
                 ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
             }

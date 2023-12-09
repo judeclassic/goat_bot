@@ -106,7 +106,7 @@ MessageTemplete.generateWalletBalanceEntities = ({ message = "Elevate Your Crypt
         // Add entity for wallet address (bold and text_link)
         entities.push({ offset: offset, length: (`${(_c = balance.contract_address) !== null && _c !== void 0 ? _c : "eth"}\n`).length, type: 'code' });
         offset += `${(_d = balance.contract_address) !== null && _d !== void 0 ? _d : "eth"}\n`.length;
-        return `▰ ${balance.coin_name} ▰\n${balanceText}${(_e = balance.contract_address) !== null && _e !== void 0 ? _e : "eth"}\n\n`;
+        return `▰ ${balance.coin_name} ▰\n ${balanceText}${(_e = balance.contract_address) !== null && _e !== void 0 ? _e : "eth"}\n\n`;
     });
     if (walletTexts.length < 1) {
         walletTexts.push("You have no token in your wallet");
