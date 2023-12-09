@@ -42,7 +42,6 @@ export const useTelegramBot = () => {
     });
 
     bot.action('menu', async (ctx) => {
-        console.log(process.env.SECRET_ENCRYPTION_KEY);
         // try {ctx.deleteMessage()} catch {}
         const keyboard = Markup.inlineKeyboard([
             [   Markup.button.callback('💼 Wallet hub', 'wallet-menu'),

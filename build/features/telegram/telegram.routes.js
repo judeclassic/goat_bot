@@ -52,7 +52,6 @@ const useTelegramBot = () => {
         ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
     }));
     bot.action('menu', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log(process.env.SECRET_ENCRYPTION_KEY);
         // try {ctx.deleteMessage()} catch {}
         const keyboard = telegraf_1.Markup.inlineKeyboard([
             [telegraf_1.Markup.button.callback('💼 Wallet hub', 'wallet-menu'),
