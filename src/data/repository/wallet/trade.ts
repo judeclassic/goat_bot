@@ -295,8 +295,7 @@ class TradeRepository {
     gas_fee: number
   }, callback: (transaction: ICallback) => void) => {
     try {
-
-      
+      console.log("wallet: ", wallet)
       const tokenIn = new Token(
         ChainId.MAINNET,
         tokenInfoIn.contractAddress,
