@@ -46,7 +46,7 @@ const LimitBuySell = ({ tradeRepository, telegrambot }) => __awaiter(void 0, voi
                 tokenInfo: limitbuySell.tokenInfo,
                 gas_fee: 1000000
             }, (data) => {
-                telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data), telegraf_1.Markup.inlineKeyboard([
+                telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data, user.default_language), telegraf_1.Markup.inlineKeyboard([
                     [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
                 ]));
             });
@@ -69,7 +69,7 @@ const LimitBuySell = ({ tradeRepository, telegrambot }) => __awaiter(void 0, voi
                 tokenInfo: limitbuySell.tokenInfo,
                 gas_fee: 1000000
             }, (data) => {
-                telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data), telegraf_1.Markup.inlineKeyboard([
+                telegrambot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.buyNotificationMessage(user, data, user.default_language), telegraf_1.Markup.inlineKeyboard([
                     [telegraf_1.Markup.button.callback('🔙 Back', 'menu')],
                 ]));
             });

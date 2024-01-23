@@ -89,7 +89,7 @@ class IntegrationService {
     if (!wallet) return { errors: [{ message: 'unable to get wallet information' }]};
 
     const response = await this._tradeRepository.swapEthToToken({ tokenInfo, amount, slippage, wallet, gas_fee }, (data) => {
-      this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data), Markup.inlineKeyboard([
+      this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data, user.default_language), Markup.inlineKeyboard([
         [ Markup.button.callback('🔙 Back', 'menu') ],
       ]));
     });
@@ -119,7 +119,7 @@ class IntegrationService {
     if (!wallet) return { errors: [{ message: 'unable to get wallet information' }]};
 
     const response = await this._tradeRepository.swapTokenToEth({ tokenInfo, amount, slippage, wallet, gas_fee }, (data) => {
-      this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data), Markup.inlineKeyboard([
+      this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data, user.default_language), Markup.inlineKeyboard([
         [ Markup.button.callback('🔙 Back', 'menu') ],
       ]));
     });
@@ -160,20 +160,20 @@ class IntegrationService {
 
     if (!tokenInfoIn.contractAddress || tokenInfoIn.contractAddress === 'eth') {
       response = await this._tradeRepository.swapEthToToken({ tokenInfo: tokenInfoOut, amount, slippage, wallet, gas_fee }, (data) => {
-        this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data), Markup.inlineKeyboard([
+        this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data, user.default_language), Markup.inlineKeyboard([
           [ Markup.button.callback('🔙 Back', 'menu') ],
         ]));
       });
     } else
     if (!tokenInfoOut.contractAddress || tokenInfoOut.contractAddress === 'eth') {
       response = await this._tradeRepository.swapTokenToEth({ tokenInfo: tokenInfoIn, amount, slippage, wallet, gas_fee }, (data) => {
-        this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data), Markup.inlineKeyboard([
+        this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data, user.default_language), Markup.inlineKeyboard([
           [ Markup.button.callback('🔙 Back', 'menu') ],
         ]));
       });
     } else {
       response = await this._tradeRepository.swapGen({ tokenInfoIn, tokenInfoOut, amount, slippage, wallet, gas_fee }, (data) => {
-        this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data), Markup.inlineKeyboard([
+        this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data, user.default_language), Markup.inlineKeyboard([
           [ Markup.button.callback('🔙 Back', 'menu') ],
         ]));
       });
@@ -291,14 +291,14 @@ class IntegrationService {
 
       if ( contract_address === "eth") {
         const transaction = await this._walletRepository.transferEth({ wallet, amount, reciever_address }, (data) => {
-          this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data));
+          this.telegrambot.telegram.sendMessage(user.telegram_id, MessageTemplete.buyNotificationMessage(user, data, user.default_language));
         });
         if (!transaction.data) return { errors: [{ message: transaction.error ?? 'wallet not found'}] };
       } else {
         const transaction = await this._walletRepository.transferToken({ wallet, amount, contract_address, reciever_address }, (data) => {
           this.telegrambot.telegram.sendMessage(
             user.telegram_id,
-            MessageTemplete.buyNotificationMessage(user, data),
+            MessageTemplete.buyNotificationMessage(user, data, user.default_language),
             Markup.inlineKeyboard([
               [ Markup.button.callback('🔙 Back', 'menu') ],
             ])
@@ -328,7 +328,7 @@ class IntegrationService {
       const transaction = await this._walletRepository.transferEth({ wallet, amount, reciever_address }, (data) => {
         this.telegrambot.telegram.sendMessage(
           user.telegram_id,
-          MessageTemplete.buyNotificationMessage(user, data),
+          MessageTemplete.buyNotificationMessage(user, data, user.default_language),
           Markup.inlineKeyboard([
             [ Markup.button.callback('🔙 Back', 'menu') ],
           ])

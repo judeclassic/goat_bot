@@ -50,8 +50,8 @@ class OtherService {
                     telegraf_1.Markup.button.callback('🔙 Referal menu', 'refer-friends-and-earn'),
                     telegraf_1.Markup.button.callback('🔙 Back to menu', 'wallet-menu'),
                 ]);
-                this.bot.telegram.sendMessage(userResponse.telegram_id, message_1.MessageTemplete.defaultMessage("Success! You've earned 1 $GOAT by referring a friend or adding a referral code. Your friend gets 1 $GOAT too. Keep building your $GOAT balance!"), modifiedKeyboard);
-                this.bot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.defaultMessage("You have entered the referral code successfully"), modifiedKeyboard);
+                this.bot.telegram.sendMessage(userResponse.telegram_id, message_1.MessageTemplete.defaultMessage("Success! You've earned 1 $GOAT by referring a friend or adding a referral code. Your friend gets 1 $GOAT too. Keep building your $GOAT balance!", user.default_language), modifiedKeyboard);
+                this.bot.telegram.sendMessage(user.telegram_id, message_1.MessageTemplete.defaultMessage("You have entered the referral code successfully", user.default_language), modifiedKeyboard);
             }
             catch (_a) { }
             return { message: "updated successfully", };

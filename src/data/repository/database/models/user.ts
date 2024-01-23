@@ -22,6 +22,12 @@ export interface IWallet {
     others: IOtherWallet[]
 }
 
+export enum Language {
+    english = 'Engish',
+    traditional_chinese = 'Traditional Chinese',
+    modern_chinese = 'Modern Chinese',
+}
+
 export interface IUser {
     _id?: string;
     name?: string;
@@ -36,6 +42,7 @@ export interface IUser {
         claimableEarnings: number;
     };
     passcode?: string;
+    default_language: Language;
     previous_command: string;
 }
 
@@ -83,6 +90,11 @@ const UserSchema = new Schema<IUser>({
         totalEarnings: Number,
         claimableEarnings: Number,
         totalGoatHeld: Number,
+    },
+    default_language: {
+        type: String,
+        default: Language.english,
+        enum: Object.values(Language),
     },
     passcode: {
         type: String,

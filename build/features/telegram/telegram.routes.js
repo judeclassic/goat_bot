@@ -33,42 +33,54 @@ const useTelegramBot = () => {
     const encryptionRepository = new encryption_1.default();
     const telegramService = new telegram_service_1.default({ userModel: user_1.UserModel, walletRepository, tradeRepository, encryptionRepository });
     bot.start((ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        // try {ctx.deleteMessage()} catch {}
-        const keyboard = telegraf_1.Markup.inlineKeyboard([
-            [telegraf_1.Markup.button.callback('💼 Wallet hub', 'wallet-menu'),
-                telegraf_1.Markup.button.callback('💹 Start trading', 'trade-menu'),
-            ],
-            [telegraf_1.Markup.button.callback('🤖 Bot center', 'bots-menu'),
-                telegraf_1.Markup.button.callback('💰 Earn rewards', 'earn-menu')],
-            [telegraf_1.Markup.button.callback('🔧 Settings & tools', 'setting-menu')],
-        ]);
+        const translate = new message_1.Translate();
+        const keyboard = (translate) => {
+            return telegraf_1.Markup.inlineKeyboard([
+                [telegraf_1.Markup.button.callback(translate.c({ en: '💼 Wallet hub', tch: '💼 皮夾集線器' }), 'wallet-menu'),
+                    telegraf_1.Markup.button.callback(translate.c({ en: '💹 Start trading', tch: '💹 開始交易' }), 'trade-menu'),
+                ],
+                [telegraf_1.Markup.button.callback(translate.c({ en: '🤖 Bot center', tch: '🤖 機器人中心' }), 'bots-menu'),
+                    telegraf_1.Markup.button.callback(translate.c({ en: '💰 Earn rewards', tch: '💰 賺取獎勵' }), 'earn-menu')],
+                [telegraf_1.Markup.button.callback(translate.c({ en: '🔧 Settings & tools', tch: '🔧 設定和工具' }), 'setting-menu')],
+            ]);
+        };
         if (!ctx.chat)
             return;
         const telegram_id = ctx.chat.id.toString();
         const response = yield telegramService.userOpensChat({ telegram_id });
         if (!response.user)
             return bot.telegram.sendMessage(telegram_id, response.message);
-        const { text, entities } = message_1.MessageTemplete.generateWalletEntities("Elevate Your Crypto Trades with GOATBOT Greatest Of All Telegram Bots", response.user.wallets);
-        ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
+        translate.changeLanguage(response.user.default_language);
+        const { text, entities } = message_1.MessageTemplete.generateWalletEntities(translate.c({
+            en: "Elevate Your Crypto Trades with GOATBOT Greatest Of All Telegram Bots",
+            tch: "使用所有 Telegram 機器人中最出色的 GOATBOT 提升您的加密貨幣交易",
+        }), response.user.wallets, response.user.default_language);
+        ctx.reply(text, Object.assign(Object.assign({}, keyboard(translate)), { entities, disable_web_page_preview: true }));
     }));
     bot.action('menu', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        // try {ctx.deleteMessage()} catch {}
-        const keyboard = telegraf_1.Markup.inlineKeyboard([
-            [telegraf_1.Markup.button.callback('💼 Wallet hub', 'wallet-menu'),
-                telegraf_1.Markup.button.callback('💹 Start trading', 'trade-menu'),
-            ],
-            [telegraf_1.Markup.button.callback('🤖 Bot center', 'bots-menu'),
-                telegraf_1.Markup.button.callback('💰 Earn rewards', 'earn-menu')],
-            [telegraf_1.Markup.button.callback('🔧 Settings & tools', 'setting-menu')],
-        ]);
+        const translate = new message_1.Translate();
+        const keyboard = (translate) => {
+            return telegraf_1.Markup.inlineKeyboard([
+                [telegraf_1.Markup.button.callback(translate.c({ en: '💼 Wallet hub', tch: '💼 皮夾集線器' }), 'wallet-menu'),
+                    telegraf_1.Markup.button.callback(translate.c({ en: '💹 Start trading', tch: '💹 開始交易' }), 'trade-menu'),
+                ],
+                [telegraf_1.Markup.button.callback(translate.c({ en: '🤖 Bot center', tch: '🤖 機器人中心' }), 'bots-menu'),
+                    telegraf_1.Markup.button.callback(translate.c({ en: '💰 Earn rewards', tch: '💰 賺取獎勵' }), 'earn-menu')],
+                [telegraf_1.Markup.button.callback(translate.c({ en: '🔧 Settings & tools', tch: '🔧 設定和工具' }), 'setting-menu')],
+            ]);
+        };
         if (!ctx.chat)
-            return ctx.reply('unable to process message', keyboard);
+            return ctx.reply('unable to process message', keyboard(translate));
         const telegram_id = ctx.chat.id.toString();
         const response = yield telegramService.userOpensChat({ telegram_id });
         if (!response.user)
-            return ctx.reply(response.message, keyboard);
-        const { text, entities } = message_1.MessageTemplete.generateWalletEntities("Elevate Your Crypto Trades with GOATBOT Greatest Of All Telegram Bots", response.user.wallets);
-        ctx.reply(text, Object.assign(Object.assign({}, keyboard), { entities, disable_web_page_preview: true }));
+            return ctx.reply(response.message, keyboard(translate));
+        translate.changeLanguage(response.user.default_language);
+        const { text, entities } = message_1.MessageTemplete.generateWalletEntities(translate.c({
+            en: "Elevate Your Crypto Trades with GOATBOT Greatest Of All Telegram Bots",
+            tch: "使用所有 Telegram 機器人中最出色的 GOATBOT 提升您的加密貨幣交易",
+        }), response.user.wallets, response.user.default_language);
+        ctx.reply(text, Object.assign(Object.assign({}, keyboard(translate)), { entities, disable_web_page_preview: true }));
     }));
     (0, wallet_routes_1.useWalletBotRoutes)({ bot, walletRepository, tradeRepository, encryptionRepository, telegramService });
     (0, trade_routes_1.useTradeBotRoutes)({ bot, walletRepository, tradeRepository, encryptionRepository, telegramService });

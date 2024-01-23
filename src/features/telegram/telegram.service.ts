@@ -1,5 +1,5 @@
 import { SessionMessage, SessionType } from '../../data/handler/type';
-import { IOtherWallet, IUser, IWallet, UserModel } from '../../data/repository/database/models/user';
+import { IOtherWallet, IUser, IWallet, Language, UserModel } from '../../data/repository/database/models/user';
 import EncryptionRepository from '../../data/repository/encryption';
 import TradeRepository from '../../data/repository/wallet/__trade';
 import WalletRepository from '../../data/repository/wallet/wallet';
@@ -21,6 +21,17 @@ class TelegramService {
         this.walletRepository = walletRepository;
         this.tradeRepository = tradeRepository;
         this.encryptionRepository = encryptionRepository;
+    }
+
+    changeLanguage = async ( { telegram_id, langauge }: { telegram_id: string; langauge: Language } ) => {
+        try {
+            const user = await this.userModel.findOneAndUpdate({ telegram_id }, { default_language: langauge });
+            if (!user) return { status: false, message: 'unable to get current user' };
+
+            return { status: true, user: {...((user as any)._doc as IUser) } };
+        } catch (err) {
+            return { status: false, message: 'error please send "/start" request again' };
+        }
     }
 
     userOpensChat = async ( { telegram_id }: { telegram_id: string } ) => {

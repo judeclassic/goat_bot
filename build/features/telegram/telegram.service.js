@@ -11,6 +11,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 class TelegramService {
     constructor({ userModel, walletRepository, tradeRepository, encryptionRepository }) {
+        this.changeLanguage = ({ telegram_id, langauge }) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const user = yield this.userModel.findOneAndUpdate({ telegram_id }, { default_language: langauge });
+                if (!user)
+                    return { status: false, message: 'unable to get current user' };
+                return { status: true, user: Object.assign({}, user._doc) };
+            }
+            catch (err) {
+                return { status: false, message: 'error please send "/start" request again' };
+            }
+        });
         this.userOpensChat = ({ telegram_id }) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const { user } = yield this.getCurrentUser(telegram_id);

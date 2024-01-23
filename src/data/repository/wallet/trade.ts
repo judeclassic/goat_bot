@@ -1,17 +1,9 @@
-import { Token, TradeType, CurrencyAmount, Percent, ChainId, } from '@uniswap/sdk-core'
+import { Token, ChainId, } from '@uniswap/sdk-core'
 import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
 const routerArtifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json')
-import {
-  AlphaRouter,
-  ID_TO_CHAIN_ID,
-  //ChainId,
-   SwapOptionsSwapRouter02,
-  SwapRoute,
-  // SwapRoute,
-   SwapType,
-} from '@uniswap/smart-order-router'
+
 import JSBI from "jsbi";
-import { ethers, BigNumber, utils } from 'ethers'
+import { ethers } from 'ethers'
 import { IOtherWallet, IWallet } from '../database/models/user'
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
@@ -21,7 +13,6 @@ import { AnkrProvider } from '@ankr.com/ankr.js';
 import { ANKR_PROVIDER_URL } from './wallet';
 
 import { ISwapTokenInfo } from '../../types/repository/trade';
-import { MAX_FEE_PER_GAS, MAX_PRIORITY_FEE_PER_GAS } from '../../handler/trade/constants';
 import { WRAPPEDETHABI } from './wrappEth_abi';
 import ICallback from '../../types/callback/callback';
 export const POOL_FACTORY_CONTRACT_ADDRESS = '0x1F98431c8aD98523631AE4a59f267346ea31F984'
@@ -33,7 +24,6 @@ export const ETH_CONTRACT_ADDRESS = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe"
 
 const ETHERSCAN_API_KEY = 'XRSGJ71XPY5V7B76ICCSEPPVT9ZVFHXQTN';
 //const YOUR_ANKR_PROVIDER_URL = 'http://127.0.0.1:8545'
-const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f'
 const V3_SWAP_CONTRACT_ADDRESS = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45';
 const V2_SWAP_CONTRACT_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
 
@@ -41,13 +31,10 @@ class TradeRepository {
     provider: ethers.providers.JsonRpcProvider;
     private ankrProvider: AnkrProvider;
     poolContract: ethers.Contract;
-    //infuraProvider: ethers.providers.JsonRpcProvider;
 
     constructor() {
-        this.provider = new ethers.providers.JsonRpcProvider(YOUR_ANKR_PROVIDER_URL);
+        this.provider = new ethers.providers.JsonRpcProvider(process.env.YOUR_ANKR_PROVIDER_URL);
         this.ankrProvider = new AnkrProvider(ANKR_PROVIDER_URL);
-        //this.infuraProvider = new ethers.providers.JsonRpcProvider(INFURA_URL);
-        if (!this.provider) throw new Error('No provider');
         this.poolContract = new ethers.Contract( POOL_FACTORY_CONTRACT_ADDRESS, IUniswapV3PoolABI.abi, this.provider );
     }
 

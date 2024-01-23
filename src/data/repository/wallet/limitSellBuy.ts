@@ -38,7 +38,7 @@ export const LimitBuySell = async ({ tradeRepository, telegrambot } : { tradeRep
             }, (data) => {
                 telegrambot.telegram.sendMessage(
                     user.telegram_id,
-                    MessageTemplete.buyNotificationMessage(user, data),
+                    MessageTemplete.buyNotificationMessage(user, data, user.default_language),
                     Markup.inlineKeyboard([
                         [ Markup.button.callback('🔙 Back', 'menu') ],
                     ])
@@ -69,7 +69,7 @@ export const LimitBuySell = async ({ tradeRepository, telegrambot } : { tradeRep
             }, (data) => {
                 telegrambot.telegram.sendMessage(
                     user.telegram_id,
-                    MessageTemplete.buyNotificationMessage(user, data),
+                    MessageTemplete.buyNotificationMessage(user, data, user.default_language),
                     Markup.inlineKeyboard([
                         [ Markup.button.callback('🔙 Back', 'menu') ],
                     ])

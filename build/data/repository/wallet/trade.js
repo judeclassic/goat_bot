@@ -31,11 +31,9 @@ exports.V3_UNISWAP_ROUTER_CONTRACT = "0xe592427a0aece92de3edee1f18e0157c05861564
 exports.ETH_CONTRACT_ADDRESS = "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe";
 const ETHERSCAN_API_KEY = 'XRSGJ71XPY5V7B76ICCSEPPVT9ZVFHXQTN';
 //const YOUR_ANKR_PROVIDER_URL = 'http://127.0.0.1:8545'
-const YOUR_ANKR_PROVIDER_URL = 'https://rpc.ankr.com/eth/56ef8dc41ff3a0a8ad5b3247e1cff736b8e0d4c8bfd57aa6dbf43014f5ceae8f';
 const V3_SWAP_CONTRACT_ADDRESS = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45';
 const V2_SWAP_CONTRACT_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
 class TradeRepository {
-    //infuraProvider: ethers.providers.JsonRpcProvider;
     constructor() {
         this.encryptToken = (data) => {
             return jsonwebtoken_1.default.sign(data, process.env.SECRET_ENCRYPTION_KEY);
@@ -507,11 +505,8 @@ class TradeRepository {
             }
             return x.toString().split('.')[1].length || 0;
         };
-        this.provider = new ethers_1.ethers.providers.JsonRpcProvider(YOUR_ANKR_PROVIDER_URL);
+        this.provider = new ethers_1.ethers.providers.JsonRpcProvider(process.env.YOUR_ANKR_PROVIDER_URL);
         this.ankrProvider = new ankr_js_1.AnkrProvider(wallet_1.ANKR_PROVIDER_URL);
-        //this.infuraProvider = new ethers.providers.JsonRpcProvider(INFURA_URL);
-        if (!this.provider)
-            throw new Error('No provider');
         this.poolContract = new ethers_1.ethers.Contract(exports.POOL_FACTORY_CONTRACT_ADDRESS, IUniswapV3Pool_json_1.default.abi, this.provider);
     }
     fromReadableAmount(amount, decimals) {

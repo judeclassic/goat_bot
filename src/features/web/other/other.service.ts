@@ -69,10 +69,10 @@ class OtherService {
       ]);
 
       this.bot.telegram.sendMessage(userResponse.telegram_id, MessageTemplete.defaultMessage(
-        "Success! You've earned 1 $GOAT by referring a friend or adding a referral code. Your friend gets 1 $GOAT too. Keep building your $GOAT balance!"
-      ), modifiedKeyboard);
+        "Success! You've earned 1 $GOAT by referring a friend or adding a referral code. Your friend gets 1 $GOAT too. Keep building your $GOAT balance!", user.default_language
+      ), modifiedKeyboard, );
       this.bot.telegram.sendMessage(user.telegram_id, MessageTemplete.defaultMessage(
-        "You have entered the referral code successfully"
+        "You have entered the referral code successfully", user.default_language
       ), modifiedKeyboard);
     }catch{}
 

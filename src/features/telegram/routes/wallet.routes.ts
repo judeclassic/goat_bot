@@ -1,5 +1,5 @@
 import { Telegraf, Markup } from 'telegraf';
-import { MessageTemplete } from '../../../data/handler/template/message';
+import { MessageTemplete, Translate } from '../../../data/handler/template/message';
 import { UserModel } from '../../../data/repository/database/models/user';
 import EncryptionRepository from '../../../data/repository/encryption';
 import TradeRepository from '../../../data/repository/wallet/__trade';
@@ -17,28 +17,34 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
 }) => {
     bot.action('wallet-menu', async (ctx) => {
         try {
-            const keyboard = Markup.inlineKeyboard([
-                [   Markup.button.callback('➕ Create new wallet', 'create-wallet-menu'),
-                    Markup.button.callback('⬇️ Import wallet', 'import-wallet-menu')
+            const translate = new Translate()
+            const keyboard = (translate: Translate) => Markup.inlineKeyboard([
+                [   Markup.button.callback(translate.c({en: '➕ Create new wallet', tch: '➕ 建立新錢包'}), 'create-wallet-menu'),
+                    Markup.button.callback(translate.c({en: '⬇️ Import wallet', tch: '⬇️導入錢包'}), 'import-wallet-menu')
                 ],
-                [   Markup.button.callback('📤 Export wallet', 'export-wallet-menu'),
-                    Markup.button.callback('🗑️ Delete wallet', 'remove-wallet-menu')
+                [   Markup.button.callback(translate.c({en: '📤 Export wallet', tch: '📤 導出錢包'}), 'export-wallet-menu'),
+                    Markup.button.callback(translate.c({en: '🗑️ Delete wallet', tch: '🗑️刪除錢包'}), 'remove-wallet-menu')
                 ],
-                [   Markup.button.callback('Transfer', 'send-token-menu'),
-                    Markup.button.callback('💼 Wallet balance', 'wallet-balance-menu')
+                [   Markup.button.callback(translate.c({en: '💼 Send Token', tch: '💼 發送令牌'}), 'send-token-menu'),
+                    Markup.button.callback(translate.c({en: '💼 Wallet balance', tch: '💼 錢包餘額'}), 'wallet-balance-menu')
                 ],
-                [Markup.button.callback('🔙 Back to menu', 'menu')],
+                [Markup.button.callback(translate.c({en: '🔙 Back to menu', tch: '🔙 返回選單'}), 'menu')]
             ]);
 
-            if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+            if (!ctx.chat) return ctx.reply('unable to process message', keyboard(translate));
 
             const telegram_id = ctx.chat.id.toString();
             const response = await telegramService.userOpensChat({ telegram_id });
-            if (!response.user) return ctx.reply(response.message, keyboard);
+            if (!response.user) return ctx.reply(response.message, keyboard(translate));
 
-            const { text, entities } = MessageTemplete.generateWalletEntities("Wallet Hub 📔: Your crypto command center! View, Create, import, manage wallets, send/receive & peek at those 💰 balances", response.user.wallets)
+            translate.changeLanguage(response.user.default_language);
 
-            ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+            const { text, entities } = MessageTemplete.generateWalletEntities(translate.c({
+                en: "Wallet Hub 📔: Your crypto command center! View, Create, import, manage wallets, send/receive & peek at those 💰 balances",
+                tch: "錢包中心 📔：您的加密貨幣指揮中心！查看、建立、匯入、管理錢包、發送/接收和查看這些 💰 餘額"
+            }), response.user.wallets, response.user.default_language)
+
+            ctx.reply(text, { ...keyboard(translate), entities, disable_web_page_preview: true });
         } catch (err) {
             console.log(err)
         }
@@ -47,6 +53,7 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
 
     bot.action('create-wallet-menu', async (ctx) => {
         try {
+            const translate = new Translate()
             const keyboard = Markup.inlineKeyboard([
                 Markup.button.callback('Add New', 'adding-new-wallet'),
                 Markup.button.callback('🔙 Back 🔄', 'wallet-menu'),
@@ -58,7 +65,10 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
             const response = await telegramService.userOpensChat({ telegram_id });
             if (!response.user) return ctx.reply(response.message, keyboard);
 
-            ctx.reply(MessageTemplete.defaultMessage("Click on 'Add New' to create a new wallet"), keyboard);
+            ctx.reply(MessageTemplete.defaultMessage(translate.c({
+                en: "Click on 'Add New' to create a new wallet",
+                tch: "點擊“新增”以建立新錢包"
+            }), response.user.default_language), keyboard);
         } catch (err) {
             console.log(err)
         }
@@ -66,28 +76,33 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
 
     bot.action('adding-new-wallet', async (ctx) => {
         try {
-            const keyboard = Markup.inlineKeyboard([
-                [   Markup.button.callback('➕ Create new wallet', 'create-wallet-menu'),
-                    Markup.button.callback('⬇️ Import wallet', 'import-wallet-menu')
+            const translate = new Translate()
+            const keyboard = (translate: Translate) => Markup.inlineKeyboard([
+                [   Markup.button.callback(translate.c({en: '➕ Create new wallet', tch: '➕ 建立新錢包'}), 'create-wallet-menu'),
+                    Markup.button.callback(translate.c({en: '⬇️ Import wallet', tch: '⬇️導入錢包'}), 'import-wallet-menu')
                 ],
-                [   Markup.button.callback('📤 Export wallet', 'export-wallet-menu'),
-                    Markup.button.callback('🗑️ Delete wallet', 'remove-wallet-menu')
+                [   Markup.button.callback(translate.c({en: '📤 Export wallet', tch: '📤 導出錢包'}), 'export-wallet-menu'),
+                    Markup.button.callback(translate.c({en: '🗑️ Delete wallet', tch: '🗑️刪除錢包'}), 'remove-wallet-menu')
                 ],
-                [   Markup.button.callback('💼 Send Token', 'send-token-menu'),
-                    Markup.button.callback('💼 Wallet balance', 'wallet-balance-menu')
+                [   Markup.button.callback(translate.c({en: '💼 Send Token', tch: '💼 發送令牌'}), 'send-token-menu'),
+                    Markup.button.callback(translate.c({en: '💼 Wallet balance', tch: '💼 錢包餘額'}), 'wallet-balance-menu')
                 ],
-                [Markup.button.callback('🔙 Back to menu', 'menu')]
+                [Markup.button.callback(translate.c({en: '🔙 Back to menu', tch: '🔙 返回選單'}), 'menu')]
             ]);
 
-            if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
+            if (!ctx.chat) return ctx.reply('unable to process message', keyboard(translate));
 
             const telegram_id = ctx.chat.id.toString();
             const response = await telegramService.userAddsWallet({ telegram_id });
-            if (!response.user) return ctx.reply(response.message, keyboard);
+            if (!response.user) return ctx.reply(response.message, keyboard(translate));
+            translate.changeLanguage(response.user.default_language);
 
-            const { text, entities } = MessageTemplete.generateWalletEntities("Wallet Hub 📔: Your crypto command center! View, Create, import, manage wallets, send/receive & peek at those 💰 balances", response.user.wallets)
+            const { text, entities } = MessageTemplete.generateWalletEntities(translate.c({
+                en: 'Wallet Hub 📔: Your crypto command center! View, Create, import, manage wallets, send/receive & peek at those 💰 balances',
+                tch: '錢包中心📔：您的加密貨幣指揮中心！ 查看、建立、匯入、管理錢包、發送/接收和查看這些 💰 餘額'
+            }), response.user.wallets, response.user.default_language)
 
-            ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
+            ctx.reply(text, { ...keyboard(translate), entities, disable_web_page_preview: true });
         } catch (err) {
             console.log(err)
         }
@@ -95,6 +110,7 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
 
     bot.action('import-wallet-menu', async (ctx) => {
         try {
+            const translate = new Translate()
             const keyboard = Markup.inlineKeyboard([
                 Markup.button.callback('Try again', 'import-new-wallet'),
                 Markup.button.callback('🔙 Back', 'wallet-menu'),
@@ -108,12 +124,20 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
 
             const urlHost = getUrlForDomainWallet({ token: response.token, type: 'import_wallet'});
 
+            const userResponse = await telegramService.userAddsWallet({ telegram_id });
+            if (!userResponse.user) return ctx.reply(userResponse.message, keyboard);
+
+            translate.changeLanguage(userResponse.user.default_language);
+
             const modifiedKeyboard = Markup.inlineKeyboard([
-                Markup.button.webApp('Click here to import', urlHost),
-                Markup.button.callback('🔙 Back', 'wallet-menu'),
+                Markup.button.webApp(translate.c({en: 'Click here to import', tch: '點此導入'}), urlHost),
+                Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'wallet-menu'),
             ]);
 
-            ctx.reply(MessageTemplete.defaultMessage("Enter the wallet private key and send to add wallet"), modifiedKeyboard);
+            ctx.reply(MessageTemplete.defaultMessage(translate.c({
+                en: "Enter the wallet private key and send to add wallet",
+                tch: "輸入錢包私鑰並發送添加錢包",
+            }), userResponse.user.default_language), modifiedKeyboard);
         } catch (err) {
             console.log(err)
         }
@@ -121,8 +145,9 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
     
     bot.action('export-wallet-menu', async (ctx) => {
         try {
+            const translate = new Translate()
             const keyboard = Markup.inlineKeyboard([
-                Markup.button.callback('🔙 Back', 'wallet-menu'),
+                Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'wallet-menu'),
             ]);
 
             if (!ctx.chat) return ctx.reply('unable to process message', keyboard);
@@ -131,7 +156,9 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
             const response = await telegramService.userOpensChat({ telegram_id });
             if (!response.user) return ctx.reply(response.message, keyboard);
 
-            const { text, entities } = MessageTemplete.generateExportWalletEntities({wallets: response.user.wallets})
+            translate.changeLanguage(response.user.default_language);
+
+            const { text, entities } = MessageTemplete.generateExportWalletEntities({wallets: response.user.wallets}, response.user.default_language)
             ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
         } catch (err) {
             console.log(err)
@@ -140,9 +167,10 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
 
     bot.action('remove-wallet-menu', async (ctx) => {
         try {
+            const translate = new Translate()
             const initialKeyboard = Markup.inlineKeyboard([
-                [Markup.button.callback('Buy', 'remove-wallet-menu')],
-                [Markup.button.callback('🔙 Back', 'wallet-menu')],
+                [Markup.button.callback(translate.c({en: 'Buy', tch: '買'}), 'remove-wallet-menu')],
+                [Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'wallet-menu')],
             ]);
 
             if (!ctx.chat) return ctx.reply('unable to process message', initialKeyboard);
@@ -151,14 +179,16 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
             const response = await telegramService.userOpensChat({ telegram_id });
             if (!response.user) return ctx.reply(response.message, initialKeyboard);
 
+            translate.changeLanguage(response.user.default_language);
+
             const keyboard = Markup.inlineKeyboard([[
                 ...response.user.wallets.map((_wallet, index) => {
-                    return Markup.button.callback(`Wallet ${index+1}`, `delete-wallet-${index+1}`);
+                    return Markup.button.callback(translate.c({en: `Wallet ${index+1}`, tch: `錢包 ${index+1}`}), `delete-wallet-${index+1}`);
                 })],
-                [Markup.button.callback('🔙 Back 🔄', 'wallet-menu')],
+                [Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'wallet-menu')],
             ]);
 
-            const { text, entities } = MessageTemplete.generateWalletEntities("Select the wallet to remove", response.user.wallets);
+            const { text, entities } = MessageTemplete.generateWalletEntities(translate.c({en: "Select the wallet to remove", tch: "選擇要刪除的錢包"}), response.user.wallets, response.user.default_language);
             ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
         } catch (err) {
             console.log(err)
@@ -167,10 +197,11 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
 
     [ 1, 2, 3 ].forEach((data, wallet_number) => {
         bot.action( `delete-wallet-${wallet_number+1}`, async (ctx) => {
+            const translate = new Translate()
             try {
                 const initialKeyboard = Markup.inlineKeyboard([
-                    [Markup.button.callback('try again', `delete-wallet-${wallet_number+1}`)],
-                    [Markup.button.callback('🔙 Back', 'wallet-menu')],
+                    [Markup.button.callback(translate.c({en: 'try again', tch: '再試一次'}), `delete-wallet-${wallet_number+1}`)],
+                    [Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'wallet-menu')],
                 ]);
 
                 if (!ctx.chat) return ctx.reply('unable to delete', initialKeyboard);
@@ -179,12 +210,18 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
                 const response = await telegramService.userOpensChat({ telegram_id });
                 if (!response.user) return ctx.reply(response.message, initialKeyboard);
 
+
+                translate.changeLanguage(response.user.default_language);
+
                 const keyboard = Markup.inlineKeyboard([
-                    [Markup.button.callback(`Confirm Delete`, `delete-wallet-confirm-${wallet_number}`)],
-                    [Markup.button.callback('🔙 Back', 'wallet-menu')],
+                    [Markup.button.callback(translate.c({en: 'Confirm Delete', tch: '確認刪除'}), `delete-wallet-confirm-${wallet_number}`)],
+                    [Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'wallet-menu')],
                 ]);
 
-                ctx.reply(MessageTemplete.defaultMessage(`Click on "Confirm Wallet ${wallet_number}" if you really want to remove this wallet ${response.user?.wallets[wallet_number]?.address}`), keyboard);
+                ctx.reply(MessageTemplete.defaultMessage(translate.c({
+                    en: `Click on "Confirm Wallet ${wallet_number}" if you really want to remove this wallet ${response.user?.wallets[wallet_number]?.address}`,
+                    tch: `點擊"確認錢包 ${wallet_number}" 如果你真的想刪除這個錢包 ${response.user?.wallets[wallet_number]?.address}`
+                }), response.user.default_language), keyboard);
             } catch (err) {
                 console.log(err)
             }
@@ -194,9 +231,10 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
     [ 1, 2, 3 ].forEach((data, wallet_number) => {
         bot.action( `delete-wallet-confirm-${wallet_number+1}`, async (ctx) => {
             try {
+                const translate = new Translate()
                 const initialKeyboard = Markup.inlineKeyboard([
-                    [Markup.button.callback('try again', `delete-wallet-${wallet_number+1}`)],
-                    [Markup.button.callback('🔙 Back', 'wallet-menu')],
+                    [Markup.button.callback(translate.c({en: 'try again', tch: '再試一次'}), `delete-wallet-${wallet_number+1}`)],
+                    [Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'wallet-menu')],
                 ]);
 
                 if (!ctx.chat) return ctx.reply('unable to confirm delete', initialKeyboard);
@@ -205,14 +243,19 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
                 const response = await telegramService.userDeleteWallet({ telegram_id, wallet_number });
                 if (!response.user) return ctx.reply(response.message, initialKeyboard);
 
+                translate.changeLanguage(response.user.default_language);
+
                 const keyboard = Markup.inlineKeyboard([[
                     ...response.user.wallets.map((_wallet, index) => {
-                        return Markup.button.callback(`Wallet ${index+1}`, `wallet-menu`);
+                        return Markup.button.callback(translate.c({en: `Wallet ${index+1}`, tch: `錢包 ${index+1}`}), `wallet-menu`);
                     })],
-                    [Markup.button.callback('🔙 Back', 'wallet-menu')],
+                    [Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'wallet-menu')],
                 ]);
 
-                const { text, entities } = MessageTemplete.generateWalletEntities("Select the wallet to remove", response.user.wallets);
+                const { text, entities } = MessageTemplete.generateWalletEntities(translate.c({
+                    en: '"Select the wallet to remove"',
+                    tch: '選擇要刪除的錢包'
+                }), response.user.wallets, response.user.default_language);
 
                 ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
             } catch (err) {
@@ -223,6 +266,7 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
 
     bot.action('wallet-balance-menu', async (ctx) => {
         try {
+            const translate = new Translate()
             const initialKeyboard = Markup.inlineKeyboard([
                 [Markup.button.callback('Buy', 'remove-wallet-menu')],
                 [Markup.button.callback('🔙 Back', 'wallet-menu')],
@@ -234,14 +278,16 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
             const response = await telegramService.userOpensChat({ telegram_id });
             if (!response.user) return ctx.reply(response.message, initialKeyboard);
 
+            translate.changeLanguage(response.user.default_language);
+
             const keyboard = Markup.inlineKeyboard([[
                 ...response.user.wallets.map((_wallet, index) => {
-                    return Markup.button.callback(`Wallet ${index+1}`, `wallet-balance-${index+1}`);
+                    return Markup.button.callback(translate.c({en: `Wallet ${index+1}`, tch: `錢包 ${index+1}`}), `wallet-balance-${index+1}`);
                 })],
-                [Markup.button.callback('🔙 Back', 'wallet-menu')],
+                [Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'wallet-menu')],
             ]);
 
-            ctx.reply(MessageTemplete.defaultMessage("Check wallet balance"), keyboard);
+            ctx.reply(MessageTemplete.defaultMessage(translate.c({en: "Check wallet balance", tch: "查看錢包餘額"}), response.user.default_language), keyboard);
         } catch (err) {
             console.log(err)
         }
@@ -250,6 +296,7 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
     [ 1, 2, 3 ].forEach((data, wallet_number) => {
         bot.action( `wallet-balance-${wallet_number+1}`, async (ctx) => {
             try {
+                const translate = new Translate()
                 const initialKeyboard = Markup.inlineKeyboard([
                     [Markup.button.callback('try again', `wallet-balance-${wallet_number+1}`)],
                     [Markup.button.callback('🔙 Back', 'wallet-menu')],
@@ -265,10 +312,15 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
                     // ...response.tokens.map((balance, index) => {
                     //     return Markup.button.callback(`Wallet ${index+1}`, `wallet-balance-${index+1}`);
                     // })],
-                    [Markup.button.callback('🔙 Back', 'wallet-menu')],
+                    [Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'wallet-menu')],
                 );
 
-                const { text, entities } = MessageTemplete.generateWalletBalanceEntities({balances: response.tokens })
+                const userResponse = await telegramService.userOpensChat({ telegram_id });
+                if (!userResponse.user) return ctx.reply(userResponse.message, keyboard);
+
+                translate.changeLanguage(userResponse.user.default_language);
+
+                const { text, entities } = MessageTemplete.generateWalletBalanceEntities({balances: response.tokens }, userResponse.user.default_language)
                 ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
             } catch (err) {
                 console.log(err)
@@ -278,6 +330,7 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
 
     bot.action('send-token-menu', async (ctx) => {
         try {
+            const translate = new Translate()
             const initialKeyboard = Markup.inlineKeyboard([
                 [Markup.button.callback('Try again', 'send-from-wallet')],
                 [Markup.button.callback('🔙 Back', 'wallet-menu')],
@@ -289,17 +342,23 @@ export const useWalletBotRoutes = ({bot, walletRepository, tradeRepository, encr
             const response = await telegramService.userOpensChat({ telegram_id });
             if (!response.user) return ctx.reply(response.message, initialKeyboard);
 
+
+            translate.changeLanguage(response.user.default_language);
+
             const keyboard = Markup.inlineKeyboard([[
                 ...response.user.wallets.map((wallet, index) => {
                     const linkResponse = telegramService.generateUserIDToken({ telegram_id, wallet_address: wallet.address });
                     const urlHost = getUrlForDomainWallet2({ token: linkResponse.token?? "", type: 'transfer_token', wallet: wallet.address });
                     console.log(urlHost);
-                    return Markup.button.webApp(` Wallet ${index+1}`, urlHost);
+                    return Markup.button.webApp(translate.c({en: `Wallet ${index+1}`, tch: `錢包 ${index+1}`}), urlHost);
                 })],
-                [Markup.button.callback('🔙 Back', 'wallet-menu')],
+                [Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'wallet-menu')],
             ]);
 
-            const { text, entities } = MessageTemplete.generateWalletEntities("Send token to another wallet address", response.user.wallets);
+            const { text, entities } = MessageTemplete.generateWalletEntities(translate.c({
+                en: "Send token to another wallet address",
+                tch: "將代幣發送到另一個錢包地址"
+            }), response.user.wallets, response.user.default_language);
 
             ctx.reply(text, { ...keyboard, entities, disable_web_page_preview: true });
         } catch (err) {
