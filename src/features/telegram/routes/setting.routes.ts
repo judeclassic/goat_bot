@@ -45,9 +45,9 @@ export const useSettingBotRoutes = ({bot, walletRepository, tradeRepository, enc
         try {
             const translate = new Translate()
             const keyboard = (translate: Translate) => Markup.inlineKeyboard([
-                Markup.button.callback(translate.c({en: 'English', tch: 'English'}), 'set-langauge-english'),
-                Markup.button.callback(translate.c({en: 'Chinese', tch: 'Chinese'}), 'set-langauge-chinese'),
-                Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'setting-menu'),
+                [ Markup.button.callback(translate.c({en: 'English', tch: 'English'}), 'set-langauge-english') ],
+                [ Markup.button.callback(translate.c({en: 'Chinese', tch: 'Chinese'}), 'set-langauge-chinese') ],
+                [ Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'setting-menu') ],
             ]);
 
             if (!ctx.chat) return ctx.reply('unable to process message', keyboard(translate));
@@ -71,8 +71,10 @@ export const useSettingBotRoutes = ({bot, walletRepository, tradeRepository, enc
         try {
             const translate = new Translate()
             const keyboard = (translate: Translate) => Markup.inlineKeyboard([
-                Markup.button.callback(translate.c({en: 'English', tch: 'English'}), 'set-langauge-english'),
-                Markup.button.callback(translate.c({en: 'Chinese', tch: 'Chinese'}), 'set-langauge-chinese')
+                Markup.button.callback(translate.c({en: '🗑️ Delete account', tch: '🗑️刪除帳戶'}), 'delete-account'),
+                Markup.button.callback(translate.c({en: '🔐 Set password', tch: '🔐設定密碼'}), 'set-password'),
+                Markup.button.callback(translate.c({en: 'Change language', tch: '改變語言'}), 'change-language'),
+                Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'menu'),
             ]);
 
             if (!ctx.chat) return ctx.reply('unable to process message', keyboard(translate));
@@ -96,8 +98,10 @@ export const useSettingBotRoutes = ({bot, walletRepository, tradeRepository, enc
         try {
             const translate = new Translate()
             const keyboard = (translate: Translate) => Markup.inlineKeyboard([
-                Markup.button.callback(translate.c({en: 'English', tch: 'English'}), 'set-langauge-english'),
-                Markup.button.callback(translate.c({en: 'Chinese', tch: 'Chinese'}), 'set-langauge-chinese')
+                Markup.button.callback(translate.c({en: '🗑️ Delete account', tch: '🗑️刪除帳戶'}), 'delete-account'),
+                Markup.button.callback(translate.c({en: '🔐 Set password', tch: '🔐設定密碼'}), 'set-password'),
+                Markup.button.callback(translate.c({en: 'Change language', tch: '改變語言'}), 'change-language'),
+                Markup.button.callback(translate.c({en: '🔙 Back', tch: '🔙 返回'}), 'menu'),
             ]);
 
             if (!ctx.chat) return ctx.reply('unable to process message', keyboard(translate));
